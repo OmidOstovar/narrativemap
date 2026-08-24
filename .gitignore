@@ -1,0 +1,12 @@
+node_modules/
+
+# The SQLite database, the generated admin password, and the session secret.
+# Anchored to the repo root so public/data/ (the bundled map) is still tracked.
+/data/
+
+*.log
+.DS_Store
+.env
+
+# Leaflet is served straight from node_modules by server.js.
+public/vendor/

@@ -1,0 +1,30 @@
+{
+  "name": "narrativemap",
+  "version": "1.0.0",
+  "description": "A map of Iran built from first-hand narratives, each anchored to an exact place and a period of time.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --watch --disable-warning=ExperimentalWarning server.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js",
+    "seed:reset": "node --disable-warning=ExperimentalWarning scripts/seed.js --reset",
+    "test": "node --test --disable-warning=ExperimentalWarning test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OmidOstovar/narrativemap.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OmidOstovar/narrativemap/issues"
+  },
+  "homepage": "https://github.com/OmidOstovar/narrativemap#readme",
+  "dependencies": {
+    "express": "^4.22.2",
+    "leaflet": "^1.9.4"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review queue — Narrative Map</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="/">
+    <svg class="brand__mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
+    </svg>
+    Narrative Map
+    <span class="brand__sub">Review queue</span>
+  </a>
+  <nav class="site-nav">
+    <a href="/">Public map</a>
+    <button type="button" class="btn btn--ghost btn--sm" id="logout" hidden>Sign out</button>
+  </nav>
+</header>
+
+<div id="login-view" hidden>
+  <div class="login-box">
+    <h1>Review queue</h1>
+    <p>Sign in to read submitted narratives and decide what goes on the public map.</p>
+    <form id="login-form">
+      <div class="field">
+        <label class="field__label" for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+        <p class="field__error" id="login-error"></p>
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<main class="admin-shell" id="admin-view" hidden>
+  <aside class="admin-queue">
+    <div class="tabs" id="tabs">
+      <button type="button" class="tab is-active" data-status="pending">Pending <span class="count" data-count="pending">0</span></button>
+      <button type="button" class="tab" data-status="approved">Published <span class="count" data-count="approved">0</span></button>
+      <button type="button" class="tab" data-status="rejected">Declined <span class="count" data-count="rejected">0</span></button>
+    </div>
+    <ul class="narrative-list" id="queue"></ul>
+  </aside>
+
+  <section class="admin-detail" id="detail">
+    <div class="empty-state" style="padding-top:20vh">
+      <strong>Nothing selected.</strong>
+      Pick a submission from the queue to read it.
+    </div>
+  </section>
+</main>
+
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script src="/js/jalali.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/map-base.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

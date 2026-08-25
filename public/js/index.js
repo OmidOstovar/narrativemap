@@ -69,10 +69,10 @@
 
   function hasActiveFilters() {
     const { search, province, from, to } = state.filters;
-    return Boolean(search.trim())
-      || Boolean(province)
-      || from !== state.yearBounds.min
-      || to !== state.yearBounds.max;
+    if (search.trim() || province) return true;
+    // Null bounds mean the timeline never appeared, so it cannot be narrowed.
+    if (from === null || to === null) return false;
+    return from !== state.yearBounds.min || to !== state.yearBounds.max;
   }
 
   /* ------------------------------ rendering ------------------------------ */
@@ -477,7 +477,6 @@
   async function boot() {
     mapApi = await window.NMMap.create('map', { interactiveProvinces: true });
     // Leave room at the bottom so southern Iran is not hidden by the timeline.
-    mapApi.fitIran({ paddingTopLeft: [24, 24], paddingBottomRight: [24, 128] });
     markerLayer = L.layerGroup().addTo(mapApi.map);
     mapApi.map.on('zoomend', renderMarkers);
 
@@ -495,6 +494,13 @@
 
     computeYearBounds();
     setupTimeline();
+    // Reserve room at the bottom only when the timeline is actually on screen,
+    // otherwise the country floats above a strip of nothing.
+    const timelineShown = !document.getElementById('timeline').hidden;
+    mapApi.fitIran({
+      paddingTopLeft: [24, 24],
+      paddingBottomRight: [24, timelineShown ? 128 : 24],
+    });
     wireControls();
     applyFilters();
 

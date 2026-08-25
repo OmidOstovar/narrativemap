@@ -99,6 +99,39 @@ Periods are stored as Gregorian ISO dates and displayed in both the Gregorian
 and the Solar Hijri calendar; the conversion is in `public/js/jalali.js`.
 Persian and Arabic answers are detected and rendered right-to-left.
 
+## Deploying to Railway
+
+The repo carries `railway.json` and `.nvmrc`, so Railway builds it with no extra
+setup. Two things are not optional:
+
+**A volume.** The narratives live in a SQLite file on disk. Without a persistent
+volume, Railway wipes it on every redeploy and every restart. Add a volume in the
+service settings and mount it at exactly:
+
+```
+/app/data
+```
+
+That is the directory the app already writes to, so nothing else needs changing.
+
+**Environment variables.** Set these in the service's Variables tab:
+
+```
+ADMIN_PASSWORD   = a long password you choose
+SESSION_SECRET   = a long random string
+COOKIE_SECURE    = true
+TRUST_PROXY      = true
+NODE_ENV         = production
+```
+
+`COOKIE_SECURE` matters because Railway serves over HTTPS; without it the
+moderator session cookie is sent unprotected. `TRUST_PROXY` lets the rate limiter
+see the real visitor address instead of Railway's router, so one abusive
+submitter cannot lock out everyone else. Do not set `PORT` — Railway injects it.
+
+The map will be empty on first deploy, which is correct: the sample narratives
+are only created by `npm run seed`, and they should not be on a live site.
+
 ## Configuration
 
 Copy `.env.example` and set what you need. The interesting ones:

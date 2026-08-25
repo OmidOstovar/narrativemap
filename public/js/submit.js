@@ -2,7 +2,8 @@
 (function () {
   'use strict';
 
-  const { api, escapeHtml, toast, debounce, gregorianPoint, jalaliPoint } = window.NM;
+  const { api, escapeHtml, toast, debounce } = window.NM;
+  const { t, pick } = window.I18N;
 
   const state = {
     questions: [],
@@ -23,24 +24,25 @@
       const id = `q-${question.id}`;
       const optional = question.required
         ? ''
-        : '<span class="field__optional">optional</span>';
+        : `<span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`;
       const help = question.help
-        ? `<p class="field__help">${escapeHtml(question.help)}</p>`
+        ? `<p class="field__help">${escapeHtml(pick(question.help))}</p>`
         : '';
+      const placeholder = question.placeholder ? pick(question.placeholder) : '';
 
       let control;
       if (question.type === 'textarea') {
         control = `<textarea id="${id}" name="${escapeHtml(question.id)}" rows="${question.rows || 5}"
                      maxlength="${question.maxLength || 5000}"
-                     ${question.placeholder ? `placeholder="${escapeHtml(question.placeholder)}"` : ''}></textarea>`;
+                     ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}></textarea>`;
       } else if (question.type === 'select') {
-        const options = ['<option value="">Choose one…</option>']
-          .concat(question.options.map((o) => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`));
+        const options = [`<option value="">${escapeHtml(t('submit.chooseOne'))}</option>`]
+          .concat(question.options.map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(pick(o))}</option>`));
         control = `<select id="${id}" name="${escapeHtml(question.id)}">${options.join('')}</select>`;
       } else {
         control = `<input type="text" id="${id}" name="${escapeHtml(question.id)}"
                      maxlength="${question.maxLength || 200}"
-                     ${question.placeholder ? `placeholder="${escapeHtml(question.placeholder)}"` : ''}>`;
+                     ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}>`;
       }
 
       const counter = question.maxLength && question.type !== 'select'
@@ -50,7 +52,7 @@
       return `
         <div class="field" data-field="${escapeHtml(question.id)}">
           <label class="field__label" for="${id}">
-            <span class="field__number">${String(index + 1).padStart(2, '0')}</span>${escapeHtml(question.label)}${optional}
+            <span class="field__number">${String(index + 1).padStart(2, '0')}</span>${escapeHtml(pick(question.label))}${optional}
           </label>
           ${help}
           ${control}
@@ -79,7 +81,7 @@
     counter.classList.toggle('is-close', length > question.maxLength * 0.9 && length <= question.maxLength);
 
     if (question.minLength && length > 0 && length < question.minLength) {
-      counter.textContent = `${length} / at least ${question.minLength}`;
+      counter.textContent = t('submit.atLeast', { count: length, min: question.minLength });
       counter.classList.add('is-close');
     }
   }
@@ -110,13 +112,13 @@
     if (state.precision === 'year') {
       host.innerHTML = `
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-start">From year</label>
+          <label class="field__label" for="period-start">${escapeHtml(t('submit.fromYear'))}</label>
           <input type="number" id="period-start" inputmode="numeric"
                  min="${state.yearRange.min}" max="${state.yearRange.max}"
                  placeholder="${state.yearRange.min}" value="${escapeHtml(startYear)}">
         </div>
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-end">To year</label>
+          <label class="field__label" for="period-end">${escapeHtml(t('submit.toYear'))}</label>
           <input type="number" id="period-end" inputmode="numeric"
                  min="${state.yearRange.min}" max="${state.yearRange.max}"
                  placeholder="${state.yearRange.max}" value="${escapeHtml(endYear)}">
@@ -124,24 +126,24 @@
     } else if (state.precision === 'month') {
       host.innerHTML = `
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-start">From month</label>
+          <label class="field__label" for="period-start">${escapeHtml(t('submit.fromMonth'))}</label>
           <input type="month" id="period-start" value="${escapeHtml(startMonth)}"
                  min="${state.yearRange.min}-01" max="${state.yearRange.max}-12">
         </div>
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-end">To month</label>
+          <label class="field__label" for="period-end">${escapeHtml(t('submit.toMonth'))}</label>
           <input type="month" id="period-end" value="${escapeHtml(endMonth)}"
                  min="${state.yearRange.min}-01" max="${state.yearRange.max}-12">
         </div>`;
     } else {
       host.innerHTML = `
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-start">First day</label>
+          <label class="field__label" for="period-start">${escapeHtml(t('submit.firstDay'))}</label>
           <input type="date" id="period-start" value="${previous ? escapeHtml(previous.start) : ''}"
                  min="${state.yearRange.min}-01-01" max="${state.yearRange.max}-12-31">
         </div>
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="period-end">Last day</label>
+          <label class="field__label" for="period-end">${escapeHtml(t('submit.lastDay'))}</label>
           <input type="date" id="period-end" value="${previous ? escapeHtml(previous.end) : ''}"
                  min="${state.yearRange.min}-01-01" max="${state.yearRange.max}-12-31">
         </div>`;
@@ -183,16 +185,10 @@
     const echo = $('period-echo');
     if (!period) { echo.textContent = ''; return; }
 
-    const a = gregorianPoint(period.start, period.precision);
-    const b = gregorianPoint(period.end, period.precision);
-    const ja = jalaliPoint(period.start, period.precision);
-    const jb = jalaliPoint(period.end, period.precision);
-
-    const gregorian = a === b ? a : `${a} – ${b}`;
-    const jalali = ja && jb ? (ja === jb ? ja : `${ja} – ${jb}`) : null;
-    echo.textContent = jalali
-      ? `${gregorian}  ·  ${jalali} in the Solar Hijri calendar`
-      : gregorian;
+    const pair = window.NM.formatPeriodPair(period);
+    echo.textContent = pair.secondary
+      ? `${pair.primary}  ·  ${pair.secondary} ${pair.secondaryLabel}`
+      : pair.primary;
   }
 
   /* ----------------------------- place picker ---------------------------- */
@@ -224,12 +220,13 @@
 
     $('readout-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     $('readout-coords').classList.remove('unset');
-    $('readout-province').textContent = province || (inside ? 'inside Iran' : 'outside Iran');
+    $('readout-province').textContent = province
+      || (inside ? t('submit.insideIran') : t('submit.outsideIran'));
     $('readout-province').classList.toggle('unset', !province && !inside);
 
     const pointError = document.querySelector('[data-error-for="place.point"]');
     if (!inside) {
-      pointError.textContent = 'That point is outside Iran. This map only carries narratives placed inside the country.';
+      pointError.textContent = t('error.outsideIran');
       pointError.style.display = 'block';
     } else {
       pointError.style.display = 'none';
@@ -255,7 +252,7 @@
       const places = await response.json();
 
       if (!places.length) {
-        results.innerHTML = '<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">No matches. Click the map instead.</li>';
+        results.innerHTML = `<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">${escapeHtml(t('submit.searchNone'))}</li>`;
         return;
       }
       results.innerHTML = places.map((place) => {
@@ -265,7 +262,7 @@
         </button></li>`;
       }).join('');
     } catch {
-      results.innerHTML = '<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">Place search is unavailable. Click the map to drop your pin.</li>';
+      results.innerHTML = `<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">${escapeHtml(t('submit.searchDown'))}</li>`;
     }
   }
 
@@ -290,8 +287,8 @@
     $('progress').hidden = done === 0;
     $('progress-fill').style.width = `${percent}%`;
     $('progress-text').textContent = done === steps
-      ? 'Everything required is filled in.'
-      : `${done} of ${steps} required parts filled in`;
+      ? t('submit.progress.done')
+      : t('submit.progress.some', { done, total: steps });
     $('progress-required').textContent = `${percent}%`;
   }
 
@@ -328,15 +325,12 @@
             <path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <h2>Your narrative is with the moderator.</h2>
-        <p>
-          It will appear on the public map once it has been read and accepted.
-          If you left an email address, you may hear back with a question first.
-        </p>
-        <div class="ref">Reference: ${escapeHtml(result.id)}</div>
+        <h2>${escapeHtml(t('submit.success.title'))}</h2>
+        <p>${escapeHtml(t('submit.success.body'))}</p>
+        <div class="ref" dir="ltr">${escapeHtml(t('submit.success.ref', { id: result.id }))}</div>
         <div>
-          <a class="btn" href="/">Back to the map</a>
-          <a class="btn btn--primary" href="/submit">Add another narrative</a>
+          <a class="btn" href="/">${escapeHtml(t('submit.success.back'))}</a>
+          <a class="btn btn--primary" href="/submit">${escapeHtml(t('submit.success.another'))}</a>
         </div>
       </div>`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -348,7 +342,7 @@
 
     const button = $('submit-btn');
     button.disabled = true;
-    button.textContent = 'Sending…';
+    button.textContent = t('submit.sending');
 
     const payload = {
       answers: collectAnswers(),
@@ -371,7 +365,7 @@
       if (error.errors && error.errors.length) {
         showErrors(error.errors);
         $('form-error').className = 'callout callout--error';
-        $('form-error').textContent = `${error.message} See the highlighted questions above.`;
+        $('form-error').textContent = t('submit.fixErrors', { message: error.message });
       } else {
         $('form-error').className = 'callout callout--error';
         $('form-error').textContent = error.message;
@@ -379,7 +373,7 @@
       $('form-error').hidden = false;
       toast(error.message, 'error');
       button.disabled = false;
-      button.textContent = 'Send for review';
+      button.textContent = t('submit.send');
     }
   }
 
@@ -437,6 +431,6 @@
 
   boot().catch((error) => {
     console.error(error);
-    toast(error.message || 'Could not load the form.', 'error');
+    toast(error.message || t('submit.loadFailed'), 'error');
   });
 }());

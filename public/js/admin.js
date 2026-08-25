@@ -2,8 +2,9 @@
 (function () {
   'use strict';
 
-  const { api, escapeHtml, paragraphs, dirFor, formatPeriod, formatPeriodJalali,
-          formatYears, formatTimestamp, toast } = window.NM;
+  const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
+          formatTimestamp, toast } = window.NM;
+  const { t, pick } = window.I18N;
 
   const state = {
     questions: [],
@@ -21,7 +22,14 @@
   const queueEl = () => $('queue');
   const detailEl = () => $('detail');
 
-  const title = (s) => s.answers.title || 'Untitled narrative';
+  const title = (s) => s.answers.title || t('reader.untitled');
+
+  /** Select answers store a stable code; show it in the moderator's language. */
+  function answerText(question, value) {
+    if (question.type !== 'select') return value;
+    const option = (question.options || []).find((o) => o.value === value);
+    return option ? pick(option) : value;
+  }
 
   /* -------------------------------- session ------------------------------ */
 
@@ -35,6 +43,11 @@
     state.yearRange = meta.yearRange;
 
     wireShell();
+    window.I18N.onChange(() => {
+      renderQueue();
+      const open = state.submissions.find((item) => item.id === state.selectedId);
+      if (open && !state.editing) renderDetail(open);
+    });
     await refresh();
   }
 
@@ -66,8 +79,8 @@
       state.selectedId = null;
       detailEl().innerHTML = `
         <div class="empty-state" style="padding-top:20vh">
-          <strong>Nothing selected.</strong>
-          Pick a submission from the queue to read it.
+          <strong>${escapeHtml(t('admin.nothingSelected'))}</strong>
+          ${escapeHtml(t('admin.pickOne'))}
         </div>`;
     }
   }
@@ -75,12 +88,12 @@
   function renderQueue() {
     if (!state.submissions.length) {
       const messages = {
-        pending: ['Queue is empty.', 'Every submission has been dealt with.'],
-        approved: ['Nothing published yet.', 'Approved narratives show up here.'],
-        rejected: ['Nothing declined.', ''],
+        pending: [t('admin.empty.pending'), t('admin.empty.pendingNote')],
+        approved: [t('admin.empty.approved'), t('admin.empty.approvedNote')],
+        rejected: [t('admin.empty.rejected'), ''],
       };
-      const [heading, note] = messages[state.status] || ['Nothing here.', ''];
-      queueEl().innerHTML = `<li class="empty-state"><strong>${heading}</strong>${escapeHtml(note)}</li>`;
+      const [heading, note] = messages[state.status] || [t('admin.empty.rejected'), ''];
+      queueEl().innerHTML = `<li class="empty-state"><strong>${escapeHtml(heading)}</strong>${escapeHtml(note)}</li>`;
       return;
     }
 
@@ -114,28 +127,29 @@
     const priv = submission.private || {};
     return `
       <div class="private-note">
-        <h3>Moderator only — never shown publicly</h3>
+        <h3>${escapeHtml(t('admin.privateHeading'))}</h3>
         <dl>
-          <dt>Reference</dt><dd>${escapeHtml(submission.id)}</dd>
-          <dt>Submitted</dt><dd>${escapeHtml(formatTimestamp(submission.submittedAt))}</dd>
-          <dt>Contact</dt><dd>${priv.email ? `<a href="mailto:${escapeHtml(priv.email)}">${escapeHtml(priv.email)}</a>` : 'none given'}</dd>
-          ${priv.reviewedAt ? `<dt>Reviewed</dt><dd>${escapeHtml(formatTimestamp(priv.reviewedAt))}</dd>` : ''}
-          ${priv.reviewNote ? `<dt>Note</dt><dd>${escapeHtml(priv.reviewNote)}</dd>` : ''}
+          <dt>${escapeHtml(t('admin.reference'))}</dt><dd>${escapeHtml(submission.id)}</dd>
+          <dt>${escapeHtml(t('admin.submitted'))}</dt><dd>${escapeHtml(formatTimestamp(submission.submittedAt))}</dd>
+          <dt>${escapeHtml(t('admin.contact'))}</dt><dd>${priv.email ? `<a href="mailto:${escapeHtml(priv.email)}">${escapeHtml(priv.email)}</a>` : escapeHtml(t('admin.noContact'))}</dd>
+          ${priv.reviewedAt ? `<dt>${escapeHtml(t('admin.reviewed'))}</dt><dd>${escapeHtml(formatTimestamp(priv.reviewedAt))}</dd>` : ''}
+          ${priv.reviewNote ? `<dt>${escapeHtml(t('admin.note'))}</dt><dd>${escapeHtml(priv.reviewNote)}</dd>` : ''}
         </dl>
       </div>`;
   }
 
   function detailHtml(submission) {
-    const jalali = formatPeriodJalali(submission.period);
+    const when = formatPeriodPair(submission.period);
     const answers = state.questions
       .filter((q) => q.id !== 'title' && submission.answers[q.id])
       .map((q) => {
-        const value = submission.answers[q.id];
+        const raw = submission.answers[q.id];
         const isChip = q.type === 'select';
+        const shown = answerText(q, raw);
         return `
           <section class="qa${isChip ? ' qa--chip' : ''}">
-            <h3 class="qa__q">${escapeHtml(q.label)}</h3>
-            <div class="qa__a" dir="${dirFor(value)}">${isChip ? escapeHtml(value) : paragraphs(value)}</div>
+            <h3 class="qa__q">${escapeHtml(pick(q.label))}</h3>
+            <div class="qa__a" dir="${dirFor(shown)}">${isChip ? escapeHtml(shown) : paragraphs(raw)}</div>
           </section>`;
       }).join('');
 
@@ -144,9 +158,9 @@
     return `
       <div class="reader__body" style="padding:32px 40px 24px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-          <span class="badge badge--${escapeHtml(submission.status)}">${escapeHtml(submission.status)}</span>
+          <span class="badge badge--${escapeHtml(submission.status)}">${escapeHtml(t('admin.status.' + submission.status))}</span>
           ${submission.status === 'approved'
-            ? `<a href="/?n=${encodeURIComponent(submission.id)}" target="_blank" rel="noopener" style="font-size:13px">View on the public map ↗</a>`
+            ? `<a href="/?n=${encodeURIComponent(submission.id)}" target="_blank" rel="noopener" style="font-size:13px">${escapeHtml(t('admin.viewOnMap'))}</a>`
             : ''}
         </div>
 
@@ -155,19 +169,19 @@
         <h1 class="reader__title" dir="${dirFor(title(submission))}">${escapeHtml(title(submission))}</h1>
 
         <dl class="reader__facts">
-          <dt>Place</dt>
+          <dt>${escapeHtml(t('reader.place'))}</dt>
           <dd>
             ${escapeHtml(submission.place.name)}
             ${submission.place.province ? `<span class="secondary"> · ${escapeHtml(submission.place.province)}</span>` : ''}
-            <div class="secondary">${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}</div>
+            <div class="secondary" dir="ltr">${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}</div>
           </dd>
-          <dt>When</dt>
+          <dt>${escapeHtml(t('reader.when'))}</dt>
           <dd>
-            ${escapeHtml(formatPeriod(submission.period))}
-            ${jalali ? `<div class="secondary">${escapeHtml(jalali)} (Solar Hijri)</div>` : ''}
+            ${escapeHtml(when.primary)}
+            ${when.secondary ? `<div class="secondary">${escapeHtml(when.secondary)} ${escapeHtml(when.secondaryLabel)}</div>` : ''}
           </dd>
-          <dt>Told by</dt>
-          <dd>${escapeHtml(submission.contributor || 'Anonymous')}</dd>
+          <dt>${escapeHtml(t('reader.toldBy'))}</dt>
+          <dd>${escapeHtml(submission.contributor || t('reader.anonymous'))}</dd>
         </dl>
 
         ${mapBlockHtml(220)}
@@ -176,20 +190,20 @@
 
         ${unanswered.length ? `
           <p style="color:var(--text-faint);font-size:13px;border-top:1px solid var(--ink-600);padding-top:16px">
-            Left blank: ${unanswered.map((q) => escapeHtml(q.label)).join(' · ')}
+            ${escapeHtml(t('admin.leftBlank', { questions: unanswered.map((q) => pick(q.label)).join(' · ') }))}
           </p>` : ''}
       </div>
 
       <div class="review-actions">
         ${submission.status !== 'approved'
-          ? '<button type="button" class="btn btn--approve" data-action="approve">Publish to the map</button>'
-          : '<button type="button" class="btn" data-action="pending">Unpublish</button>'}
+          ? `<button type="button" class="btn btn--approve" data-action="approve">${escapeHtml(t('admin.publish'))}</button>`
+          : `<button type="button" class="btn" data-action="pending">${escapeHtml(t('admin.unpublish'))}</button>`}
         ${submission.status !== 'rejected'
-          ? '<button type="button" class="btn" data-action="reject">Decline</button>'
-          : '<button type="button" class="btn" data-action="pending">Move back to pending</button>'}
-        <button type="button" class="btn" data-action="edit">Edit details</button>
+          ? `<button type="button" class="btn" data-action="reject">${escapeHtml(t('admin.decline'))}</button>`
+          : `<button type="button" class="btn" data-action="pending">${escapeHtml(t('admin.backToPending'))}</button>`}
+        <button type="button" class="btn" data-action="edit">${escapeHtml(t('admin.edit'))}</button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn--danger" data-action="delete">Delete</button>
+        <button type="button" class="btn btn--danger" data-action="delete">${escapeHtml(t('admin.delete'))}</button>
       </div>`;
   }
 
@@ -198,7 +212,7 @@
     return `
       <div style="margin-bottom:32px">
         <label class="map-toggle" style="box-shadow:none;margin-bottom:8px">
-          <input type="checkbox" id="detail-tiles"> Street detail — check the pin against real streets
+          <input type="checkbox" id="detail-tiles"> ${escapeHtml(t('admin.streetCheck'))}
         </label>
         <div id="detail-map" style="height:${height}px;border:1px solid var(--ink-500);border-radius:var(--radius-sm)"></div>
       </div>`;
@@ -231,7 +245,7 @@
             if (lngField) lngField.value = position.lng.toFixed(5);
             const { province } = await window.NMMap.locate(position.lat, position.lng);
             const provinceNode = document.getElementById('edit-province');
-            if (provinceNode) provinceNode.textContent = province || 'outside the province layer';
+            if (provinceNode) provinceNode.textContent = province || t('admin.outsideProvinces');
           });
         }
       })
@@ -245,15 +259,15 @@
       const value = submission.answers[q.id] || '';
       const control = q.type === 'select'
         ? `<select data-answer="${escapeHtml(q.id)}">
-             <option value="">— no answer —</option>
-             ${q.options.map((o) => `<option value="${escapeHtml(o)}"${o === value ? ' selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+             <option value="">${escapeHtml(t('admin.noAnswer'))}</option>
+             ${q.options.map((o) => `<option value="${escapeHtml(o.value)}"${o.value === value ? ' selected' : ''}>${escapeHtml(pick(o))}</option>`).join('')}
            </select>`
         : q.type === 'text'
           ? `<input type="text" data-answer="${escapeHtml(q.id)}" value="${escapeHtml(value)}" maxlength="${q.maxLength || 200}">`
           : `<textarea data-answer="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 5, 10)}" maxlength="${q.maxLength || 5000}">${escapeHtml(value)}</textarea>`;
       return `
         <div class="field">
-          <label class="field__label">${escapeHtml(q.label)}${q.required ? '' : '<span class="field__optional">optional</span>'}</label>
+          <label class="field__label">${escapeHtml(pick(q.label))}${q.required ? '' : `<span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`}</label>
           ${control}
           <p class="field__error" data-error-for="${escapeHtml(q.id)}"></p>
         </div>`;
@@ -261,49 +275,46 @@
 
     return `
       <div class="reader__body" style="padding:32px 40px 24px">
-        <h2 class="section__title" style="margin-bottom:20px">Editing “${escapeHtml(title(submission))}”</h2>
-        <p class="section__note">
-          Fix typos, tighten a place name, or move a misplaced pin. Changes are saved
-          to the submission itself, so a published narrative updates on the map.
-        </p>
+        <h2 class="section__title" style="margin-bottom:20px">${escapeHtml(t('admin.editing', { title: title(submission) }))}</h2>
+        <p class="section__note">${escapeHtml(t('admin.editNote'))}</p>
 
         <div class="private-note" style="border-style:solid">
-          <h3>Place and time</h3>
+          <h3>${escapeHtml(t('admin.placeAndTime'))}</h3>
           <div class="edit-grid" style="margin-top:12px">
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-place">Place name</label>
+              <label class="field__label" for="edit-place">${escapeHtml(t('admin.placeName'))}</label>
               <input type="text" id="edit-place" value="${escapeHtml(submission.place.name)}" maxlength="160">
             </div>
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-lat">Latitude</label>
+              <label class="field__label" for="edit-lat">${escapeHtml(t('admin.latitude'))}</label>
               <input type="number" id="edit-lat" step="0.00001" value="${submission.place.lat}">
             </div>
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-lng">Longitude</label>
+              <label class="field__label" for="edit-lng">${escapeHtml(t('admin.longitude'))}</label>
               <input type="number" id="edit-lng" step="0.00001" value="${submission.place.lng}">
             </div>
           </div>
           <p style="margin:10px 0 0;font-size:13px">
-            Province: <span id="edit-province" style="color:var(--text)">${escapeHtml(submission.place.province || 'unknown')}</span>
-            — drag the pin below to move it.
+            ${escapeHtml(t('admin.provinceIs'))} <span id="edit-province" style="color:var(--text)">${escapeHtml(submission.place.province || t('admin.unknown'))}</span>
+            ${escapeHtml(t('admin.dragPin'))}
           </p>
           <div class="edit-grid" style="margin-top:14px">
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-start">Period start</label>
+              <label class="field__label" for="edit-start">${escapeHtml(t('admin.periodStart'))}</label>
               <input type="date" id="edit-start" value="${escapeHtml(submission.period.start)}">
             </div>
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-end">Period end</label>
+              <label class="field__label" for="edit-end">${escapeHtml(t('admin.periodEnd'))}</label>
               <input type="date" id="edit-end" value="${escapeHtml(submission.period.end)}">
             </div>
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-precision">Shown as</label>
+              <label class="field__label" for="edit-precision">${escapeHtml(t('admin.shownAs'))}</label>
               <select id="edit-precision">
-                ${['year', 'month', 'day'].map((p) => `<option value="${p}"${p === submission.period.precision ? ' selected' : ''}>To the ${p}</option>`).join('')}
+                ${['year', 'month', 'day'].map((p) => `<option value="${p}"${p === submission.period.precision ? ' selected' : ''}>${escapeHtml(t('submit.precision.' + p))}</option>`).join('')}
               </select>
             </div>
             <div class="field" style="margin:0">
-              <label class="field__label" for="edit-contributor">Told by</label>
+              <label class="field__label" for="edit-contributor">${escapeHtml(t('reader.toldBy'))}</label>
               <input type="text" id="edit-contributor" value="${escapeHtml(submission.contributor || '')}" placeholder="Anonymous" maxlength="80">
             </div>
           </div>
@@ -318,8 +329,8 @@
       </div>
 
       <div class="review-actions">
-        <button type="button" class="btn btn--primary" data-action="save">Save changes</button>
-        <button type="button" class="btn btn--ghost" data-action="cancel-edit">Cancel</button>
+        <button type="button" class="btn btn--primary" data-action="save">${escapeHtml(t('admin.save'))}</button>
+        <button type="button" class="btn btn--ghost" data-action="cancel-edit">${escapeHtml(t('admin.cancel'))}</button>
       </div>`;
   }
 
@@ -360,17 +371,19 @@
   /* -------------------------------- actions ------------------------------ */
 
   async function setStatus(submission, status) {
-    const labels = { approved: 'published', rejected: 'declined', pending: 'moved back to pending' };
+    const toastKey = {
+      approved: 'admin.published', rejected: 'admin.declined', pending: 'admin.movedBack',
+    }[status];
     let note = null;
     if (status === 'rejected') {
-      note = prompt('Why is this being declined? (private note, optional)') || null;
+      note = prompt(t('admin.declineReason')) || null;
     }
     try {
       await api(`/api/admin/submissions/${encodeURIComponent(submission.id)}/status`, {
         method: 'POST',
         body: { status, note },
       });
-      toast(`Narrative ${labels[status]}.`);
+      toast(t(toastKey));
       await refresh(false);
     } catch (error) {
       toast(error.message, 'error');
@@ -387,10 +400,10 @@
         if (action === 'pending') return setStatus(submission, 'pending');
 
         if (action === 'delete') {
-          if (!confirm(`Delete “${title(submission)}” permanently? This cannot be undone.`)) return;
+          if (!confirm(t('admin.confirmDelete', { title: title(submission) }))) return;
           try {
             await api(`/api/admin/submissions/${encodeURIComponent(submission.id)}`, { method: 'DELETE' });
-            toast('Submission deleted.');
+            toast(t('admin.deleted'));
             state.selectedId = null;
             await refresh(false);
           } catch (error) {
@@ -419,7 +432,7 @@
               method: 'PUT',
               body: collectEdit(),
             });
-            toast('Changes saved.');
+            toast(t('admin.saved'));
             state.selectedId = result.submission.id;
             await refresh(false);
             renderDetail(result.submission);

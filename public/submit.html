@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Add your narrative — Narrative Map</title>
+<title data-i18n="title.submit">Add your narrative — Narrative Map</title>
 <meta name="description" content="Submit a narrative to the map of Iran. Answer a short set of questions, mark the exact place, and give the period it belongs to.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -17,20 +17,20 @@
       <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
       <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
     </svg>
-    Narrative Map
-    <span class="brand__sub">Iran</span>
+    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__sub" data-i18n="brand.sub">Iran</span>
   </a>
   <nav class="site-nav">
-    <a href="/">Map</a>
-    <a href="/submit">Add <span class="nav-long">your narrative</span></a>
-    <a href="/about">About</a>
+    <a href="/" data-i18n="nav.map">Map</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/about" data-i18n="nav.about">About</a>
   </nav>
 </header>
 
 <main class="page" id="page">
-  <p class="page__eyebrow">Add your narrative</p>
-  <h1 class="page__title">Put your story on the map.</h1>
-  <p class="page__lede">
+  <p class="page__eyebrow" data-i18n="submit.eyebrow">Add your narrative</p>
+  <h1 class="page__title" data-i18n="submit.title">Put your story on the map.</h1>
+  <p class="page__lede" data-i18n="submit.lede">
     Every narrative here is anchored to one exact place in Iran and one period of time.
     Answer the questions below, mark the spot, and send it in. Nothing appears on the
     public map until it has been read and accepted.
@@ -39,7 +39,7 @@
   <div class="progress" id="progress" hidden>
     <div class="progress__bar"><div class="progress__fill" id="progress-fill"></div></div>
     <div class="progress__text">
-      <span id="progress-text">Nothing answered yet</span>
+      <span id="progress-text" data-i18n="submit.progress.none">Nothing answered yet</span>
       <span id="progress-required"></span>
     </div>
   </div>
@@ -47,36 +47,36 @@
   <form id="form" novalidate>
 
     <section class="section">
-      <h2 class="section__title">Where did it happen?</h2>
-      <p class="section__note">
+      <h2 class="section__title" data-i18n="submit.where.title">Where did it happen?</h2>
+      <p class="section__note" data-i18n="submit.where.note">
         Search for the place or click straight on the map. Drag the pin to fine-tune it —
         the exact coordinates are what fixes your narrative to the map.
       </p>
 
       <div class="picker">
         <div class="picker__search">
-          <label class="visually-hidden" for="place-search">Search for a place in Iran</label>
-          <input type="search" id="place-search" placeholder="Search for a city, street, or landmark in Iran…" autocomplete="off">
+          <label class="visually-hidden" for="place-search" data-i18n="submit.searchLabel">Search for a place in Iran</label>
+          <input type="search" id="place-search" data-i18n-placeholder="submit.search" placeholder="Search for a city, street, or landmark in Iran…" autocomplete="off">
           <ul class="picker__results" id="place-results"></ul>
         </div>
 
         <div class="picker__map">
           <div id="picker-map" style="position:absolute;inset:0"></div>
-          <div class="picker__hint" id="picker-hint">Click anywhere on Iran to drop your pin</div>
+          <div class="picker__hint" id="picker-hint" data-i18n="submit.pinHint">Click anywhere on Iran to drop your pin</div>
         </div>
 
         <div class="picker__readout">
-          <span>Pin: <span class="coords unset" id="readout-coords">not set</span></span>
-          <span>Province: <span class="province unset" id="readout-province">—</span></span>
+          <span><span data-i18n="submit.pin">Pin:</span> <span class="coords unset" id="readout-coords" dir="ltr" data-i18n="submit.pinUnset">not set</span></span>
+          <span><span data-i18n="submit.province">Province:</span> <span class="province unset" id="readout-province">—</span></span>
           <label class="map-toggle" style="margin-left:auto;box-shadow:none;background:transparent;padding:0;border:none">
-            <input type="checkbox" id="picker-tiles"> Street detail
+            <input type="checkbox" id="picker-tiles"> <span data-i18n="map.streetDetail">Street detail</span>
           </label>
         </div>
 
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="place-name">What is this place called?</label>
-          <p class="field__help">In your own words — “my grandmother’s courtyard on Sepah Street”, not just “Tehran”.</p>
-          <input type="text" id="place-name" maxlength="160" placeholder="e.g. The bakery at the corner of Ferdowsi and Enghelab">
+          <label class="field__label" for="place-name" data-i18n="submit.placeName">What is this place called?</label>
+          <p class="field__help" data-i18n="submit.placeNameHelp">In your own words — “my grandmother’s courtyard on Sepah Street”, not just “Tehran”.</p>
+          <input type="text" id="place-name" maxlength="160" data-i18n-placeholder="submit.placeNamePlaceholder" placeholder="e.g. The bakery at the corner of Ferdowsi and Enghelab">
           <p class="field__error" data-error-for="place.name"></p>
         </div>
         <p class="field__error" data-error-for="place.point" style="margin-top:-8px"></p>
@@ -84,18 +84,18 @@
     </section>
 
     <section class="section">
-      <h2 class="section__title">When did it happen?</h2>
-      <p class="section__note">
+      <h2 class="section__title" data-i18n="submit.when.title">When did it happen?</h2>
+      <p class="section__note" data-i18n="submit.when.note">
         A single day, a month, or a stretch of years — whatever you actually know.
         Dates are entered in the Gregorian calendar and shown in both calendars on the map.
       </p>
 
       <div class="field">
-        <label class="field__label" for="precision">How precisely do you know the time?</label>
+        <label class="field__label" for="precision" data-i18n="submit.precision">How precisely do you know the time?</label>
         <select id="precision">
-          <option value="year">To the year</option>
-          <option value="month">To the month</option>
-          <option value="day">To the day</option>
+          <option value="year" data-i18n="submit.precision.year">To the year</option>
+          <option value="month" data-i18n="submit.precision.month">To the month</option>
+          <option value="day" data-i18n="submit.precision.day">To the day</option>
         </select>
       </div>
 
@@ -105,8 +105,8 @@
     </section>
 
     <section class="section">
-      <h2 class="section__title">The narrative</h2>
-      <p class="section__note">
+      <h2 class="section__title" data-i18n="submit.narrative.title">The narrative</h2>
+      <p class="section__note" data-i18n="submit.narrative.note">
         Answer in whichever language you think in — English or Persian both work.
         The questions marked optional can be left empty.
       </p>
@@ -114,22 +114,24 @@
     </section>
 
     <section class="section">
-      <h2 class="section__title">About you</h2>
-      <p class="section__note">Both fields are optional. Leave the name blank to appear as “Anonymous”.</p>
+      <h2 class="section__title" data-i18n="submit.about.title">About you</h2>
+      <p class="section__note" data-i18n="submit.about.note">Both fields are optional. Leave the name blank to appear as “Anonymous”.</p>
 
       <div class="field">
         <label class="field__label" for="contributor-name">
-          Name to show with the narrative <span class="field__optional">optional, public</span>
+          <span data-i18n="submit.yourName">Name to show with the narrative</span>
+          <span class="field__optional" data-i18n="submit.optionalPublic">optional, public</span>
         </label>
-        <input type="text" id="contributor-name" maxlength="80" placeholder="Anonymous">
+        <input type="text" id="contributor-name" maxlength="80" data-i18n-placeholder="reader.anonymous" placeholder="Anonymous">
         <p class="field__error" data-error-for="contributor.name"></p>
       </div>
 
       <div class="field">
         <label class="field__label" for="contributor-email">
-          Email <span class="field__optional">optional, never published</span>
+          <span data-i18n="submit.email">Email</span>
+          <span class="field__optional" data-i18n="submit.emailOptional">optional, never published</span>
         </label>
-        <p class="field__help">Only so the moderator can come back to you with a question before publishing.</p>
+        <p class="field__help" data-i18n="submit.emailHelp">Only so the moderator can come back to you with a question before publishing.</p>
         <input type="email" id="contributor-email" maxlength="160" placeholder="you@example.com">
         <p class="field__error" data-error-for="contributor.email"></p>
       </div>
@@ -138,14 +140,15 @@
     <div class="callout" id="form-error" hidden></div>
 
     <div class="submit-actions">
-      <button type="submit" class="btn btn--primary" id="submit-btn">Send for review</button>
-      <span class="note">A moderator reads every submission before it is published.</span>
+      <button type="submit" class="btn btn--primary" id="submit-btn" data-i18n="submit.send">Send for review</button>
+      <span class="note" data-i18n="submit.moderatorNote">A moderator reads every submission before it is published.</span>
     </div>
   </form>
 </main>
 
 <script src="/vendor/leaflet/leaflet.js"></script>
 <script src="/js/jalali.js"></script>
+<script src="/js/i18n.js"></script>
 <script src="/js/common.js"></script>
 <script src="/js/map-base.js"></script>
 <script src="/js/submit.js"></script>

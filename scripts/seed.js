@@ -29,7 +29,7 @@ const SAMPLES = [
       who_else: 'My father, who would not want his name here. His neighbour Agha Rahim, who is gone.',
       what_changed:
         'I learned that adults keep records of things they cannot say out loud. I have kept a notebook ever since.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: 'This is a small story about a shop, not about anything larger.',
     },
   },
@@ -49,7 +49,7 @@ const SAMPLES = [
       who_else: 'Four cousins. Two are in Isfahan, one in Toronto, one I do not speak to.',
       what_changed:
         'When I go back now I check the water level before I check anything else. That habit started under that arch.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -69,7 +69,7 @@ const SAMPLES = [
       who_else: 'My grandmother. Her father. My uncle, who is the reason the cutting exists.',
       what_changed:
         'I understood that a family can carry a place forward even after the place is demolished.',
-      how_you_know: 'Someone in my family told me',
+      how_you_know: 'family',
       before_reading: 'Everything here is second-hand, told to me across a kitchen table many times over.',
     },
   },
@@ -88,7 +88,7 @@ const SAMPLES = [
       who_else: 'The tea seller. I never learned his name and he is certainly not there now.',
       what_changed:
         'I retook the exams. That is not the point of the story, but people always ask.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -108,7 +108,7 @@ const SAMPLES = [
       who_else:
         'An engineer whose first name I think was Behrouz. Dozens of drivers whose faces I would not recognise now.',
       what_changed: 'I do not think I have ever been genuinely bored since.',
-      how_you_know: 'I was there, but it happened to someone else',
+      how_you_know: 'witnessed',
       before_reading:
         'This account touches on a disaster in which many thousands of people died. It is deliberately restrained, but it is still about that day.',
     },
@@ -127,7 +127,7 @@ const SAMPLES = [
       senses: 'بوی ماهی تازه و چوب خیس. هنوز هم با بوی چوب خیس یاد آن صبح‌ها می‌افتم.',
       who_else: 'مادرم. نمی‌خواهد اسمش نوشته شود.',
       what_changed: 'هیچ‌وقت نتوانستم در شهری زندگی کنم که باران کم دارد.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: 'این روایت به سال‌های جنگ اشاره دارد اما درباره‌ی جنگ نیست.',
     },
   },
@@ -146,7 +146,7 @@ const SAMPLES = [
       who_else: 'A supervisor my father only ever called “the Isfahani”.',
       what_changed:
         'My father never let a kettle be emptied and put away in our house. It always had water in it.',
-      how_you_know: 'Someone in my family told me',
+      how_you_know: 'family',
       before_reading: 'Told to me in pieces over about thirty years, so the details may have drifted.',
     },
   },
@@ -166,7 +166,7 @@ const SAMPLES = [
       who_else: 'My brother Hossein. My grandmother, who is buried here.',
       what_changed:
         'I have never once looked at the sky without hearing two people disagreeing pleasantly.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -185,7 +185,7 @@ const SAMPLES = [
       who_else: 'Ten strangers. Four of them are still in my phone.',
       what_changed:
         'I stopped being embarrassed about asking whether I am in the right place.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -204,7 +204,7 @@ const SAMPLES = [
       who_else: 'A headmaster who was moved on after two years.',
       what_changed:
         'I have never since believed that a rule about language is only about language.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -226,7 +226,7 @@ const PENDING = [
       senses: 'The absence of the sound you stop noticing until it goes.',
       who_else: 'My uncle. Perhaps twenty fishermen whose names I do not know.',
       what_changed: 'I pay attention to the wind now in a way I did not before.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       before_reading: '',
     },
   },
@@ -245,7 +245,7 @@ const PENDING = [
       senses: 'Diesel exhaust in cold mountain air, which is a smell I now associate with kindness.',
       who_else: 'Hundreds of people. One man with blankets.',
       what_changed: 'I do not accept the idea that people are basically indifferent.',
-      how_you_know: 'I was there, but it happened to someone else',
+      how_you_know: 'witnessed',
       before_reading:
         'This refers to the 2017 earthquake, in which many people died. It is about the response rather than the event.',
     },

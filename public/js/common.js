@@ -51,8 +51,16 @@
 
   /* ------------------------------- dates --------------------------------- */
 
-  const GREGORIAN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
+  const GREGORIAN_MONTHS = {
+    en: ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'],
+    fa: ['ژانویه', 'فوریه', 'مارس', 'آوریل', 'مه', 'ژوئن',
+      'ژوئیه', 'اوت', 'سپتامبر', 'اکتبر', 'نوامبر', 'دسامبر'],
+  };
+
+  function uiLang() {
+    return global.I18N ? global.I18N.lang() : 'en';
+  }
 
   function parts(iso) {
     const [y, m, d] = String(iso).split('-').map(Number);
@@ -61,13 +69,14 @@
 
   function gregorianPoint(iso, precision) {
     const { y, m, d } = parts(iso);
+    const months = GREGORIAN_MONTHS[uiLang()] || GREGORIAN_MONTHS.en;
     if (precision === 'year') return String(y);
-    if (precision === 'month') return `${GREGORIAN_MONTHS[m - 1]} ${y}`;
-    return `${d} ${GREGORIAN_MONTHS[m - 1]} ${y}`;
+    if (precision === 'month') return `${months[m - 1]} ${y}`;
+    return `${d} ${months[m - 1]} ${y}`;
   }
 
   function jalaliPoint(iso, precision) {
-    const j = global.Jalali && global.Jalali.fromISO(iso);
+    const j = global.Jalali && global.Jalali.fromISO(iso, uiLang());
     if (!j) return null;
     if (precision === 'year') return String(j.jy);
     if (precision === 'month') return `${j.month} ${j.jy}`;
@@ -95,6 +104,22 @@
     const from = period.start.slice(0, 4);
     const to = period.end.slice(0, 4);
     return from === to ? from : `${from}–${to}`;
+  }
+
+  /**
+   * Returns the period as { primary, secondary, secondaryLabel }, leading with
+   * the calendar the current interface language actually uses.
+   */
+  function formatPeriodPair(period) {
+    if (!period) return { primary: '', secondary: null, secondaryLabel: '' };
+    const gregorian = formatPeriod(period);
+    const jalali = formatPeriodJalali(period);
+    if (!jalali) return { primary: gregorian, secondary: null, secondaryLabel: '' };
+
+    const t = global.I18N ? global.I18N.t : (k) => k;
+    return uiLang() === 'fa'
+      ? { primary: jalali, secondary: gregorian, secondaryLabel: t('reader.gregorian') }
+      : { primary: gregorian, secondary: jalali, secondaryLabel: t('reader.solarHijri') };
   }
 
   function formatTimestamp(iso) {
@@ -156,7 +181,7 @@
 
   global.NM = {
     api, escapeHtml, paragraphs, dirFor,
-    formatPeriod, formatPeriodJalali, formatYears, formatTimestamp,
+    formatPeriod, formatPeriodJalali, formatPeriodPair, formatYears, formatTimestamp,
     gregorianPoint, jalaliPoint,
     toast, debounce,
   };

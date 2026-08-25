@@ -2,8 +2,9 @@
 (function () {
   'use strict';
 
-  const { api, escapeHtml, paragraphs, dirFor, formatPeriod, formatPeriodJalali,
-          formatYears, toast, debounce } = window.NM;
+  const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
+          toast, debounce } = window.NM;
+  const { t, pick } = window.I18N;
 
   const state = {
     narratives: [],
@@ -78,7 +79,7 @@
   /* ------------------------------ rendering ------------------------------ */
 
   function title(n) {
-    return n.answers.title || 'Untitled narrative';
+    return n.answers.title || t('reader.untitled');
   }
 
   function excerpt(n) {
@@ -93,8 +94,8 @@
     const total = state.narratives.length;
     const shown = state.filtered.length;
     $('count-label').textContent = shown === total
-      ? (total === 1 ? 'narrative' : 'narratives')
-      : `of ${total} narratives`;
+      ? t(total === 1 ? 'map.count.one' : 'map.count.many')
+      : t('map.count.ofTotal', { total });
     $('clear-filters').hidden = !hasActiveFilters();
   }
 
@@ -102,17 +103,17 @@
     if (!state.narratives.length) {
       listEl.innerHTML = `
         <li class="empty-state">
-          <strong>No narratives yet.</strong>
-          This map fills up one story at a time.
-          <p style="margin-top:14px"><a href="/submit">Be the first to add one →</a></p>
+          <strong>${escapeHtml(t('map.empty.title'))}</strong>
+          ${escapeHtml(t('map.empty.body'))}
+          <p style="margin-top:14px"><a href="/submit">${escapeHtml(t('map.empty.cta'))}</a></p>
         </li>`;
       return;
     }
     if (!state.filtered.length) {
       listEl.innerHTML = `
         <li class="empty-state">
-          <strong>Nothing matches these filters.</strong>
-          Try widening the time period or clearing the search.
+          <strong>${escapeHtml(t('map.noMatch.title'))}</strong>
+          ${escapeHtml(t('map.noMatch.body'))}
         </li>`;
       return;
     }
@@ -178,7 +179,7 @@
           size: [28, 22],
           anchor: [14, 11],
         });
-        marker.bindTooltip(`${group.length} narratives — click to zoom in`, {
+        marker.bindTooltip(escapeHtml(t('map.cluster', { count: group.length })), {
           className: 'map-tip', direction: 'top', offset: [0, -12], opacity: 1,
         });
         marker.on('click', () => {
@@ -325,41 +326,49 @@
 
   function questionLabel(id) {
     const question = state.questions.find((q) => q.id === id);
-    return question ? question.label : id;
+    return question ? pick(question.label) : id;
+  }
+
+  /** Select answers store a stable code; show it in the reader's language. */
+  function answerText(question, value) {
+    if (question.type !== 'select') return value;
+    const option = (question.options || []).find((o) => o.value === value);
+    return option ? pick(option) : value;
   }
 
   function renderReader(n) {
-    const jalali = formatPeriodJalali(n.period);
+    const when = formatPeriodPair(n.period);
     const coords = `${n.place.lat.toFixed(4)}, ${n.place.lng.toFixed(4)}`;
 
     const answers = state.questions
       .filter((q) => q.id !== 'title' && n.answers[q.id])
       .map((q) => {
-        const value = n.answers[q.id];
+        const raw = n.answers[q.id];
         const isChip = q.type === 'select';
+        const shown = answerText(q, raw);
         return `
           <section class="qa${isChip ? ' qa--chip' : ''}">
             <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
-            <div class="qa__a" dir="${dirFor(value)}">${isChip ? escapeHtml(value) : paragraphs(value)}</div>
+            <div class="qa__a" dir="${dirFor(shown)}">${isChip ? escapeHtml(shown) : paragraphs(raw)}</div>
           </section>`;
       }).join('');
 
     readerBody.innerHTML = `
       <h1 class="reader__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}</h1>
       <dl class="reader__facts">
-        <dt>Place</dt>
+        <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
           ${escapeHtml(n.place.name)}
           ${n.place.province ? `<span class="secondary"> · ${escapeHtml(n.place.province)}</span>` : ''}
-          <div class="secondary">${coords}</div>
+          <div class="secondary" dir="ltr">${coords}</div>
         </dd>
-        <dt>When</dt>
+        <dt>${escapeHtml(t('reader.when'))}</dt>
         <dd>
-          ${escapeHtml(formatPeriod(n.period))}
-          ${jalali ? `<div class="secondary">${escapeHtml(jalali)} (Solar Hijri)</div>` : ''}
+          ${escapeHtml(when.primary)}
+          ${when.secondary ? `<div class="secondary">${escapeHtml(when.secondary)} ${escapeHtml(when.secondaryLabel)}</div>` : ''}
         </dd>
-        <dt>Told by</dt>
-        <dd>${escapeHtml(n.contributor || 'Anonymous')}</dd>
+        <dt>${escapeHtml(t('reader.toldBy'))}</dt>
+        <dd>${escapeHtml(n.contributor || t('reader.anonymous'))}</dd>
       </dl>
       ${answers}`;
 
@@ -457,9 +466,9 @@
     $('reader-link').addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(location.href);
-        toast('Link copied.');
+        toast(t('reader.copied'));
       } catch {
-        toast('Copy the address bar to share this narrative.', 'error');
+        toast(t('reader.copyFailed'), 'error');
       }
     });
 
@@ -504,12 +513,20 @@
     wireControls();
     applyFilters();
 
+    window.I18N.onChange(() => {
+      renderList();
+      renderCount();
+      renderMarkers();
+      const open = state.selectedId && state.narratives.find((n) => n.id === state.selectedId);
+      if (open) renderReader(open);
+    });
+
     const deepLink = new URLSearchParams(location.search).get('n');
     if (deepLink) select(deepLink);
   }
 
   boot().catch((error) => {
     console.error(error);
-    toast(error.message || 'Could not load the map.', 'error');
+    toast(error.message || t('map.loadFailed'), 'error');
   });
 }());

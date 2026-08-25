@@ -450,6 +450,7 @@ input[type='date'] { cursor: text; }
 /* Contributor text is tagged dir="rtl" when it is Persian or Arabic; alignment
    has to follow, otherwise the text renders right-to-left but hugs the left edge. */
 [dir='rtl'] { text-align: right; }
+[dir='ltr'] { text-align: left; }
 .qa--chip .qa__a[dir='rtl'] { text-align: center; }
 
 .empty-state {
@@ -579,13 +580,14 @@ input[type='date'] { cursor: text; }
 
 .map-controls {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 96px;
+  left: 14px;
+  right: auto;
   z-index: 420;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 .map-toggle {
   display: inline-flex;
@@ -1029,11 +1031,122 @@ input[type='date'] { cursor: text; }
 }
 
 @media (max-width: 560px) {
-  .site-nav a { padding: 7px 9px; font-size: 13px; }
+  .site-header { gap: 8px; padding: 0 12px; }
+  .site-nav { gap: 2px; }
+  .site-nav a { padding: 7px 7px; font-size: 13px; }
   .site-nav .nav-long { display: none; }
+  .lang-toggle { padding: 6px 8px; margin-inline-start: 2px; }
+  .brand { font-size: 14px; gap: 6px; }
   .picker__map { height: 300px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+
+/* =========================================================================
+   Persian / right-to-left
+   The interface language sets dir on <html>. CSS grid already reverses column
+   order under rtl, so the sidebar moves to the right on its own; what needs
+   fixing is everything anchored with a physical left/right.
+   ========================================================================= */
+
+.lang-toggle {
+  background: transparent;
+  border: 1px solid var(--ink-400);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  margin-inline-start: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+.lang-toggle:hover { background: var(--ink-600); color: var(--text); }
+.lang-toggle__short { display: none; }
+
+/* On a phone the full word does not fit beside the brand and the nav links. */
+@media (max-width: 560px) {
+  .lang-toggle__long { display: none; }
+  .lang-toggle__short { display: inline; }
+}
+
+[dir='rtl'] .sidebar {
+  border-right: none;
+  border-left: 1px solid var(--ink-500);
+}
+[dir='rtl'] .admin-queue {
+  border-right: none;
+  border-left: 1px solid var(--ink-500);
+}
+
+[dir='rtl'] .brand__sub {
+  border-left: none;
+  border-right: 1px solid var(--ink-400);
+  padding-left: 0;
+  padding-right: 10px;
+  margin-left: 0;
+  margin-right: 2px;
+}
+
+[dir='rtl'] .site-nav { margin-left: 0; margin-right: auto; }
+
+[dir='rtl'] .map-controls { right: auto; left: 14px; }
+
+/* The reading panel slides in from the leading edge, which flips under rtl. */
+[dir='rtl'] .reader {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid var(--ink-500);
+  transform: translateX(-101%);
+}
+[dir='rtl'] .reader.is-open { transform: translateX(0); }
+
+[dir='rtl'] .callout { border-left: none; border-right: 3px solid var(--saffron-dim); }
+[dir='rtl'] .callout--error { border-right-color: var(--rose); }
+[dir='rtl'] .callout--ok { border-right-color: var(--turquoise); }
+[dir='rtl'] .toast { border-left: none; border-right: 3px solid var(--turquoise); }
+[dir='rtl'] .toast--error { border-right-color: var(--rose); }
+
+[dir='rtl'] .field__number { margin-right: 0; margin-left: 8px; }
+[dir='rtl'] .field__optional { margin-left: 0; margin-right: 6px; }
+[dir='rtl'] .counter { text-align: left; }
+
+[dir='rtl'] select {
+  background-position: 18px 50%, 23px 50%;
+  padding-right: 12px;
+  padding-left: 36px;
+}
+
+[dir='rtl'] .page__prose ul { padding-left: 0; padding-right: 22px; }
+
+[dir='rtl'] .picker__results button { text-align: right; }
+
+[dir='rtl'] .tab { direction: rtl; }
+
+/* Persian reads more comfortably a touch larger and looser. */
+[lang='fa'] body { font-size: 15.5px; line-height: 1.75; }
+[lang='fa'] .qa__a { font-family: var(--sans); font-size: 16.5px; line-height: 1.95; }
+[lang='fa'] .card__title,
+[lang='fa'] .reader__title,
+[lang='fa'] .page__title,
+[lang='fa'] .section__title { font-family: var(--sans); letter-spacing: 0; }
+[lang='fa'] textarea { font-family: var(--sans); font-size: 15.5px; line-height: 1.9; }
+
+/* The timeline is a numeric axis and stays left-to-right in both languages. */
+.timeline { direction: ltr; }
+.timeline .timeline__label,
+.timeline .timeline__reset { text-align: start; }
+
+/* The reading panel opens on the trailing edge, so both the zoom control and
+   the map toggles move to the opposite edge under rtl. */
+[dir='rtl'] .leaflet-top.leaflet-left { left: auto; right: 0; }
+[dir='rtl'] .map-controls { left: auto; right: 14px; align-items: flex-end; }
+
+/* Coordinates are Latin digits and must not be reordered by the bidi
+   algorithm when they sit inside Persian text. */
+.coords, .reader__facts .secondary, .picker__readout .coords { unicode-bidi: isolate; }

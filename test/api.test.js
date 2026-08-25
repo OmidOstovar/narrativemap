@@ -55,7 +55,7 @@ function validSubmission(overrides = {}) {
       title: 'A test narrative',
       what_happened: 'Something happened at this corner, and this sentence is deliberately long enough to clear the minimum length the questionnaire asks for on the main narrative answer.',
       why_here: 'Because this exact corner is where the whole thing took place, and nowhere else.',
-      how_you_know: 'I lived it',
+      how_you_know: 'lived',
       ...(overrides.answers || {}),
     },
     place: { name: 'A corner in Tehran', lat: 35.6892, lng: 51.3890, ...(overrides.place || {}) },
@@ -78,6 +78,50 @@ test('questions endpoint exposes the questionnaire and province list', async () 
   assert.equal(body.questions[0].id, 'title');
   assert.equal(body.provinces.length, 31);
   assert.ok(body.yearRange.min < body.yearRange.max);
+});
+
+test('every question is available in both languages', async () => {
+  const { questions } = await json(await call('/api/questions'));
+  for (const question of questions) {
+    assert.ok(question.label.en, `${question.id} is missing an English label`);
+    assert.ok(question.label.fa, `${question.id} is missing a Persian label`);
+    if (question.help) {
+      assert.ok(question.help.en && question.help.fa, `${question.id} help is not bilingual`);
+    }
+    if (question.type === 'select') {
+      for (const option of question.options) {
+        assert.ok(option.value, 'select options need a stable value');
+        assert.ok(option.en && option.fa, `option ${option.value} is not bilingual`);
+      }
+    }
+  }
+});
+
+test('validation errors carry a translatable code', async () => {
+  const payload = validSubmission();
+  delete payload.answers.what_happened;
+  payload.place.lat = 48.8566;
+  payload.place.lng = 2.3522;
+
+  const response = await call('/api/submissions', { method: 'POST', body: payload });
+  assert.equal(response.status, 400);
+
+  const { errors } = await json(response);
+  assert.ok(errors.length > 0);
+  for (const error of errors) {
+    assert.ok(error.code, `error on ${error.field} has no code`);
+    assert.match(error.code, /^error\./);
+    assert.ok(error.message, 'the English fallback message is still present');
+  }
+});
+
+test('a select answer outside the allowed codes is rejected', async () => {
+  const response = await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({ answers: { how_you_know: 'I lived it' } }),
+  });
+  assert.equal(response.status, 400);
+  assert.ok((await json(response)).errors.some((e) => e.field === 'how_you_know'));
 });
 
 test('the public map starts empty', async () => {

@@ -12,8 +12,12 @@
   var BREAKS = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210,
                 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
 
-  var MONTHS = ['Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad',
-                'Shahrivar', 'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'];
+  var MONTHS = {
+    en: ['Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad',
+         'Shahrivar', 'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'],
+    fa: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد',
+         'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
+  };
 
   function div(a, b) { return Math.trunc(a / b); }
   function mod(a, b) { return a - b * Math.floor(a / b); }
@@ -94,13 +98,17 @@
     return { jy: jy, jm: jm, jd: jd };
   }
 
-  /** Converts an ISO 'YYYY-MM-DD' string to { jy, jm, jd, month }. */
-  function fromISO(iso) {
+  /**
+   * Converts an ISO 'YYYY-MM-DD' string to { jy, jm, jd, month }.
+   * `lang` selects the script the month name is written in.
+   */
+  function fromISO(iso, lang) {
     var parts = String(iso).split('-');
     if (parts.length !== 3) return null;
     var result = d2j(g2d(Number(parts[0]), Number(parts[1]), Number(parts[2])));
     if (!result) return null;
-    result.month = MONTHS[result.jm - 1];
+    var names = MONTHS[lang === 'fa' ? 'fa' : 'en'];
+    result.month = names[result.jm - 1];
     return result;
   }
 

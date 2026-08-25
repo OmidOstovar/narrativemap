@@ -46,16 +46,45 @@ scripts/build-geo.js   Regenerates public/data/iran.geo.json from source data
 test/api.test.js       End-to-end API tests
 ```
 
+### Languages
+
+The interface is English and Persian, switched by a toggle in the header and
+remembered per visitor in `localStorage`. The starting language follows the
+browser (`?lang=fa` forces it for one visit).
+
+All interface text lives in `public/js/i18n.js` as `{ en, fa }` pairs. Static
+markup is tagged `data-i18n="key"` (or `data-i18n-placeholder`, `-label`,
+`-html`); anything rendered from JavaScript calls `t(key, params)`. Views that
+have to redraw on a switch register with `I18N.onChange`.
+
+Persian sets `dir="rtl"` on the document, which flips the sidebar and reading
+panel automatically — CSS grid reverses column order on its own, so only things
+anchored to a physical edge need the `[dir='rtl']` rules at the end of the
+stylesheet. The timeline stays left-to-right in both languages because it is a
+numeric axis, and coordinates are isolated so bidi does not reorder them.
+
+Dates are stored as Gregorian ISO strings and shown in both calendars, leading
+with the one the current language uses: Solar Hijri first in Persian, Gregorian
+first in English. Month names are translated in both calendars.
+
+Contributor text is separate from interface language: answers can be written in
+either language, and Persian or Arabic is detected per answer and rendered
+right-to-left even while the interface is in English.
+
 ### Changing the questions
 
 Edit `src/questions.js`. The public form, the server-side validation, the
 reading panel, and the moderator's edit view are all generated from that array,
 so adding, reordering, or rewording a question needs no other change.
 
+Every contributor-facing string in that file is an `{ en, fa }` pair, and
+`select` options carry a stable `value` that is what actually gets stored — so an
+answer chosen in English still renders in Persian for a Persian reader.
+
 Keep the `id` of a question stable when you reword it — answers are stored keyed
 by `id`, so renaming one orphans the answers already collected under the old
-name. Removing a question hides its answers from the site but leaves them in the
-database.
+name. The same applies to an option's `value`. Removing a question hides its
+answers from the site but leaves them in the database.
 
 Two ids are special, set at the bottom of the file: `title` supplies the name
 shown on pins and list cards, and `what_happened` supplies list previews and the

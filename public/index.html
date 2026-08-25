@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Narrative Map — Iran</title>
+<title data-i18n="title.map">Narrative Map — Iran</title>
 <meta name="description" content="First-hand narratives placed on the map of Iran, each anchored to an exact place and a period in time.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -17,35 +17,35 @@
       <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
       <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
     </svg>
-    Narrative Map
-    <span class="brand__sub">Iran</span>
+    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__sub" data-i18n="brand.sub">Iran</span>
   </a>
   <nav class="site-nav">
-    <a href="/">Map</a>
-    <a href="/submit">Add <span class="nav-long">your narrative</span></a>
-    <a href="/about">About</a>
+    <a href="/" data-i18n="nav.map">Map</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/about" data-i18n="nav.about">About</a>
   </nav>
 </header>
 
 <main class="app">
   <aside class="sidebar">
     <div class="filters">
-      <label class="visually-hidden" for="search">Search narratives</label>
-      <input type="search" id="search" placeholder="Search titles, places, and text…" autocomplete="off">
+      <label class="visually-hidden" for="search" data-i18n="map.searchLabel">Search narratives</label>
+      <input type="search" id="search" data-i18n-placeholder="map.search" placeholder="Search titles, places, and text…" autocomplete="off">
       <div class="filters__row">
-        <label class="visually-hidden" for="province-filter">Filter by province</label>
-        <select id="province-filter"><option value="">All provinces</option></select>
-        <label class="visually-hidden" for="sort">Sort narratives</label>
+        <label class="visually-hidden" for="province-filter" data-i18n="map.provinceLabel">Filter by province</label>
+        <select id="province-filter"><option value="" data-i18n="map.allProvinces">All provinces</option></select>
+        <label class="visually-hidden" for="sort" data-i18n="map.sortLabel">Sort narratives</label>
         <select id="sort">
-          <option value="chronological">Oldest first</option>
-          <option value="reverse">Newest first</option>
-          <option value="recent">Recently published</option>
-          <option value="title">By title</option>
+          <option value="chronological" data-i18n="map.sort.chronological">Oldest first</option>
+          <option value="reverse" data-i18n="map.sort.reverse">Newest first</option>
+          <option value="recent" data-i18n="map.sort.recent">Recently published</option>
+          <option value="title" data-i18n="map.sort.title">By title</option>
         </select>
       </div>
       <p class="result-count">
         <span><strong id="count">0</strong> <span id="count-label">narratives</span></span>
-        <button type="button" id="clear-filters" hidden>Clear filters</button>
+        <button type="button" id="clear-filters" data-i18n="map.clearFilters" hidden>Clear filters</button>
       </p>
     </div>
     <ul class="narrative-list" id="list"></ul>
@@ -57,23 +57,23 @@
     <div class="map-controls">
       <label class="map-toggle">
         <input type="checkbox" id="tiles-toggle">
-        Street detail
+        <span data-i18n="map.streetDetail">Street detail</span>
       </label>
     </div>
 
-    <section class="timeline" id="timeline" hidden aria-label="Filter narratives by time period">
+    <section class="timeline" id="timeline" dir="ltr" hidden data-i18n-label="timeline.aria" aria-label="Filter narratives by time period">
       <div class="timeline__head">
-        <span class="timeline__label">Time period</span>
+        <span class="timeline__label" data-i18n="timeline.label">Time period</span>
         <span class="timeline__value" id="timeline-value">—</span>
-        <button type="button" class="timeline__reset" id="timeline-reset">Reset</button>
+        <button type="button" class="timeline__reset" id="timeline-reset" data-i18n="timeline.reset">Reset</button>
       </div>
       <div class="timeline__histogram" id="histogram" aria-hidden="true"></div>
       <div class="range" id="range">
         <div class="range__track"></div>
         <div class="range__fill" id="range-fill"></div>
-        <label class="visually-hidden" for="year-from">Earliest year</label>
+        <label class="visually-hidden" for="year-from" data-i18n="timeline.from">Earliest year</label>
         <input type="range" id="year-from">
-        <label class="visually-hidden" for="year-to">Latest year</label>
+        <label class="visually-hidden" for="year-to" data-i18n="timeline.to">Latest year</label>
         <input type="range" id="year-to">
       </div>
       <div class="range__scale"><span id="scale-min"></span><span id="scale-max"></span></div>
@@ -81,9 +81,9 @@
 
     <article class="reader" id="reader" aria-hidden="true" tabindex="-1">
       <div class="reader__bar">
-        <button type="button" class="btn btn--ghost btn--sm" id="reader-close" aria-label="Close narrative">← Back to map</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="reader-close" data-i18n-label="reader.close" data-i18n="reader.back" aria-label="Close narrative">← Back to map</button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn--ghost btn--sm" id="reader-link">Copy link</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="reader-link" data-i18n="reader.copyLink">Copy link</button>
       </div>
       <div class="reader__body" id="reader-body"></div>
     </article>
@@ -92,6 +92,7 @@
 
 <script src="/vendor/leaflet/leaflet.js"></script>
 <script src="/js/jalali.js"></script>
+<script src="/js/i18n.js"></script>
 <script src="/js/common.js"></script>
 <script src="/js/map-base.js"></script>
 <script src="/js/index.js"></script>

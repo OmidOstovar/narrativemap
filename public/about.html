@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About — Narrative Map</title>
+<title data-i18n="title.about">About — Narrative Map</title>
 <meta name="description" content="How the Narrative Map works: what a narrative is, how places and periods are recorded, and how submissions are reviewed.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/css/style.css">
@@ -16,86 +16,52 @@
       <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
       <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
     </svg>
-    Narrative Map
-    <span class="brand__sub">Iran</span>
+    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__sub" data-i18n="brand.sub">Iran</span>
   </a>
   <nav class="site-nav">
-    <a href="/">Map</a>
-    <a href="/submit">Add <span class="nav-long">your narrative</span></a>
-    <a href="/about">About</a>
+    <a href="/" data-i18n="nav.map">Map</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/about" data-i18n="nav.about">About</a>
   </nav>
 </header>
 
 <main class="page">
-  <p class="page__eyebrow">About</p>
-  <h1 class="page__title">A map made of what people remember.</h1>
-  <p class="page__lede">
+  <p class="page__eyebrow" data-i18n="about.eyebrow">About</p>
+  <h1 class="page__title" data-i18n="about.title">A map made of what people remember.</h1>
+  <p class="page__lede" data-i18n="about.lede">
     Most maps of Iran show roads, borders, and administrative units. This one shows
     what happened to people, and exactly where.
   </p>
 
   <div class="page__prose">
-    <h2>What counts as a narrative</h2>
-    <p>
-      A narrative is one account, told by one person, tied to two things that never move:
-      an <strong>exact place</strong> and a <strong>period of time</strong>. A street corner in
-      Tabriz in the spring of 1979. A schoolyard in Ahvaz across four years in the 1980s.
-      A single afternoon at a bus stop.
-    </p>
-    <p>
-      Narratives are not written free-form. Everyone answers the same set of questions,
-      which is what makes very different accounts readable side by side — and what stops
-      the map from turning into a wall of unrelated text.
-    </p>
+    <h2 data-i18n="about.what.title">What counts as a narrative</h2>
+    <p data-i18n="about.what.p1"></p>
+    <p data-i18n="about.what.p2"></p>
 
-    <h2>How the place and the time are recorded</h2>
+    <h2 data-i18n="about.how.title">How the place and the time are recorded</h2>
     <ul>
-      <li>
-        <strong>Place.</strong> A pin, set to about a metre of precision, plus the name the
-        contributor uses for it. The province is worked out from the coordinates, so
-        filtering by province needs nothing extra from the contributor.
-      </li>
-      <li>
-        <strong>Time.</strong> A start and an end, with the precision the contributor
-        actually has — to the year, the month, or the day. The map shows the period in
-        both the Gregorian and the Solar Hijri calendar.
-      </li>
+      <li data-i18n="about.how.place"></li>
+      <li data-i18n="about.how.time"></li>
     </ul>
 
-    <h2>How submissions are reviewed</h2>
-    <p>
-      Nothing reaches the public map on its own. Every submission goes into a private
-      queue, where a moderator reads it in full and either publishes it, sends it back,
-      or declines it. The moderator can correct a typo or nudge a misplaced pin before
-      publishing; the narrative itself stays as it was written.
-    </p>
-    <p>
-      Contact details are optional, are only used to ask a contributor a question before
-      publishing, and are never shown on the map. A contributor who leaves the name field
-      blank appears as “Anonymous”.
-    </p>
+    <h2 data-i18n="about.review.title">How submissions are reviewed</h2>
+    <p data-i18n="about.review.p1"></p>
+    <p data-i18n="about.review.p2"></p>
 
-    <h2>Languages</h2>
-    <p>
-      Answers can be written in English or Persian. Persian and Arabic text is detected
-      and rendered right-to-left automatically, in both the reading panel and the list.
-    </p>
+    <h2 data-i18n="about.lang.title">Languages</h2>
+    <p data-i18n="about.lang.p"></p>
 
-    <h2>Where the map comes from</h2>
-    <p>
-      The outline of Iran and its 31 provinces is drawn from
-      <a href="https://www.geoboundaries.org" rel="noopener">geoBoundaries</a> (CC BY 4.0), bundled
-      with the site so the map loads without calling out to anyone. The optional
-      “Street detail” layer is the only thing that fetches third-party tiles, from
-      <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>.
-    </p>
+    <h2 data-i18n="about.map.title">Where the map comes from</h2>
+    <p data-i18n="about.map.p"></p>
 
     <p style="margin-top:40px">
-      <a class="btn btn--primary" href="/submit">Add your narrative</a>
+      <a class="btn btn--primary" href="/submit" data-i18n="about.cta">Add your narrative</a>
     </p>
   </div>
 </main>
 
+<script src="/js/i18n.js"></script>
 <script src="/js/common.js"></script>
 </body>
 </html>

@@ -135,6 +135,13 @@ moderator session cookie is sent unprotected. `TRUST_PROXY` lets the rate limite
 see the real visitor address instead of Railway's router, so one abusive
 submitter cannot lock out everyone else. Do not set `PORT` — Railway injects it.
 
+**Railway stages changes.** Attaching the volume, adding variables, and
+generating a domain do not take effect when you make them — Railway collects
+them into a changeset and applies nothing until you click **Deploy** at the top
+of the screen. A domain that reads "Public domain will be generated" is a queued
+change, not a broken one. Check the changeset lists the volume before deploying:
+going live without it means submissions are erased at the next restart.
+
 The map will be empty on first deploy, which is correct: the sample narratives
 are only created by `npm run seed`, and they should not be on a live site.
 

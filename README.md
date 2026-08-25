@@ -105,14 +105,20 @@ The repo carries `railway.json` and `.nvmrc`, so Railway builds it with no extra
 setup. Two things are not optional:
 
 **A volume.** The narratives live in a SQLite file on disk. Without a persistent
-volume, Railway wipes it on every redeploy and every restart. Add a volume in the
-service settings and mount it at exactly:
+volume, Railway wipes it on every redeploy and every restart.
+
+Volumes are attached from the **project canvas**, not from the service's Settings
+tab: right-click the service tile and choose **Attach Volume** (the command
+palette, Ctrl/Cmd-K, can also create one). Set the mount path to exactly:
 
 ```
 /app/data
 ```
 
-That is the directory the app already writes to, so nothing else needs changing.
+Railway's builder puts the code at `/app`, and the app writes its database to
+`./data`, so that path is the directory it already uses — nothing else needs
+changing. If **Attach Volume** does not appear, the service has more than one
+replica; volumes require exactly one.
 
 **Environment variables.** Set these in the service's Variables tab:
 

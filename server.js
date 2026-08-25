@@ -176,17 +176,29 @@ app.delete('/api/admin/submissions/:id', auth.requireAdmin, (req, res) => {
 
 /* --------------------------------- pages --------------------------------- */
 
+/**
+ * Everything the browser holds must revalidate on each load.
+ *
+ * The pages and the API are two halves of one program: the API's shape changes
+ * with the client that reads it. Letting a browser keep a script for an hour
+ * means a deploy can pair yesterday's JavaScript with today's API, which
+ * renders as broken text rather than as an error anyone would notice. ETags
+ * make revalidation a 304 with no body, so the cost is one small round trip
+ * and the guarantee is that a deploy is never half-applied.
+ */
+const STATIC_OPTIONS = { etag: true, lastModified: true, maxAge: 0, cacheControl: true };
+
 // Leaflet is a dependency rather than a checked-in copy, so it is served
 // straight out of node_modules at the path the pages reference.
 app.use('/vendor/leaflet', express.static(
   path.join(__dirname, 'node_modules', 'leaflet', 'dist'),
-  { maxAge: '30d', immutable: true },
+  STATIC_OPTIONS,
 ));
 
-app.use(express.static(path.join(__dirname, 'public'), {
-  extensions: ['html'],
-  maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
-}));
+app.use(express.static(
+  path.join(__dirname, 'public'),
+  Object.assign({ extensions: ['html'] }, STATIC_OPTIONS),
+));
 
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {

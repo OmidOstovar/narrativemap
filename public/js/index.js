@@ -4,7 +4,7 @@
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
           toast, debounce } = window.NM;
-  const { t, pick } = window.I18N;
+  const { t, pick, province } = window.I18N;
 
   const state = {
     narratives: [],
@@ -87,6 +87,18 @@
       || Object.values(n.answers).find((v) => v && v.length > 60)
       || '';
     return source.replace(/\s+/g, ' ').slice(0, 220);
+  }
+
+  /** Option values stay the stored English name; only the label is translated. */
+  function renderProvinceFilter() {
+    const select = $('province-filter');
+    const chosen = state.filters.province;
+    const names = [...new Set(state.narratives.map((n) => n.place.province).filter(Boolean))]
+      .sort((a, b) => province(a).localeCompare(province(b)));
+
+    select.innerHTML = `<option value="">${escapeHtml(t('map.allProvinces'))}</option>`
+      + names.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(province(p))}</option>`).join('');
+    select.value = chosen;
   }
 
   function renderCount() {
@@ -359,7 +371,7 @@
         <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
           ${escapeHtml(n.place.name)}
-          ${n.place.province ? `<span class="secondary"> · ${escapeHtml(n.place.province)}</span>` : ''}
+          ${n.place.province ? `<span class="secondary"> · ${escapeHtml(province(n.place.province))}</span>` : ''}
           <div class="secondary" dir="ltr">${coords}</div>
         </dd>
         <dt>${escapeHtml(t('reader.when'))}</dt>
@@ -497,9 +509,7 @@
     state.questions = meta.questions;
     state.narratives = data.narratives;
 
-    const provinces = [...new Set(state.narratives.map((n) => n.place.province).filter(Boolean))].sort();
-    $('province-filter').insertAdjacentHTML('beforeend',
-      provinces.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join(''));
+    renderProvinceFilter();
 
     computeYearBounds();
     setupTimeline();
@@ -514,6 +524,7 @@
     applyFilters();
 
     window.I18N.onChange(() => {
+      renderProvinceFilter();
       renderList();
       renderCount();
       renderMarkers();

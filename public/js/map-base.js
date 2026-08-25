@@ -63,9 +63,13 @@
         interactive: config.interactiveProvinces,
         onEachFeature: (feature, layer) => {
           if (!config.interactiveProvinces) return;
-          layer.bindTooltip(feature.properties.name, {
+          const label = () => (global.I18N ? global.I18N.province(feature.properties.name)
+            : feature.properties.name);
+          layer.bindTooltip(label(), {
             className: 'map-tip', sticky: true, direction: 'top', opacity: 1,
           });
+          // Province tooltips are built once, so refresh them on a switch.
+          if (global.I18N) global.I18N.onChange(() => layer.setTooltipContent(label()));
           layer.on('mouseover', () => layer.setStyle(STYLE.provinceHover));
           layer.on('mouseout', () => layer.setStyle(STYLE.province));
         },

@@ -3,7 +3,7 @@
   'use strict';
 
   const { api, escapeHtml, toast, debounce } = window.NM;
-  const { t, pick } = window.I18N;
+  const { t, pick, province } = window.I18N;
 
   const state = {
     questions: [],
@@ -215,14 +215,14 @@
       pickerApi.map.setView([lat, lng], Math.max(pickerApi.map.getZoom(), config.zoom || 10));
     }
 
-    const { inside, province } = await window.NMMap.locate(lat, lng);
-    state.place.province = province;
+    const { inside, province: found } = await window.NMMap.locate(lat, lng);
+    state.place.province = found;
 
     $('readout-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     $('readout-coords').classList.remove('unset');
-    $('readout-province').textContent = province
+    $('readout-province').textContent = province(found)
       || (inside ? t('submit.insideIran') : t('submit.outsideIran'));
-    $('readout-province').classList.toggle('unset', !province && !inside);
+    $('readout-province').classList.toggle('unset', !found && !inside);
 
     const pointError = document.querySelector('[data-error-for="place.point"]');
     if (!inside) {

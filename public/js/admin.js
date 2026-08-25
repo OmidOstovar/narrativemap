@@ -4,7 +4,7 @@
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
           formatTimestamp, toast } = window.NM;
-  const { t, pick } = window.I18N;
+  const { t, pick, province } = window.I18N;
 
   const state = {
     questions: [],
@@ -172,7 +172,7 @@
           <dt>${escapeHtml(t('reader.place'))}</dt>
           <dd>
             ${escapeHtml(submission.place.name)}
-            ${submission.place.province ? `<span class="secondary"> · ${escapeHtml(submission.place.province)}</span>` : ''}
+            ${submission.place.province ? `<span class="secondary"> · ${escapeHtml(province(submission.place.province))}</span>` : ''}
             <div class="secondary" dir="ltr">${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}</div>
           </dd>
           <dt>${escapeHtml(t('reader.when'))}</dt>
@@ -243,9 +243,11 @@
             const lngField = document.getElementById('edit-lng');
             if (latField) latField.value = position.lat.toFixed(5);
             if (lngField) lngField.value = position.lng.toFixed(5);
-            const { province } = await window.NMMap.locate(position.lat, position.lng);
+            const { province: found } = await window.NMMap.locate(position.lat, position.lng);
             const provinceNode = document.getElementById('edit-province');
-            if (provinceNode) provinceNode.textContent = province || t('admin.outsideProvinces');
+            if (provinceNode) {
+            provinceNode.textContent = province(found) || t('admin.outsideProvinces');
+          }
           });
         }
       })
@@ -295,7 +297,7 @@
             </div>
           </div>
           <p style="margin:10px 0 0;font-size:13px">
-            ${escapeHtml(t('admin.provinceIs'))} <span id="edit-province" style="color:var(--text)">${escapeHtml(submission.place.province || t('admin.unknown'))}</span>
+            ${escapeHtml(t('admin.provinceIs'))} <span id="edit-province" style="color:var(--text)">${escapeHtml(province(submission.place.province) || t('admin.unknown'))}</span>
             ${escapeHtml(t('admin.dragPin'))}
           </p>
           <div class="edit-grid" style="margin-top:14px">
@@ -315,7 +317,7 @@
             </div>
             <div class="field" style="margin:0">
               <label class="field__label" for="edit-contributor">${escapeHtml(t('reader.toldBy'))}</label>
-              <input type="text" id="edit-contributor" value="${escapeHtml(submission.contributor || '')}" placeholder="Anonymous" maxlength="80">
+              <input type="text" id="edit-contributor" value="${escapeHtml(submission.contributor || '')}" placeholder="${escapeHtml(t('reader.anonymous'))}" maxlength="80">
             </div>
           </div>
           <p class="field__error" data-error-for="period"></p>

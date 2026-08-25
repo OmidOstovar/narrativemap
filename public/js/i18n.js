@@ -321,6 +321,51 @@
     '404.back': { en: 'Back to the map', fa: 'بازگشت به نقشه' },
   };
 
+  /**
+   * Province names are stored as the English spelling used by the boundary
+   * data. These are the Persian equivalents, matching the wording the Telegram
+   * bot already uses with contributors.
+   */
+  const PROVINCES = {
+    'Alborz': 'البرز',
+    'Ardabil': 'اردبیل',
+    'Bushehr': 'بوشهر',
+    'Chaharmahal and Bakhtiari': 'چهارمحال و بختیاری',
+    'East Azerbaijan': 'آذربایجان شرقی',
+    'Fars': 'فارس',
+    'Gilan': 'گیلان',
+    'Golestan': 'گلستان',
+    'Hamadan': 'همدان',
+    'Hormozgan': 'هرمزگان',
+    'Ilam': 'ایلام',
+    'Isfahan': 'اصفهان',
+    'Kerman': 'کرمان',
+    'Kermanshah': 'کرمانشاه',
+    'Khuzestan': 'خوزستان',
+    'Kohgiluyeh and Boyer-Ahmad': 'کهگیلویه و بویراحمد',
+    'Kurdistan': 'کردستان',
+    'Lorestan': 'لرستان',
+    'Markazi': 'مرکزی',
+    'Mazandaran': 'مازندران',
+    'North Khorasan': 'خراسان شمالی',
+    'Qazvin': 'قزوین',
+    'Qom': 'قم',
+    'Razavi Khorasan': 'خراسان رضوی',
+    'Semnan': 'سمنان',
+    'Sistan and Baluchestan': 'سیستان و بلوچستان',
+    'South Khorasan': 'خراسان جنوبی',
+    'Tehran': 'تهران',
+    'West Azerbaijan': 'آذربایجان غربی',
+    'Yazd': 'یزد',
+    'Zanjan': 'زنجان',
+  };
+
+  /** Renders a stored province name in the current language. */
+  function province(name) {
+    if (!name) return '';
+    return current === 'fa' ? (PROVINCES[name] || name) : name;
+  }
+
   let current = 'en';
 
   function detect() {
@@ -424,7 +469,7 @@
     apply();
   }
 
-  global.I18N = { t, pick, lang, isRTL, setLang, toggle, apply, onChange, init, LANGS };
+  global.I18N = { t, pick, province, lang, isRTL, setLang, toggle, apply, onChange, init, LANGS };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

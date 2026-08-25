@@ -5,6 +5,7 @@
 const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs');
+const http = require('node:http');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
@@ -47,6 +48,21 @@ function call(pathname, options = {}) {
 
 async function json(response) {
   return response.json();
+}
+
+/** A browser-style conditional GET: If-None-Match without Cache-Control. */
+function conditionalGet(pathname, etag) {
+  return new Promise((resolve, reject) => {
+    const request = http.get(
+      { host: '127.0.0.1', port: server.address().port, path: pathname, headers: { 'If-None-Match': etag } },
+      (response) => {
+        let body = '';
+        response.on('data', (chunk) => { body += chunk; });
+        response.on('end', () => resolve({ statusCode: response.statusCode, body }));
+      },
+    );
+    request.on('error', reject);
+  });
 }
 
 function validSubmission(overrides = {}) {
@@ -361,6 +377,33 @@ test('the public pages are served', async () => {
     const response = await call(pathname);
     assert.equal(response.status, 200, `${pathname} should be served`);
   }
+});
+
+test('static assets revalidate so a deploy is never half-applied', async () => {
+  // A cached script paired with a newer API renders as broken text rather than
+  // as a visible error, so nothing may be held without checking back.
+  for (const pathname of ['/', '/js/index.js', '/js/i18n.js', '/css/style.css', '/vendor/leaflet/leaflet.js']) {
+    const response = await call(pathname);
+    assert.equal(response.status, 200, `${pathname} should be served`);
+
+    const cacheControl = response.headers.get('cache-control') || '';
+    assert.match(cacheControl, /max-age=0/, `${pathname} must not be held without revalidating`);
+    assert.ok(!/immutable/.test(cacheControl), `${pathname} must not be marked immutable`);
+    assert.ok(response.headers.get('etag'), `${pathname} needs an ETag to revalidate cheaply`);
+  }
+});
+
+test('a revalidated asset comes back as a 304 with no body', async () => {
+  const first = await call('/js/i18n.js');
+  const etag = first.headers.get('etag');
+  assert.ok(etag);
+
+  // Node's fetch attaches Cache-Control: no-cache to a conditional request,
+  // which correctly tells the server to skip the 304. A browser doing an
+  // ordinary reload does not, so use a plain request to model that.
+  const { statusCode, body } = await conditionalGet('/js/i18n.js', etag);
+  assert.equal(statusCode, 304);
+  assert.equal(body.length, 0);
 });
 
 test('unknown paths return the right kind of 404', async () => {

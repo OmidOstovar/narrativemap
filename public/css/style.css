@@ -721,6 +721,10 @@ input[type='date'] { cursor: text; }
 .badge--pending { color: var(--saffron); border-color: rgba(224, 145, 63, 0.35); background: rgba(224, 145, 63, 0.1); }
 .badge--approved { color: var(--turquoise); border-color: rgba(63, 176, 168, 0.35); background: rgba(63, 176, 168, 0.1); }
 .badge--rejected { color: var(--rose); border-color: rgba(212, 100, 94, 0.35); background: rgba(212, 100, 94, 0.1); }
+.badge--source { color: var(--text-muted); border-color: var(--ink-400); background: var(--ink-600); }
+
+.callout--warn { border-left-color: var(--saffron); color: #f0d5b4; }
+[dir='rtl'] .callout--warn { border-right-color: var(--saffron); }
 
 /* -------------------------------- toasts -------------------------------- */
 

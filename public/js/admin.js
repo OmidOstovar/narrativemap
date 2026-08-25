@@ -131,6 +131,7 @@
         <dl>
           <dt>${escapeHtml(t('admin.reference'))}</dt><dd>${escapeHtml(submission.id)}</dd>
           <dt>${escapeHtml(t('admin.submitted'))}</dt><dd>${escapeHtml(formatTimestamp(submission.submittedAt))}</dd>
+          <dt>${escapeHtml(t('admin.source'))}</dt><dd>${escapeHtml(t('admin.source.' + ((submission.private || {}).source || 'web')))}</dd>
           <dt>${escapeHtml(t('admin.contact'))}</dt><dd>${priv.email ? `<a href="mailto:${escapeHtml(priv.email)}">${escapeHtml(priv.email)}</a>` : escapeHtml(t('admin.noContact'))}</dd>
           ${priv.reviewedAt ? `<dt>${escapeHtml(t('admin.reviewed'))}</dt><dd>${escapeHtml(formatTimestamp(priv.reviewedAt))}</dd>` : ''}
           ${priv.reviewNote ? `<dt>${escapeHtml(t('admin.note'))}</dt><dd>${escapeHtml(priv.reviewNote)}</dd>` : ''}
@@ -140,6 +141,7 @@
 
   function detailHtml(submission) {
     const when = formatPeriodPair(submission.period);
+    const source = (submission.private && submission.private.source) || 'web';
     const answers = state.questions
       .filter((q) => q.id !== 'title' && submission.answers[q.id])
       .map((q) => {
@@ -157,8 +159,10 @@
 
     return `
       <div class="reader__body" style="padding:32px 40px 24px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
           <span class="badge badge--${escapeHtml(submission.status)}">${escapeHtml(t('admin.status.' + submission.status))}</span>
+          <span class="badge badge--source">${escapeHtml(t('admin.source.' + source))}</span>
+          ${submission.place.approximate ? `<span class="badge badge--pending">${escapeHtml(t('admin.approximateShort'))}</span>` : ''}
           ${submission.status === 'approved'
             ? `<a href="/?n=${encodeURIComponent(submission.id)}" target="_blank" rel="noopener" style="font-size:13px">${escapeHtml(t('admin.viewOnMap'))}</a>`
             : ''}
@@ -184,6 +188,9 @@
           <dd>${escapeHtml(submission.contributor || t('reader.anonymous'))}</dd>
         </dl>
 
+        ${submission.place.approximate
+          ? `<div class="callout callout--warn" style="margin-bottom:16px">${escapeHtml(t('admin.approximate'))}</div>`
+          : ''}
         ${mapBlockHtml(220)}
 
         ${answers}
@@ -243,6 +250,9 @@
             const lngField = document.getElementById('edit-lng');
             if (latField) latField.value = position.lat.toFixed(5);
             if (lngField) lngField.value = position.lng.toFixed(5);
+            // Moving the pin is exactly the act that makes it no longer a guess.
+            const approxField = document.getElementById('edit-approximate');
+            if (approxField) approxField.checked = false;
             const { province: found } = await window.NMMap.locate(position.lat, position.lng);
             const provinceNode = document.getElementById('edit-province');
             if (provinceNode) {
@@ -316,6 +326,13 @@
               </select>
             </div>
             <div class="field" style="margin:0">
+              <label class="field__label" for="edit-approximate-label">${escapeHtml(t('admin.approximateField'))}</label>
+              <label class="map-toggle" style="box-shadow:none;background:transparent;border:none;padding:8px 0">
+                <input type="checkbox" id="edit-approximate"${submission.place.approximate ? ' checked' : ''}>
+                ${escapeHtml(t('admin.approximateShort'))}
+              </label>
+            </div>
+            <div class="field" style="margin:0">
               <label class="field__label" for="edit-contributor">${escapeHtml(t('reader.toldBy'))}</label>
               <input type="text" id="edit-contributor" value="${escapeHtml(submission.contributor || '')}" placeholder="${escapeHtml(t('reader.anonymous'))}" maxlength="80">
             </div>
@@ -347,6 +364,7 @@
         name: $('edit-place').value,
         lat: Number($('edit-lat').value),
         lng: Number($('edit-lng').value),
+        approximate: $('edit-approximate') ? $('edit-approximate').checked : false,
       },
       period: {
         start: $('edit-start').value,

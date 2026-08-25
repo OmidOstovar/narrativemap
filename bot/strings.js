@@ -1,0 +1,136 @@
+'use strict';
+
+/**
+ * Everything the bot says, in Persian and English.
+ *
+ * The Persian keeps the warm, informal register of the original bot — this is
+ * the voice contributors already know, and the tone matters when you are asking
+ * someone for a difficult memory.
+ */
+const STRINGS = {
+  'welcome': {
+    fa: '📖 <b>تجربهٔ شما بخشی از تاریخ است، و حیف است که ناپدید شود.</b>\n\n'
+      + 'هم آنچه دیده‌اید، هم آنچه از سر گذرانده‌اید — می‌توانید ناشناس بگویید.\n\n'
+      + 'روایت‌ها روی نقشهٔ ایران منتشر می‌شوند، هر کدام سر جای خودش و در زمان خودش.\n\n'
+      + 'هیچ روایتی پیش از خوانده‌شدن و تأیید منتشر نمی‌شود.',
+    en: '📖 <b>What you lived through is part of the record, and it would be a shame to lose it.</b>\n\n'
+      + 'What you saw, and what you went through — you can tell it anonymously.\n\n'
+      + 'Narratives are published on a map of Iran, each one at its own place and its own time.\n\n'
+      + 'Nothing is published until it has been read and accepted.',
+  },
+  'welcome.start': { fa: '✍️ ثبت روایت تازه', en: '✍️ Add a narrative' },
+  'welcome.language': { fa: '🌐 English', en: '🌐 فارسی' },
+
+  'cancelled': { fa: 'لغو شد. هر وقت خواستید /start را بزنید.', en: 'Cancelled. Send /start whenever you are ready.' },
+  'expired': {
+    fa: 'این گفت‌وگو منقضی شده. برای شروع دوباره /start را بزنید.',
+    en: 'This conversation has expired. Send /start to begin again.',
+  },
+  'unknown': { fa: 'متوجه نشدم. برای شروع /start را بزنید.', en: 'I did not follow that. Send /start to begin.' },
+  'skip': { fa: '⏭ رد کردن', en: '⏭ Skip' },
+  'back': { fa: '« بازگشت', en: '« Back' },
+  'step': { fa: 'گام {n} از {total}', en: 'Step {n} of {total}' },
+
+  'ask.name': {
+    fa: '👤 <b>نامتان را بنویسید</b>\n\nواقعی یا مستعار، فرقی نمی‌کند. اگر می‌خواهید ناشناس بمانید، رد کنید.',
+    en: '👤 <b>What name should appear with this?</b>\n\nReal or a pen name, it makes no difference. Skip to stay anonymous.',
+  },
+  'ask.province': { fa: '📍 <b>استان را انتخاب کنید</b>', en: '📍 <b>Choose the province</b>' },
+  'ask.city': { fa: '📍 <b>شهر را انتخاب کنید</b>\n\nاستان: {province}', en: '📍 <b>Choose the city</b>\n\nProvince: {province}' },
+  'ask.place': {
+    fa: '📍 <b>دقیق‌تر بگویید کجا</b>\n\nبه زبان خودتان — «حیاط خانهٔ مادربزرگم در خیابان سپه»، نه فقط نام شهر.',
+    en: '📍 <b>Where exactly?</b>\n\nIn your own words — “my grandmother’s courtyard on Sepah Street”, not just the city.',
+  },
+  'ask.location': {
+    fa: '🗺 <b>نقطهٔ دقیق را بفرستید</b>\n\nاز گیرهٔ 📎 گزینهٔ Location را بزنید و نشانگر را روی همان نقطه بکشید.\n\n'
+      + 'اگر نمی‌توانید، رد کنید — روایت فعلاً وسط استان می‌نشیند و بعداً جابه‌جا می‌شود.',
+    en: '🗺 <b>Send the exact spot</b>\n\nUse the 📎 attachment menu, choose Location, and drag the pin to the place.\n\n'
+      + 'If you cannot, skip it — the narrative sits at the centre of the province until it is moved.',
+  },
+  'ask.precision': {
+    fa: '📅 <b>زمان را با چه دقتی می‌دانید؟</b>',
+    en: '📅 <b>How precisely do you know the time?</b>',
+  },
+  'precision.year': { fa: 'تا حد سال', en: 'To the year' },
+  'precision.month': { fa: 'تا حد ماه', en: 'To the month' },
+  'precision.day': { fa: 'تا حد روز', en: 'To the day' },
+
+  'ask.year': {
+    fa: '📅 <b>سال را بنویسید</b> (هجری شمسی، مثلاً ۱۳۵۷)\n\nاگر میلادی می‌نویسید، چهار رقمی بنویسید، مثلاً 1979.',
+    en: '📅 <b>Which year?</b>\n\nWrite a Solar Hijri year such as 1357, or a Gregorian one such as 1979.',
+  },
+  'ask.month': { fa: '📅 <b>ماه را انتخاب کنید</b>', en: '📅 <b>Choose the month</b>' },
+  'ask.day': { fa: '📅 <b>روز را بنویسید</b> (۱ تا ۳۱)', en: '📅 <b>Which day?</b> (1–31)' },
+  'ask.endYear': {
+    fa: '📅 <b>تا چه سالی ادامه داشت؟</b>\n\nاگر مربوط به یک سال است، همان سال را دوباره بنویسید.',
+    en: '📅 <b>Through to which year?</b>\n\nIf it belongs to one year, write the same year again.',
+  },
+
+  'error.year': {
+    fa: 'سال را نفهمیدم. یک عدد بنویسید، مثلاً ۱۳۵۷ یا 1979.',
+    en: 'I did not understand that year. Write a number such as 1357 or 1979.',
+  },
+  'error.yearRange': { fa: 'این نقشه سال‌های {min} تا {max} میلادی را در بر می‌گیرد.', en: 'This map covers {min} to {max}.' },
+  'error.day': { fa: 'روز باید عددی بین ۱ تا ۳۱ باشد.', en: 'The day has to be a number from 1 to 31.' },
+  'error.date': { fa: 'این تاریخ وجود ندارد. دوباره امتحان کنید.', en: 'That date does not exist. Try again.' },
+  'error.endBeforeStart': { fa: 'سال پایان از سال آغاز جلوتر است. دوباره بنویسید.', en: 'The end year comes before the start. Try again.' },
+  'error.outsideIran': {
+    fa: 'این نقطه بیرون از ایران است. یک نقطهٔ دیگر بفرستید یا رد کنید.',
+    en: 'That point is outside Iran. Send another one, or skip.',
+  },
+  'error.tooShort': { fa: 'کمی بیشتر بنویسید — دست‌کم {min} نویسه.', en: 'A little more, please — at least {min} characters.' },
+  'error.tooLong': { fa: 'این بیش از حد بلند است. کمتر از {max} نویسه بنویسید.', en: 'That is too long. Please keep it under {max} characters.' },
+  'error.needText': { fa: 'لطفاً پاسخ را به‌صورت متن بنویسید.', en: 'Please answer with text.' },
+  'error.pickOption': { fa: 'یکی از گزینه‌ها را انتخاب کنید.', en: 'Choose one of the options.' },
+  'error.send': {
+    fa: '⚠️ روایت فرستاده نشد. کمی بعد دوباره /start را بزنید.',
+    en: '⚠️ The narrative could not be sent. Try /start again shortly.',
+  },
+  'error.rateLimited': {
+    fa: 'روایت‌های زیادی در مدت کوتاه فرستاده شده. کمی بعد دوباره تلاش کنید.',
+    en: 'That is a lot of narratives in a short time. Please try again later.',
+  },
+
+  'review.heading': { fa: '📋 <b>یک بار مرور کنید</b>', en: '📋 <b>Have a last look</b>' },
+  'review.name': { fa: 'راوی', en: 'Told by' },
+  'review.anonymous': { fa: 'ناشناس', en: 'Anonymous' },
+  'review.place': { fa: 'مکان', en: 'Place' },
+  'review.point': { fa: 'نقطه', en: 'Point' },
+  'review.pointApprox': { fa: 'مرکز استان (بعداً دقیق می‌شود)', en: 'centre of the province (to be placed exactly later)' },
+  'review.when': { fa: 'زمان', en: 'When' },
+  'review.confirm': { fa: '✅ بفرست', en: '✅ Send it' },
+  'review.restart': { fa: '🔄 از نو', en: '🔄 Start over' },
+  'review.cancel': { fa: '✖️ بی‌خیال', en: '✖️ Cancel' },
+
+  'sent': {
+    fa: '🌿 <b>روایت شما رسید.</b>\n\nبه‌محض اینکه خوانده و تأیید شود روی نقشه می‌آید.\n\n'
+      + 'کد پیگیری: <code>{id}</code>\n\nبرای ثبت روایتی دیگر /start را بزنید.',
+    en: '🌿 <b>Your narrative has arrived.</b>\n\nIt will appear on the map once it has been read and accepted.\n\n'
+      + 'Reference: <code>{id}</code>\n\nSend /start to add another.',
+  },
+  'help': {
+    fa: 'برای ثبت روایت /start را بزنید.\n/cancel گفت‌وگوی جاری را لغو می‌کند.\n/language زبان را عوض می‌کند.',
+    en: 'Send /start to add a narrative.\n/cancel abandons the current one.\n/language switches language.',
+  },
+  'language.changed': { fa: 'زبان روی فارسی تنظیم شد.', en: 'Language set to English.' },
+};
+
+const PERSIAN_MONTHS = {
+  fa: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+    'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
+  en: ['Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad', 'Shahrivar',
+    'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'],
+};
+
+function t(key, lang, params) {
+  const entry = STRINGS[key];
+  let text = entry ? (entry[lang] || entry.fa) : key;
+  if (params) {
+    for (const [name, value] of Object.entries(params)) {
+      text = text.split(`{${name}}`).join(String(value));
+    }
+  }
+  return text;
+}
+
+module.exports = { STRINGS, PERSIAN_MONTHS, t };

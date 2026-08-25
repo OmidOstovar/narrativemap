@@ -101,6 +101,22 @@ function isAuthenticated(req) {
   return verifyToken(parseCookies(req.headers.cookie)[COOKIE_NAME]);
 }
 
+/**
+ * The Telegram bot posts every contributor's narrative from one address, so it
+ * authenticates with a shared token instead of being held to the per-visitor
+ * submission limit. Without a token set, no caller is ever trusted.
+ */
+function isTrustedBot(req) {
+  const expected = process.env.BOT_API_TOKEN || '';
+  if (!expected) return false;
+  const given = req.get('X-Bot-Token') || '';
+  if (!given) return false;
+  return timingSafeEqual(
+    crypto.createHash('sha256').update(given).digest('hex'),
+    crypto.createHash('sha256').update(expected).digest('hex'),
+  );
+}
+
 /** Express middleware guarding every /api/admin route. */
 function requireAdmin(req, res, next) {
   if (!isAuthenticated(req)) {
@@ -136,6 +152,7 @@ function createRateLimiter({ windowMs, max }) {
 
 module.exports = {
   COOKIE_NAME,
+  isTrustedBot,
   adminPassword,
   checkPassword,
   issueToken,

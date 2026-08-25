@@ -98,6 +98,38 @@
     return { jy: jy, jm: jm, jd: jd };
   }
 
+  /** Jalaali date -> Julian Day Number. */
+  function j2d(jy, jm, jd) {
+    var r = jalCal(jy);
+    if (!r) return null;
+    return g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1;
+  }
+
+  /** Days in a Jalaali month; Esfand is 30 only in a leap year. */
+  function daysInMonth(jy, jm) {
+    if (jm <= 6) return 31;
+    if (jm <= 11) return 30;
+    var r = jalCal(jy);
+    return r && r.leap === 0 ? 30 : 29;
+  }
+
+  function isValid(jy, jm, jd) {
+    if (!Number.isInteger(jy) || !Number.isInteger(jm) || !Number.isInteger(jd)) return false;
+    if (jm < 1 || jm > 12 || jd < 1) return false;
+    return jd <= daysInMonth(jy, jm);
+  }
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  /** Jalaali date -> Gregorian ISO 'YYYY-MM-DD', or null if the date is unreal. */
+  function toISO(jy, jm, jd) {
+    if (!isValid(jy, jm, jd)) return null;
+    var jdn = j2d(jy, jm, jd);
+    if (jdn === null) return null;
+    var g = d2g(jdn);
+    return g.gy + '-' + pad(g.gm) + '-' + pad(g.gd);
+  }
+
   /**
    * Converts an ISO 'YYYY-MM-DD' string to { jy, jm, jd, month }.
    * `lang` selects the script the month name is written in.
@@ -112,5 +144,11 @@
     return result;
   }
 
-  global.Jalali = { fromISO: fromISO, MONTHS: MONTHS };
+  global.Jalali = {
+    fromISO: fromISO,
+    toISO: toISO,
+    daysInMonth: daysInMonth,
+    isValid: isValid,
+    MONTHS: MONTHS,
+  };
 }(typeof window !== 'undefined' ? window : globalThis));

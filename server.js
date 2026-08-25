@@ -30,7 +30,7 @@ const db = require('./src/db');
 const auth = require('./src/auth');
 const { QUESTIONS } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
-const { validateSubmission, MIN_YEAR, maxYear } = require('./src/validate');
+const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
 
 const app = express();
 app.disable('x-powered-by');
@@ -44,6 +44,10 @@ const submitLimit = auth.createRateLimiter({
 const loginLimit = auth.createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: Number(process.env.LOGIN_LIMIT_PER_15_MIN || 10),
+});
+const botLimit = auth.createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: Number(process.env.SUBMIT_LIMIT_PER_HOUR || 10),
 });
 
 function clientKey(req) {
@@ -74,7 +78,12 @@ app.get('/api/narratives/:id', (req, res) => {
 });
 
 app.post('/api/submissions', (req, res) => {
-  const limit = submitLimit(clientKey(req));
+  // The bot funnels many contributors through one address, so it carries its
+  // own limit keyed by Telegram user rather than the per-visitor IP limit.
+  const trusted = auth.isTrustedBot(req);
+  const limit = trusted
+    ? botLimit(String((req.body && req.body.botUserKey) || 'bot'))
+    : submitLimit(clientKey(req));
   if (!limit.ok) {
     res.set('Retry-After', String(limit.retryAfter));
     res.status(429).json({
@@ -89,7 +98,13 @@ app.post('/api/submissions', (req, res) => {
     return;
   }
 
-  const id = db.createSubmission(value);
+  const submission = trusted
+    ? applyTrustedFields(value, req.body)
+    : Object.assign({}, value, {
+      source: 'web',
+      place: Object.assign({}, value.place, { approximate: false }),
+    });
+  const id = db.createSubmission(submission);
   res.status(201).json({
     id,
     status: 'pending',

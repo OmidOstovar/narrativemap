@@ -48,6 +48,9 @@ function validatePlace(raw, errors) {
     lat: Math.round(lat * 1e5) / 1e5,
     lng: Math.round(lng * 1e5) / 1e5,
     province: provinceFor(lat, lng),
+    // Set when the contributor could not give an exact spot, so the point is
+    // a stand-in the moderator is expected to move.
+    approximate: Boolean(input.approximate),
   };
 }
 
@@ -114,4 +117,16 @@ function validateSubmission(body) {
   return { value: { answers, place, period, contributor }, errors: [] };
 }
 
-module.exports = { validateSubmission, MIN_YEAR, maxYear };
+/**
+ * Trusted callers (the Telegram bot) may state where a submission came from
+ * and that its point is approximate. Public callers may not.
+ */
+function applyTrustedFields(value, body) {
+  const input = body && typeof body === 'object' ? body : {};
+  return Object.assign({}, value, {
+    source: input.source === 'telegram' ? 'telegram' : 'web',
+    place: Object.assign({}, value.place, { approximate: Boolean(input.place && input.place.approximate) }),
+  });
+}
+
+module.exports = { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear };

@@ -34,6 +34,7 @@ npm run dev      # restart on file changes
 
 ```
 server.js              Express app: public API, admin API, static files
+bot/                   Telegram bot: telegram.js (API), conversation.js (flow)
 src/questions.js       The questionnaire — the single source of truth
 src/validate.js        Validates a submission (answers, place, period, contributor)
 src/db.js              SQLite schema and queries
@@ -128,6 +129,45 @@ Periods are stored as Gregorian ISO dates and displayed in both the Gregorian
 and the Solar Hijri calendar; the conversion is in `public/js/jalali.js`.
 Persian and Arabic answers are detected and rendered right-to-left.
 
+## The Telegram bot
+
+`npm run bot` runs a Telegram bot that collects narratives through the same
+questionnaire and posts them into the same review queue. It is a separate
+process from the website and talks to it only over the API, so the two can run
+on different machines.
+
+```bash
+TELEGRAM_BOT_TOKEN=...  # from @BotFather
+NARRATIVEMAP_API=https://your-site   # where to post narratives
+BOT_API_TOKEN=...       # the same secret the website has
+npm run bot
+```
+
+The conversation asks for a name (skippable — a skipped name is “Anonymous”),
+province, city, the place in the contributor's own words, an exact location,
+the period, and then every question in `src/questions.js`. Because the
+questionnaire is shared, editing that one file changes the bot and the website
+together.
+
+**The exact spot** comes from a location the contributor shares in Telegram,
+whose map lets them drag a pin anywhere. That is better than any list of city
+coordinates. If they cannot or will not, the narrative is placed at the centre
+of the chosen province and flagged as approximate: the review queue shows a
+warning and the moderator drags the pin to the right place, which clears the
+flag automatically.
+
+**Dates** may be typed in either calendar and in either set of digits — `۱۳۵۷`,
+`1357` and `1979` all work. Solar Hijri and Gregorian years are told apart by
+magnitude, so nobody is asked which calendar they meant.
+
+Conversations are held in memory, so restarting the bot loses any conversation
+in progress; contributors are told it expired and can start again. Nothing that
+was already sent is affected.
+
+`bot/conversation.js` is a pure state machine — it decides what to ask next and
+what to store, and never touches the network. That is what makes the flow
+testable, and `test/conversation.test.js` drives it end to end without Telegram.
+
 ## Deploying to Railway
 
 The repo carries `railway.json` and `.nvmrc`, so Railway builds it with no extra
@@ -174,6 +214,21 @@ going live without it means submissions are erased at the next restart.
 The map will be empty on first deploy, which is correct: the sample narratives
 are only created by `npm run seed`, and they should not be on a live site.
 
+### Adding the bot as a second service
+
+The bot is a second Railway service from the same repository. Create it, then
+set its start command to `npm run bot` and give it:
+
+```
+TELEGRAM_BOT_TOKEN = from @BotFather
+NARRATIVEMAP_API   = https://your-site.up.railway.app
+BOT_API_TOKEN      = the same secret you set on the website
+```
+
+The bot needs no volume and no domain — it makes outbound connections only.
+`BOT_API_TOKEN` must match on both services, or the bot's submissions are held
+to the limit meant for a single visitor.
+
 ## Configuration
 
 Copy `.env.example` and set what you need. The interesting ones:
@@ -187,7 +242,8 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `COOKIE_SECURE` | `false` | Set to `true` when serving over HTTPS |
 | `TRUST_PROXY` | `false` | Set to `true` behind a reverse proxy |
 | `MIN_YEAR` | `1800` | Earliest year a narrative may be dated to |
-| `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per IP per hour |
+| `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per visitor per hour (per Telegram user, for the bot) |
+| `BOT_API_TOKEN` | none | Shared secret letting the bot submit for many contributors |
 | `LOGIN_LIMIT_PER_15_MIN` | `10` | Sign-in attempts per IP per 15 minutes |
 
 Before going live: set `ADMIN_PASSWORD` and `SESSION_SECRET` explicitly, set

@@ -38,7 +38,24 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_narratives_period ON narratives (period_start, period_end);
 `);
 
+/**
+ * Columns added after the first release. SQLite has no "ADD COLUMN IF NOT
+ * EXISTS", so check the table first — this runs against databases that already
+ * hold narratives.
+ */
+function addColumnIfMissing(column, definition) {
+  const existing = db.prepare('PRAGMA table_info(narratives)').all();
+  if (existing.some((c) => c.name === column)) return;
+  db.exec(`ALTER TABLE narratives ADD COLUMN ${column} ${definition}`);
+}
+
+addColumnIfMissing('source', "TEXT NOT NULL DEFAULT 'web'");
+addColumnIfMissing('approximate', 'INTEGER NOT NULL DEFAULT 0');
+
 const STATUSES = ['pending', 'approved', 'rejected'];
+
+/** Where a submission came from. */
+const SOURCES = ['web', 'telegram'];
 
 /** URL-safe id with no ambiguous characters. */
 function newPublicId() {
@@ -68,9 +85,12 @@ function toNarrative(row, { includePrivate = false } = {}) {
     contributor: row.contributor_name || null,
     submittedAt: row.submitted_at,
   };
+  // A pin the contributor could not place exactly; the moderator moves it.
+  if (row.approximate) narrative.place.approximate = true;
   if (includePrivate) {
     narrative.private = {
       rowId: row.id,
+      source: row.source || 'web',
       email: row.contributor_email || null,
       reviewedAt: row.reviewed_at || null,
       reviewNote: row.review_note || null,
@@ -83,8 +103,8 @@ const insertStatement = db.prepare(`
   INSERT INTO narratives (
     public_id, status, answers, place_name, province, lat, lng,
     period_start, period_end, period_precision,
-    contributor_name, contributor_email, submitted_at
-  ) VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    contributor_name, contributor_email, submitted_at, source, approximate
+  ) VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 function createSubmission(input) {
@@ -102,6 +122,8 @@ function createSubmission(input) {
     input.contributor.name || null,
     input.contributor.email || null,
     new Date().toISOString(),
+    SOURCES.includes(input.source) ? input.source : 'web',
+    input.place.approximate ? 1 : 0,
   );
   return publicId;
 }
@@ -173,7 +195,8 @@ function setStatus(publicId, status, reviewNote) {
 const updateStatement = db.prepare(`
   UPDATE narratives SET
     answers = ?, place_name = ?, province = ?, lat = ?, lng = ?,
-    period_start = ?, period_end = ?, period_precision = ?, contributor_name = ?
+    period_start = ?, period_end = ?, period_precision = ?, contributor_name = ?,
+    approximate = ?
   WHERE public_id = ?
 `);
 
@@ -189,6 +212,7 @@ function updateNarrative(publicId, input) {
     input.period.end,
     input.period.precision,
     input.contributor.name || null,
+    input.place.approximate ? 1 : 0,
     publicId,
   );
   return result.changes > 0;
@@ -204,6 +228,7 @@ module.exports = {
   db,
   DB_PATH,
   STATUSES,
+  SOURCES,
   createSubmission,
   listApproved,
   getApproved,

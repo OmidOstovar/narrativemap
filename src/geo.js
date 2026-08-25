@@ -86,4 +86,56 @@ function centroidOf(feature) {
 
 const PROVINCE_NAMES = provinces.map((f) => f.properties.name).sort();
 
-module.exports = { isInsideIran, provinceFor, PROVINCE_NAMES };
+const interiorPoints = new Map();
+
+/**
+ * A point guaranteed to lie inside the province, used when a contributor
+ * cannot give an exact spot. A polygon's centroid can fall outside a concave
+ * shape, so fall back to scanning the bounding box for the interior point
+ * nearest the centroid.
+ */
+function provinceCentroid(name) {
+  if (interiorPoints.has(name)) return interiorPoints.get(name);
+
+  const feature = provinces.find((f) => f.properties.name === name);
+  if (!feature) return null;
+
+  const [cx, cy] = centroidOf(feature);
+  let best = null;
+
+  if (inFeature([cx, cy], feature)) {
+    best = { lat: cy, lng: cx };
+  } else {
+    const rings = feature.geometry.type === 'Polygon'
+      ? [feature.geometry.coordinates]
+      : feature.geometry.coordinates;
+    let minX = Infinity; let minY = Infinity; let maxX = -Infinity; let maxY = -Infinity;
+    for (const polygon of rings) {
+      for (const [x, y] of polygon[0]) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    const steps = 40;
+    let bestDistance = Infinity;
+    for (let i = 0; i <= steps; i++) {
+      for (let j = 0; j <= steps; j++) {
+        const x = minX + ((maxX - minX) * i) / steps;
+        const y = minY + ((maxY - minY) * j) / steps;
+        if (!inFeature([x, y], feature)) continue;
+        const d = (x - cx) ** 2 + (y - cy) ** 2;
+        if (d < bestDistance) { bestDistance = d; best = { lat: y, lng: x }; }
+      }
+    }
+  }
+
+  if (best) {
+    best = { lat: Math.round(best.lat * 1e5) / 1e5, lng: Math.round(best.lng * 1e5) / 1e5 };
+  }
+  interiorPoints.set(name, best);
+  return best;
+}
+
+module.exports = { isInsideIran, provinceFor, provinceCentroid, PROVINCE_NAMES };

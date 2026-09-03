@@ -51,6 +51,7 @@ const STRINGS = {
     fa: '📅 <b>زمان را با چه دقتی می‌دانید؟</b>',
     en: '📅 <b>How precisely do you know the time?</b>',
   },
+  'precision.hour': { fa: 'تا حد ساعت', en: 'To the hour' },
   'precision.year': { fa: 'تا حد سال', en: 'To the year' },
   'precision.month': { fa: 'تا حد ماه', en: 'To the month' },
   'precision.day': { fa: 'تا حد روز', en: 'To the day' },
@@ -61,6 +62,18 @@ const STRINGS = {
   },
   'ask.month': { fa: '📅 <b>ماه را انتخاب کنید</b>', en: '📅 <b>Choose the month</b>' },
   'ask.day': { fa: '📅 <b>روز را بنویسید</b> (۱ تا ۳۱)', en: '📅 <b>Which day?</b> (1–31)' },
+  'ask.fromTime': {
+    fa: '🕐 <b>ساعت آغاز را بنویسید</b>\n\nمثلاً ۱۴:۳۰ یا 2:30 — همان ساعتی که آنجا بود.',
+    en: '🕐 <b>What time did it start?</b>\n\nSomething like 14:30 — the time where you were.',
+  },
+  'ask.toTime': {
+    fa: '🕐 <b>و تا چه ساعتی؟</b>\n\nاگر یک لحظه بوده، همان ساعت را دوباره بنویسید.',
+    en: '🕐 <b>And until what time?</b>\n\nIf it was a single moment, write the same time again.',
+  },
+  'error.time': {
+    fa: 'ساعت را نفهمیدم. به شکل ۱۴:۳۰ بنویسید.',
+    en: 'I did not understand that time. Write it like 14:30.',
+  },
   'ask.endYear': {
     fa: '📅 <b>تا چه سالی ادامه داشت؟</b>\n\nاگر مربوط به یک سال است، همان سال را دوباره بنویسید.',
     en: '📅 <b>Through to which year?</b>\n\nIf it belongs to one year, write the same year again.',

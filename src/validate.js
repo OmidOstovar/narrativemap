@@ -6,7 +6,8 @@ const { isInsideIran, provinceFor } = require('./geo');
 const MIN_YEAR = Number(process.env.MIN_YEAR || 1800);
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PRECISIONS = ['day', 'month', 'year'];
+const PRECISIONS = ['hour', 'day', 'month', 'year'];
+const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 function maxYear() {
   return new Date().getUTCFullYear();
@@ -64,7 +65,23 @@ function validatePeriod(raw, errors) {
     errors.push({ field: 'period', code: 'error.badDates', message: 'Give a real start and end date for the period.' });
     return null;
   }
-  if (start > end) {
+
+  // Times are only carried when the contributor knew the hour. They are local
+  // wall-clock times as the witness experienced them, never converted.
+  let startTime = null;
+  let endTime = null;
+  if (precision === 'hour') {
+    startTime = typeof input.startTime === 'string' ? input.startTime.trim() : '';
+    endTime = typeof input.endTime === 'string' ? input.endTime.trim() : '';
+    if (!TIME_PATTERN.test(startTime) || !TIME_PATTERN.test(endTime)) {
+      errors.push({ field: 'period', code: 'error.badTime', message: 'Give a real start and end time, as HH:MM.' });
+      return null;
+    }
+  }
+
+  const startAt = startTime ? `${start} ${startTime}` : start;
+  const endAt = endTime ? `${end} ${endTime}` : end;
+  if (startAt > endAt) {
     errors.push({ field: 'period', code: 'error.endBeforeStart', message: 'The period ends before it starts.' });
     return null;
   }
@@ -80,7 +97,7 @@ function validatePeriod(raw, errors) {
     return null;
   }
 
-  return { start, end, precision };
+  return { start, end, precision, startTime, endTime };
 }
 
 function validateContributor(raw, errors) {

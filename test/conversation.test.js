@@ -116,6 +116,82 @@ test('an impossible day is refused rather than stored', () => {
   assert.ok(good.ok);
 });
 
+test('times are read in either script and in loose formats', () => {
+  assert.equal(convo.readTime('14:30'), '14:30');
+  assert.equal(convo.readTime('۱۴:۳۰'), '14:30');
+  assert.equal(convo.readTime('9:05'), '09:05');
+  assert.equal(convo.readTime('1430'), '14:30');
+  assert.equal(convo.readTime('14.30'), '14:30');
+  assert.equal(convo.readTime('25:00'), null);
+  assert.equal(convo.readTime('14:75'), null);
+  assert.equal(convo.readTime('later'), null);
+});
+
+test('an hour-precision narrative carries the time through to the API', () => {
+  const session = convo.newSession('fa');
+  runToQuestions(session, { precision: { choice: 'hour' } });
+  convo.apply(session, { text: '1357' });
+  convo.apply(session, { choice: '11' });
+  convo.apply(session, { text: '22' });
+  assert.equal(session.step, 'date', 'it still wants the times');
+
+  assert.ok(convo.apply(session, { text: '۱۴:۰۰' }).ok);
+  assert.ok(convo.apply(session, { text: '۱۶:۳۰' }).ok);
+  assert.equal(session.step, 'question');
+
+  const period = convo.resolvePeriod(session);
+  assert.deepEqual(period, {
+    start: '1979-02-11', end: '1979-02-11', precision: 'hour',
+    startTime: '14:00', endTime: '16:30',
+  });
+});
+
+test('an hour range crossing midnight lands on the next day', () => {
+  const session = convo.newSession('fa');
+  runToQuestions(session, { precision: { choice: 'hour' } });
+  convo.apply(session, { text: '1357' });
+  convo.apply(session, { choice: '11' });
+  convo.apply(session, { text: '22' });
+  convo.apply(session, { text: '23:00' });
+  convo.apply(session, { text: '02:00' });
+
+  const period = convo.resolvePeriod(session);
+  assert.equal(period.start, '1979-02-11');
+  assert.equal(period.end, '1979-02-12', 'two in the morning is the next day');
+});
+
+test('an unreadable time is refused without losing the date', () => {
+  const session = convo.newSession('fa');
+  runToQuestions(session, { precision: { choice: 'hour' } });
+  convo.apply(session, { text: '1357' });
+  convo.apply(session, { choice: '11' });
+  convo.apply(session, { text: '22' });
+
+  const bad = convo.apply(session, { text: 'صبح زود' });
+  assert.equal(bad.ok, false);
+  assert.equal(session.period.startTime, null);
+  assert.equal(session.period.day, 22, 'the date it already has is kept');
+});
+
+test('an hour narrative is a submission the API accepts', () => {
+  const session = convo.newSession('fa');
+  runToQuestions(session, { precision: { choice: 'hour' } });
+  convo.apply(session, { text: '1357' });
+  convo.apply(session, { choice: '11' });
+  convo.apply(session, { text: '22' });
+  convo.apply(session, { text: '14:00' });
+  convo.apply(session, { text: '16:30' });
+  while (session.step === 'question') answerCurrent(session);
+
+  const body = convo.toSubmission(session, { centroidFor });
+  const { value, errors } = validateSubmission(body);
+  assert.deepEqual(errors, []);
+  assert.equal(value.period.precision, 'hour');
+  assert.equal(value.period.startTime, '14:00');
+
+  assert.match(convo.reviewText(session), /14:00/, 'the contributor sees the time before sending');
+});
+
 test('an end year before the start year is refused', () => {
   const session = convo.newSession('fa');
   runToQuestions(session);

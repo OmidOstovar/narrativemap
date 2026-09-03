@@ -167,6 +167,15 @@ Periods are stored as Gregorian ISO dates and displayed in both the Gregorian
 and the Solar Hijri calendar; the conversion is in `public/js/jalali.js`.
 Persian and Arabic answers are detected and rendered right-to-left.
 
+A period carries the precision the contributor actually has — to the year, the
+month, the day, or the **hour**. Times are local wall-clock times, stored exactly
+as written and never converted to another zone: a witness saying "about two in
+the afternoon" means two in the afternoon where they stood, and rewriting that
+into UTC would make the record say something they did not. An hour range whose
+end reads earlier than its start is taken as crossing midnight, so "from eleven
+at night until two" ends on the following day. Only hour-precision periods carry
+times at all; every other precision leaves them null.
+
 ## The Telegram bot
 
 `npm run bot` runs a Telegram bot that collects narratives through the same

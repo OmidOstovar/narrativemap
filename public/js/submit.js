@@ -109,7 +109,24 @@
     const startMonth = previous ? previous.start.slice(0, 7) : '';
     const endMonth = previous ? previous.end.slice(0, 7) : '';
 
-    if (state.precision === 'year') {
+    if (state.precision === 'hour') {
+      const day = previous ? previous.start : '';
+      host.innerHTML = `
+        <div class="field" style="margin-bottom:0;flex:1 1 100%">
+          <label class="field__label" for="period-start">${escapeHtml(t('submit.onDay'))}</label>
+          <input type="date" id="period-start" value="${escapeHtml(day)}"
+                 min="${state.yearRange.min}-01-01" max="${state.yearRange.max}-12-31">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="period-start-time">${escapeHtml(t('submit.fromTime'))}</label>
+          <input type="time" id="period-start-time" value="${escapeHtml(previous && previous.startTime ? previous.startTime : '')}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="period-end-time">${escapeHtml(t('submit.toTime'))}</label>
+          <input type="time" id="period-end-time" value="${escapeHtml(previous && previous.endTime ? previous.endTime : '')}">
+        </div>
+        <p class="field__help" style="flex:1 1 100%;margin:0">${escapeHtml(t('submit.timeHelp'))}</p>`;
+    } else if (state.precision === 'year') {
       host.innerHTML = `
         <div class="field" style="margin-bottom:0">
           <label class="field__label" for="period-start">${escapeHtml(t('submit.fromYear'))}</label>
@@ -157,7 +174,31 @@
   }
 
   /** Expands the widget's values into the ISO start/end the API expects. */
+  /** Adds days to an ISO date without touching the local timezone. */
+  function addDays(iso, days) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const shifted = new Date(Date.UTC(y, m - 1, d + days));
+    return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`;
+  }
+
   function readPeriod() {
+    if (state.precision === 'hour') {
+      const day = $('period-start');
+      const from = $('period-start-time');
+      const to = $('period-end-time');
+      if (!day || !from || !to) return null;
+      if (!day.value || !from.value || !to.value) return null;
+      // "From eleven at night until two" means the small hours of the next day.
+      const crossesMidnight = to.value < from.value;
+      return {
+        start: day.value,
+        end: crossesMidnight ? addDays(day.value, 1) : day.value,
+        precision: 'hour',
+        startTime: from.value,
+        endTime: to.value,
+      };
+    }
+
     const startInput = $('period-start');
     const endInput = $('period-end');
     if (!startInput || !endInput) return null;
@@ -166,7 +207,24 @@
     const rawEnd = endInput.value.trim();
     if (!rawStart || !rawEnd) return null;
 
-    if (state.precision === 'year') {
+    if (state.precision === 'hour') {
+      const day = previous ? previous.start : '';
+      host.innerHTML = `
+        <div class="field" style="margin-bottom:0;flex:1 1 100%">
+          <label class="field__label" for="period-start">${escapeHtml(t('submit.onDay'))}</label>
+          <input type="date" id="period-start" value="${escapeHtml(day)}"
+                 min="${state.yearRange.min}-01-01" max="${state.yearRange.max}-12-31">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="period-start-time">${escapeHtml(t('submit.fromTime'))}</label>
+          <input type="time" id="period-start-time" value="${escapeHtml(previous && previous.startTime ? previous.startTime : '')}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="period-end-time">${escapeHtml(t('submit.toTime'))}</label>
+          <input type="time" id="period-end-time" value="${escapeHtml(previous && previous.endTime ? previous.endTime : '')}">
+        </div>
+        <p class="field__help" style="flex:1 1 100%;margin:0">${escapeHtml(t('submit.timeHelp'))}</p>`;
+    } else if (state.precision === 'year') {
       const a = Number(rawStart);
       const b = Number(rawEnd);
       if (!Number.isInteger(a) || !Number.isInteger(b)) return null;

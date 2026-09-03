@@ -63,6 +63,12 @@ addColumnIfMissing('translation_model', 'TEXT');
 addColumnIfMissing('translation_error', 'TEXT');
 addColumnIfMissing('translated_at', 'TEXT');
 
+// Only set when a contributor knew the hour. Local wall-clock time, stored as
+// written — a witness saying "about two in the afternoon" means two in the
+// afternoon where they stood, not two in any other zone.
+addColumnIfMissing('period_start_time', 'TEXT');
+addColumnIfMissing('period_end_time', 'TEXT');
+
 const STATUSES = ['pending', 'approved', 'rejected'];
 
 /** Where a submission came from. */
@@ -101,6 +107,8 @@ function toNarrative(row, { includePrivate = false } = {}) {
       start: row.period_start,
       end: row.period_end,
       precision: row.period_precision,
+      startTime: row.period_start_time || null,
+      endTime: row.period_end_time || null,
     },
     contributor: row.contributor_name || null,
     submittedAt: row.submitted_at,
@@ -134,8 +142,8 @@ const insertStatement = db.prepare(`
     public_id, status, answers, place_name, province, lat, lng,
     period_start, period_end, period_precision,
     contributor_name, contributor_email, submitted_at, source, approximate,
-    original_lang
-  ) VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    original_lang, period_start_time, period_end_time
+  ) VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 function createSubmission(input) {
@@ -156,6 +164,8 @@ function createSubmission(input) {
     SOURCES.includes(input.source) ? input.source : 'web',
     input.place.approximate ? 1 : 0,
     input.originalLang === 'en' ? 'en' : 'fa',
+    input.period.startTime || null,
+    input.period.endTime || null,
   );
   return publicId;
 }
@@ -264,7 +274,7 @@ const updateStatement = db.prepare(`
     answers = ?, place_name = ?, province = ?, lat = ?, lng = ?,
     period_start = ?, period_end = ?, period_precision = ?, contributor_name = ?,
     approximate = ?, answers_translated = ?, place_name_translated = ?,
-    translation_status = ?
+    translation_status = ?, period_start_time = ?, period_end_time = ?
   WHERE public_id = ?
 `);
 
@@ -285,6 +295,8 @@ function updateNarrative(publicId, input) {
       ? JSON.stringify(input.translation.answers) : null,
     (input.translation && input.translation.placeName) || null,
     (input.translation && input.translation.status) || 'pending',
+    input.period.startTime || null,
+    input.period.endTime || null,
     publicId,
   );
   return result.changes > 0;

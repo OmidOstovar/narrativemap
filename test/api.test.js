@@ -202,6 +202,62 @@ test('an inverted or future period is rejected', async () => {
   assert.equal(future.status, 400);
 });
 
+test('an hour-precision period keeps its times', async () => {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({
+      answers: { title: 'An afternoon' },
+      period: { start: '1979-02-11', end: '1979-02-11', precision: 'hour', startTime: '14:00', endTime: '16:30' },
+    }),
+  }));
+
+  const detail = await json(await call(`/api/admin/submissions/${created.id}`, { cookie }));
+  assert.equal(detail.submission.period.precision, 'hour');
+  assert.equal(detail.submission.period.startTime, '14:00');
+  assert.equal(detail.submission.period.endTime, '16:30');
+
+  await call(`/api/admin/submissions/${created.id}/status`, {
+    method: 'POST', cookie, body: { status: 'approved' },
+  });
+  const published = (await json(await call(`/api/narratives/${created.id}`))).narrative;
+  assert.equal(published.period.startTime, '14:00');
+});
+
+test('an hour period without times, or with impossible ones, is refused', async () => {
+  for (const period of [
+    { start: '1979-02-11', end: '1979-02-11', precision: 'hour' },
+    { start: '1979-02-11', end: '1979-02-11', precision: 'hour', startTime: '25:00', endTime: '16:30' },
+    { start: '1979-02-11', end: '1979-02-11', precision: 'hour', startTime: '2pm', endTime: '4pm' },
+  ]) {
+    const response = await call('/api/submissions', { method: 'POST', body: validSubmission({ period }) });
+    assert.equal(response.status, 400, `should reject ${JSON.stringify(period)}`);
+    assert.ok((await json(response)).errors.some((e) => e.code === 'error.badTime'));
+  }
+});
+
+test('an hour period that ends before it starts on the same day is refused', async () => {
+  const response = await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({
+      period: { start: '1979-02-11', end: '1979-02-11', precision: 'hour', startTime: '16:00', endTime: '14:00' },
+    }),
+  });
+  assert.equal(response.status, 400);
+  assert.ok((await json(response)).errors.some((e) => e.code === 'error.endBeforeStart'));
+});
+
+test('periods without an hour keep no times', async () => {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({ period: { start: '1979-01-01', end: '1979-12-31', precision: 'year' } }),
+  }));
+  const detail = await json(await call(`/api/admin/submissions/${created.id}`, { cookie }));
+  assert.equal(detail.submission.period.startTime, null);
+  assert.equal(detail.submission.period.endTime, null);
+});
+
 test('the province is derived from the coordinates', async () => {
   const { cookie } = await signIn();
   const created = await json(await call('/api/submissions', {

@@ -50,7 +50,16 @@ function newSession(lang) {
     answers: {},
     questionIndex: 0,
     place: { province: null, provinceEn: null, city: null, name: null, lat: null, lng: null, approximate: false },
-    period: { precision: 'year', startYear: null, endYear: null, month: null, day: null, calendar: 'jalali' },
+    period: {
+      precision: 'year',
+      startYear: null,
+      endYear: null,
+      month: null,
+      day: null,
+      startTime: null,
+      endTime: null,
+      calendar: 'jalali',
+    },
     contributor: null,
     updatedAt: Date.now(),
   };
@@ -123,10 +132,27 @@ function datePrompt(session, footer) {
   if (precision !== 'year' && month === null) {
     return { text: t('ask.month', lang) + footer, keyboard: 'months' };
   }
-  if (precision === 'day' && session.period.day === null) {
+  if (precision !== 'month' && session.period.day === null) {
     return { text: t('ask.day', lang) + footer, keyboard: null };
   }
+  if (precision === 'hour' && session.period.startTime === null) {
+    return { text: t('ask.fromTime', lang) + footer, keyboard: null };
+  }
+  if (precision === 'hour' && session.period.endTime === null) {
+    return { text: t('ask.toTime', lang) + footer, keyboard: null };
+  }
   return { text: t('ask.year', lang) + footer, keyboard: null };
+}
+
+/** Reads a time typed in either script, as 14:30, 14.30, or 1430. */
+function readTime(text) {
+  const digits = normaliseDigits(text).replace(/[^\d:.]/g, '').replace(/\./g, ':');
+  const match = digits.match(/^(\d{1,2}):?(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
 function questionPrompt(question, lang, footer) {
@@ -205,7 +231,7 @@ function apply(session, input) {
     }
 
     case 'precision': {
-      if (!['year', 'month', 'day'].includes(input.choice)) {
+      if (!['year', 'month', 'day', 'hour'].includes(input.choice)) {
         return { ok: false, error: t('error.pickOption', lang) };
       }
       session.period.precision = input.choice;
@@ -257,21 +283,46 @@ function applyDate(session, input) {
     return { ok: true };
   }
 
-  if (period.precision === 'day' && period.day === null) {
+  if (period.precision !== 'month' && period.day === null) {
     const day = Number(normaliseDigits(input.text));
     if (!Number.isInteger(day) || day < 1 || day > 31) {
       return { ok: false, error: t('error.day', lang) };
     }
     period.day = day;
-    if (!resolvePeriod(session)) {
+    if (!isRealCalendarDate(period)) {
       period.day = null;
       return { ok: false, error: t('error.date', lang) };
     }
+    if (period.precision === 'day') session.step = 'question';
+    return { ok: true };
+  }
+
+  if (period.precision === 'hour' && period.startTime === null) {
+    const time = readTime(input.text);
+    if (!time) return { ok: false, error: t('error.time', lang) };
+    period.startTime = time;
+    return { ok: true };
+  }
+
+  if (period.precision === 'hour' && period.endTime === null) {
+    const time = readTime(input.text);
+    if (!time) return { ok: false, error: t('error.time', lang) };
+    period.endTime = time;
     session.step = 'question';
     return { ok: true };
   }
 
   return { ok: false, error: t('unknown', lang) };
+}
+
+/** True when the collected year/month/day is a date that exists. */
+function isRealCalendarDate(period) {
+  const { calendar, startYear, month, day } = period;
+  if (calendar === 'jalali') return Boolean(Jalali.toISO(startYear, month, day));
+  const date = new Date(Date.UTC(startYear, month - 1, day));
+  return date.getUTCFullYear() === startYear
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
 }
 
 function applyQuestion(session, input) {
@@ -341,7 +392,27 @@ function resolvePeriod(session) {
     return start && end ? { start, end, precision: 'month' } : null;
   }
   const exact = toISO(startYear, month, day);
-  return exact ? { start: exact, end: exact, precision: 'day' } : null;
+  if (!exact) return null;
+  if (precision === 'day') return { start: exact, end: exact, precision: 'day' };
+
+  if (session.period.startTime === null || session.period.endTime === null) return null;
+  // "From eleven at night until two" means the small hours of the next day.
+  const crossesMidnight = session.period.endTime < session.period.startTime;
+  const endDate = crossesMidnight ? addDaysISO(exact, 1) : exact;
+  return {
+    start: exact,
+    end: endDate,
+    precision: 'hour',
+    startTime: session.period.startTime,
+    endTime: session.period.endTime,
+  };
+}
+
+/** Adds days to a Gregorian ISO date. */
+function addDaysISO(iso, days) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const shifted = new Date(Date.UTC(y, m - 1, d + days));
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`;
 }
 
 function describePeriod(session) {
@@ -355,7 +426,11 @@ function describePeriod(session) {
     return startYear === last ? String(startYear) : `${startYear} – ${last}`;
   }
   if (precision === 'month') return `${monthName} ${startYear}`;
-  return `${day} ${monthName} ${startYear}`;
+  const date = `${day} ${monthName} ${startYear}`;
+  if (precision !== 'hour') return date;
+  const { startTime, endTime } = session.period;
+  if (!startTime) return date;
+  return startTime === endTime ? `${date}، ${startTime}` : `${date}، ${startTime}–${endTime}`;
 }
 
 function reviewText(session) {
@@ -412,6 +487,6 @@ function toSubmission(session, { centroidFor }) {
 
 module.exports = {
   newSession, prompt, apply, reviewText, describePeriod,
-  resolvePeriod, toSubmission, readYear, normaliseDigits,
+  resolvePeriod, toSubmission, readYear, readTime, normaliseDigits,
   totalSteps, PRE_STEPS,
 };

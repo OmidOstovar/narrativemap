@@ -72,6 +72,7 @@
     const months = GREGORIAN_MONTHS[uiLang()] || GREGORIAN_MONTHS.en;
     if (precision === 'year') return String(y);
     if (precision === 'month') return `${months[m - 1]} ${y}`;
+    // An hour is a moment within a day, so the date reads the same either way.
     return `${d} ${months[m - 1]} ${y}`;
   }
 
@@ -83,11 +84,29 @@
     return `${j.jd} ${j.month} ${j.jy}`;
   }
 
+  /**
+   * Joins the two ends of a period, adding times when the contributor knew the
+   * hour. Within one day the date is said once: "11 February 1979, 14:00–16:30".
+   */
+  function joinPeriod(a, b, period) {
+    if (period.precision !== 'hour' || !period.startTime) {
+      return a === b ? a : `${a} – ${b}`;
+    }
+    if (a === b) {
+      return period.startTime === period.endTime
+        ? `${a}, ${period.startTime}`
+        : `${a}, ${period.startTime}–${period.endTime}`;
+    }
+    return `${a}, ${period.startTime} – ${b}, ${period.endTime}`;
+  }
+
   function formatPeriod(period) {
     if (!period) return '';
-    const a = gregorianPoint(period.start, period.precision);
-    const b = gregorianPoint(period.end, period.precision);
-    return a === b ? a : `${a} – ${b}`;
+    return joinPeriod(
+      gregorianPoint(period.start, period.precision),
+      gregorianPoint(period.end, period.precision),
+      period,
+    );
   }
 
   function formatPeriodJalali(period) {
@@ -95,7 +114,7 @@
     const a = jalaliPoint(period.start, period.precision);
     const b = jalaliPoint(period.end, period.precision);
     if (!a || !b) return null;
-    return a === b ? a : `${a} – ${b}`;
+    return joinPeriod(a, b, period);
   }
 
   /** Compact form for list cards: years only. */

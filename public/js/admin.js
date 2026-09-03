@@ -358,8 +358,16 @@
             <div class="field" style="margin:0">
               <label class="field__label" for="edit-precision">${escapeHtml(t('admin.shownAs'))}</label>
               <select id="edit-precision">
-                ${['year', 'month', 'day'].map((p) => `<option value="${p}"${p === submission.period.precision ? ' selected' : ''}>${escapeHtml(t('submit.precision.' + p))}</option>`).join('')}
+                ${['year', 'month', 'day', 'hour'].map((p) => `<option value="${p}"${p === submission.period.precision ? ' selected' : ''}>${escapeHtml(t('submit.precision.' + p))}</option>`).join('')}
               </select>
+            </div>
+            <div class="field" style="margin:0">
+              <label class="field__label" for="edit-start-time">${escapeHtml(t('submit.fromTime'))}</label>
+              <input type="time" id="edit-start-time" value="${escapeHtml(submission.period.startTime || '')}">
+            </div>
+            <div class="field" style="margin:0">
+              <label class="field__label" for="edit-end-time">${escapeHtml(t('submit.toTime'))}</label>
+              <input type="time" id="edit-end-time" value="${escapeHtml(submission.period.endTime || '')}">
             </div>
             <div class="field" style="margin:0">
               <label class="field__label" for="edit-approximate-label">${escapeHtml(t('admin.approximateField'))}</label>
@@ -415,6 +423,8 @@
         start: $('edit-start').value,
         end: $('edit-end').value,
         precision: $('edit-precision').value,
+        startTime: $('edit-start-time') ? $('edit-start-time').value : null,
+        endTime: $('edit-end-time') ? $('edit-end-time').value : null,
       },
       contributor: { name: $('edit-contributor').value, email: null },
     };

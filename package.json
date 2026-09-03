@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/OmidOstovar/narrativemap#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
     "express": "^4.22.2",
     "leaflet": "^1.9.4"
   },

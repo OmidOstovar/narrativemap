@@ -222,6 +222,26 @@
     },
     'admin.approximateShort': { en: 'approximate pin', fa: 'نشانگر تقریبی' },
     'admin.approximateField': { en: 'Still approximate', fa: 'هنوز تقریبی است' },
+    'admin.translation': { en: 'Translation', fa: 'ترجمه' },
+    'admin.original': { en: 'Original', fa: 'متن اصلی' },
+    'admin.translationOf': { en: 'Translation ({lang})', fa: 'ترجمه ({lang})' },
+    'admin.originalIn': { en: 'Original ({lang})', fa: 'اصل ({lang})' },
+    'admin.retranslate': { en: 'Translate again', fa: 'ترجمهٔ دوباره' },
+    'admin.translating': { en: 'Translating…', fa: 'در حال ترجمه…' },
+    'admin.translated': { en: 'Translation updated.', fa: 'ترجمه به‌روز شد.' },
+    'admin.tstatus.pending': { en: 'translation queued', fa: 'ترجمه در صف' },
+    'admin.tstatus.done': { en: 'translated', fa: 'ترجمه‌شده' },
+    'admin.tstatus.edited': { en: 'translation edited', fa: 'ترجمه ویرایش‌شده' },
+    'admin.tstatus.failed': { en: 'translation failed', fa: 'ترجمه ناموفق' },
+    'admin.tstatus.skipped': { en: 'not translated', fa: 'ترجمه نشده' },
+    'admin.translationNote': {
+      en: 'The translation is what non-Persian readers see. Correct it freely — an edit is kept and never overwritten by an automatic translation.',
+      fa: 'ترجمه همان چیزی است که خوانندهٔ غیرفارسی‌زبان می‌بیند. آزادانه اصلاحش کنید — ویرایش شما نگه داشته می‌شود و ترجمهٔ خودکار رویش نمی‌نویسد.',
+    },
+    'admin.retranslateWarning': {
+      en: 'Translating again replaces the current translation, including your edits. Continue?',
+      fa: 'ترجمهٔ دوباره، ترجمهٔ فعلی و ویرایش‌های شما را جایگزین می‌کند. ادامه می‌دهید؟',
+    },
     'admin.publish': { en: 'Publish to the map', fa: 'انتشار روی نقشه' },
     'admin.unpublish': { en: 'Unpublish', fa: 'برداشتن از نقشه' },
     'admin.decline': { en: 'Decline', fa: 'رد کردن' },
@@ -257,6 +277,27 @@
     'admin.status.pending': { en: 'pending', fa: 'در انتظار' },
     'admin.status.approved': { en: 'published', fa: 'منتشرشده' },
     'admin.status.rejected': { en: 'declined', fa: 'ردشده' },
+
+    /* --------------------------- translation ---------------------------- */
+    'lang.fa': { en: 'Persian', fa: 'فارسی' },
+    'lang.en': { en: 'English', fa: 'انگلیسی' },
+    'translated.from': {
+      en: 'Translated from {language}',
+      fa: 'ترجمه‌شده از {language}',
+    },
+    'translated.note': {
+      en: 'This narrative was written in {language} and translated. The original wording is what the contributor wrote.',
+      fa: 'این روایت به {language} نوشته شده و ترجمه شده است. متن اصلی همان است که راوی نوشته.',
+    },
+    'translated.original': { en: 'Written in {language}', fa: 'نوشته‌شده به {language}' },
+    'translated.missing': {
+      en: 'Only available in {language}',
+      fa: 'فقط به {language} در دسترس است',
+    },
+    'translated.missingNote': {
+      en: 'This narrative has not been translated yet, so it is shown as it was written.',
+      fa: 'این روایت هنوز ترجمه نشده، پس همان‌طور که نوشته شده نمایش داده می‌شود.',
+    },
 
     /* ------------------------------ errors ------------------------------ */
     'error.required': { en: 'This question needs an answer.', fa: 'این پرسش باید پاسخ داده شود.' },

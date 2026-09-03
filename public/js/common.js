@@ -132,6 +132,49 @@
     });
   }
 
+  /* ---------------------------- translation ------------------------------ */
+
+  /**
+   * Chooses which language of a narrative to show.
+   *
+   * A reader sees one version, not two: the original when it matches the
+   * interface language, the translation otherwise. When no translation exists
+   * yet, the original is shown and the reader is told which language it is in,
+   * rather than being given an empty panel.
+   */
+  function versionFor(narrative) {
+    const ui = uiLang();
+    const original = narrative.originalLang || 'fa';
+
+    if (ui === original) {
+      return {
+        answers: narrative.answers,
+        placeName: narrative.place.name,
+        isTranslation: false,
+        note: null,
+      };
+    }
+    if (narrative.hasTranslation && narrative.answersTranslated) {
+      const t = global.I18N ? global.I18N.t : (k) => k;
+      return {
+        answers: narrative.answersTranslated,
+        placeName: narrative.place.nameTranslated || narrative.place.name,
+        isTranslation: true,
+        note: t('translated.from', { language: t(`lang.${original}`) }),
+        noteDetail: t('translated.note', { language: t(`lang.${original}`) }),
+      };
+    }
+    const t = global.I18N ? global.I18N.t : (k) => k;
+    return {
+      answers: narrative.answers,
+      placeName: narrative.place.name,
+      isTranslation: false,
+      untranslated: true,
+      note: t('translated.missing', { language: t(`lang.${original}`) }),
+      noteDetail: t('translated.missingNote'),
+    };
+  }
+
   /* ------------------------------- toasts -------------------------------- */
 
   function toastContainer() {
@@ -183,6 +226,6 @@
     api, escapeHtml, paragraphs, dirFor,
     formatPeriod, formatPeriodJalali, formatPeriodPair, formatYears, formatTimestamp,
     gregorianPoint, jalaliPoint,
-    toast, debounce,
+    toast, debounce, versionFor,
   };
 }(window));

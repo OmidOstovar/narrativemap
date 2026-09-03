@@ -654,6 +654,28 @@ input[type='date'] { cursor: text; }
   margin-bottom: 16px;
 }
 
+/* Where a narrative's words came from — shown once, under the title. */
+.provenance {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin: -6px 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ink-500);
+  border-radius: 100px;
+  padding: 3px 12px;
+  cursor: help;
+}
+.provenance::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--turquoise-dim);
+}
+.provenance--untranslated::before { background: var(--saffron-dim); }
+
 .reader__facts {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1015,6 +1037,43 @@ input[type='date'] { cursor: text; }
 .private-note dd { margin: 0; color: var(--text); }
 
 .edit-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+/* Original beside translation, so the moderator can compare while editing. */
+.bilingual { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; align-items: start; }
+@media (max-width: 900px) { .bilingual { grid-template-columns: 1fr; } }
+
+.field__label--sub {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.translation-pane textarea { background: var(--ink-700); }
+
+.qa__translation {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-inline-start: 2px solid var(--ink-500);
+  background: var(--ink-800);
+  border-radius: var(--radius-sm);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.qa__translation-label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.qa__translation p { margin: 0 0 0.8em; }
+.qa__translation p:last-child { margin-bottom: 0; }
 
 /* ------------------------------ responsive ------------------------------ */
 

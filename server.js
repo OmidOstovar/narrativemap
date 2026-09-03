@@ -31,6 +31,8 @@ const auth = require('./src/auth');
 const { QUESTIONS } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
+const { detectSubmissionLanguage } = require('./src/translate');
+const translations = require('./src/translation-queue');
 
 const app = express();
 app.disable('x-powered-by');
@@ -104,7 +106,14 @@ app.post('/api/submissions', (req, res) => {
       source: 'web',
       place: Object.assign({}, value.place, { approximate: false }),
     });
+  submission.originalLang = detectSubmissionLanguage(submission.answers);
+
   const id = db.createSubmission(submission);
+
+  // Translate after replying: the contributor should not wait on a model, and
+  // a translation outage must never cost a narrative.
+  translations.enqueue(id).catch((error) => console.error('translation queue:', error));
+
   res.status(201).json({
     id,
     status: 'pending',
@@ -177,8 +186,32 @@ app.put('/api/admin/submissions/:id', auth.requireAdmin, (req, res) => {
     res.status(400).json({ error: 'The edited narrative is not valid.', errors });
     return;
   }
-  db.updateNarrative(req.params.id, value);
+  const existing = db.getAny(req.params.id);
+  const edited = req.body && req.body.translation;
+  const translation = edited && typeof edited === 'object'
+    ? {
+      answers: sanitiseTranslation(edited.answers),
+      placeName: typeof edited.placeName === 'string' ? edited.placeName.trim() || null : null,
+      // Once a person has touched it, it is no longer the model's output.
+      status: 'edited',
+    }
+    : {
+      answers: existing.answersTranslated,
+      placeName: existing.place.nameTranslated,
+      status: (existing.private && existing.private.translationStatus) || 'pending',
+    };
+
+  db.updateNarrative(req.params.id, Object.assign({}, value, { translation }));
   res.json({ submission: db.getAny(req.params.id) });
+});
+
+app.post('/api/admin/submissions/:id/translate', auth.requireAdmin, async (req, res) => {
+  if (!db.getAny(req.params.id)) {
+    res.status(404).json({ error: 'No submission with that id.' });
+    return;
+  }
+  const result = await translations.translateOne(req.params.id);
+  res.json({ result, submission: db.getAny(req.params.id) });
 });
 
 app.delete('/api/admin/submissions/:id', auth.requireAdmin, (req, res) => {
@@ -188,6 +221,19 @@ app.delete('/api/admin/submissions/:id', auth.requireAdmin, (req, res) => {
   }
   res.json({ deleted: true, counts: db.counts() });
 });
+
+/** Keeps only known question ids, with trimmed string values. */
+function sanitiseTranslation(raw) {
+  const input = raw && typeof raw === 'object' ? raw : {};
+  const out = {};
+  for (const question of QUESTIONS) {
+    const value = input[question.id];
+    if (typeof value !== 'string') continue;
+    const trimmed = value.trim();
+    if (trimmed) out[question.id] = trimmed.slice(0, 12000);
+  }
+  return Object.keys(out).length ? out : null;
+}
 
 /* --------------------------------- pages --------------------------------- */
 
@@ -251,6 +297,8 @@ if (require.main === module) {
       console.log('  ─────────────────────────────────────────────────');
     }
     console.log('');
+    // Anything a restart or an outage left unfinished.
+    translations.resumePending().catch((error) => console.error('translation resume:', error));
   });
 }
 

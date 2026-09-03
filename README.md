@@ -39,6 +39,8 @@ src/questions.js       The questionnaire — the single source of truth
 src/validate.js        Validates a submission (answers, place, period, contributor)
 src/db.js              SQLite schema and queries
 src/geo.js             Point-in-polygon: is the pin in Iran, and in which province
+src/translate.js       Persian <-> English translation of a submission
+src/translation-queue.js  Runs translations after submission, and retries them
 src/auth.js            Moderator password, signed session cookie, rate limiting
 public/                index (map) · submit · admin · about, plus CSS and JS
 public/data/           Iran's outline and 31 provinces, bundled
@@ -71,6 +73,42 @@ first in English. Month names are translated in both calendars.
 Contributor text is separate from interface language: answers can be written in
 either language, and Persian or Arabic is detected per answer and rendered
 right-to-left even while the interface is in English.
+
+### Translation
+
+Witnesses write in the language they think in — mostly Persian. So that a
+Persian testimony is readable by someone who does not read Persian, every
+narrative is kept in **both** languages: the original exactly as written, and a
+translation beside it.
+
+A reader sees **one** of them, never both. The original when it matches the
+interface language, the translation otherwise, with a small note under the title
+saying where the words came from — “Translated from Persian”. When a narrative
+has not been translated, the original is shown with “Only available in Persian”
+rather than an empty panel. List cards, place names, and search follow the same
+rule; search covers both languages, so an English search still finds a Persian
+narrative.
+
+Translation happens **after** a submission is stored, never during it. A
+contributor pressing send gets their confirmation immediately whether or not a
+model is reachable, and a translation outage can never cost a narrative — the
+attempt is simply marked failed, and the moderator retries it with one button.
+Anything a restart interrupts is picked up on the next boot.
+
+The moderator sees both languages side by side in the review queue and can
+correct the translation freely. An edited translation is marked as such and is
+never overwritten by an automatic one; "Translate again" asks first, because it
+discards those edits.
+
+Set `ANTHROPIC_API_KEY` to enable it. **Without a key nothing breaks** — the
+site behaves as it did before, narratives show in their original language with
+a note, and translations can be typed by hand in the review queue.
+
+Two details worth knowing. Select answers are stored as language-independent
+codes, so they already render in both languages and are never sent to a model.
+And a contributor's text is passed as a document to translate, with the system
+prompt stating that it is data and that instructions found inside it must be
+translated rather than followed — a narrative can contain anything.
 
 ### Changing the questions
 
@@ -242,6 +280,8 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `COOKIE_SECURE` | `false` | Set to `true` when serving over HTTPS |
 | `TRUST_PROXY` | `false` | Set to `true` behind a reverse proxy |
 | `MIN_YEAR` | `1800` | Earliest year a narrative may be dated to |
+| `ANTHROPIC_API_KEY` | none | Enables automatic translation; without it, nothing is translated |
+| `TRANSLATION_MODEL` | `claude-opus-5` | Model used for translation |
 | `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per visitor per hour (per Telegram user, for the bot) |
 | `BOT_API_TOKEN` | none | Shared secret letting the bot submit for many contributors |
 | `LOGIN_LIMIT_PER_15_MIN` | `10` | Sign-in attempts per IP per 15 minutes |

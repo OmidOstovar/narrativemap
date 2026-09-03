@@ -3,7 +3,7 @@
   'use strict';
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
-          toast, debounce } = window.NM;
+          versionFor, toast, debounce } = window.NM;
   const { t, pick, province } = window.I18N;
 
   const state = {
@@ -33,7 +33,9 @@
     if (!n._haystack) {
       n._haystack = [
         ...Object.values(n.answers),
+        ...Object.values(n.answersTranslated || {}),
         n.place.name,
+        n.place.nameTranslated || '',
         n.place.province || '',
         n.contributor || '',
       ].join(' \n ').toLowerCase();
@@ -78,13 +80,19 @@
 
   /* ------------------------------ rendering ------------------------------ */
 
+  /** The half of the narrative this reader should see. */
+  function shown(n) {
+    return versionFor(n);
+  }
+
   function title(n) {
-    return n.answers.title || t('reader.untitled');
+    return shown(n).answers.title || n.answers.title || t('reader.untitled');
   }
 
   function excerpt(n) {
-    const source = n.answers.what_happened
-      || Object.values(n.answers).find((v) => v && v.length > 60)
+    const answers = shown(n).answers;
+    const source = answers.what_happened
+      || Object.values(answers).find((v) => v && v.length > 60)
       || '';
     return source.replace(/\s+/g, ' ').slice(0, 220);
   }
@@ -135,7 +143,7 @@
         <button class="card${n.id === state.selectedId ? ' is-active' : ''}" data-id="${escapeHtml(n.id)}">
           <span class="card__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}</span>
           <span class="card__meta">
-            <span class="place">${escapeHtml(n.place.name)}</span>
+            <span class="place">${escapeHtml(shown(n).placeName)}</span>
             <span>${escapeHtml(formatYears(n.period))}</span>
           </span>
           <span class="card__excerpt" dir="${dirFor(excerpt(n))}">${escapeHtml(excerpt(n))}</span>
@@ -352,25 +360,34 @@
     const when = formatPeriodPair(n.period);
     const coords = `${n.place.lat.toFixed(4)}, ${n.place.lng.toFixed(4)}`;
 
+    const version = shown(n);
     const answers = state.questions
-      .filter((q) => q.id !== 'title' && n.answers[q.id])
+      .filter((q) => q.id !== 'title')
       .map((q) => {
-        const raw = n.answers[q.id];
         const isChip = q.type === 'select';
-        const shown = answerText(q, raw);
+        // Select answers are stored as codes and render in either language, so
+        // they come from the original whichever version is being read.
+        const raw = isChip ? n.answers[q.id] : version.answers[q.id];
+        if (!raw) return '';
+        const text = isChip ? answerText(q, raw) : raw;
         return `
           <section class="qa${isChip ? ' qa--chip' : ''}">
             <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
-            <div class="qa__a" dir="${dirFor(shown)}">${isChip ? escapeHtml(shown) : paragraphs(raw)}</div>
+            <div class="qa__a" dir="${dirFor(text)}">${isChip ? escapeHtml(text) : paragraphs(text)}</div>
           </section>`;
       }).join('');
 
     readerBody.innerHTML = `
       <h1 class="reader__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}</h1>
+      ${version.note ? `
+        <p class="provenance${version.untranslated ? ' provenance--untranslated' : ''}"
+           title="${escapeHtml(version.noteDetail || '')}">
+          ${escapeHtml(version.note)}
+        </p>` : ''}
       <dl class="reader__facts">
         <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
-          ${escapeHtml(n.place.name)}
+          ${escapeHtml(version.placeName)}
           ${n.place.province ? `<span class="secondary"> · ${escapeHtml(province(n.place.province))}</span>` : ''}
           <div class="secondary" dir="ltr">${coords}</div>
         </dd>

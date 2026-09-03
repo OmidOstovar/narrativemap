@@ -142,16 +142,24 @@
   function detailHtml(submission) {
     const when = formatPeriodPair(submission.period);
     const source = (submission.private && submission.private.source) || 'web';
+    const tstatus = (submission.private && submission.private.translationStatus) || 'pending';
+    const otherLang = submission.originalLang === 'fa' ? 'en' : 'fa';
     const answers = state.questions
       .filter((q) => q.id !== 'title' && submission.answers[q.id])
       .map((q) => {
         const raw = submission.answers[q.id];
         const isChip = q.type === 'select';
         const shown = answerText(q, raw);
+        const translated = !isChip && (submission.answersTranslated || {})[q.id];
         return `
           <section class="qa${isChip ? ' qa--chip' : ''}">
             <h3 class="qa__q">${escapeHtml(pick(q.label))}</h3>
             <div class="qa__a" dir="${dirFor(shown)}">${isChip ? escapeHtml(shown) : paragraphs(raw)}</div>
+            ${translated ? `
+              <div class="qa__translation" dir="${dirFor(translated)}">
+                <span class="qa__translation-label">${escapeHtml(t('admin.translationOf', { lang: t('lang.' + otherLang) }))}</span>
+                ${paragraphs(translated)}
+              </div>` : ''}
           </section>`;
       }).join('');
 
@@ -163,6 +171,7 @@
           <span class="badge badge--${escapeHtml(submission.status)}">${escapeHtml(t('admin.status.' + submission.status))}</span>
           <span class="badge badge--source">${escapeHtml(t('admin.source.' + source))}</span>
           ${submission.place.approximate ? `<span class="badge badge--pending">${escapeHtml(t('admin.approximateShort'))}</span>` : ''}
+          <span class="badge badge--${tstatus === 'failed' ? 'rejected' : 'source'}">${escapeHtml(t('admin.tstatus.' + tstatus))}</span>
           ${submission.status === 'approved'
             ? `<a href="/?n=${encodeURIComponent(submission.id)}" target="_blank" rel="noopener" style="font-size:13px">${escapeHtml(t('admin.viewOnMap'))}</a>`
             : ''}
@@ -209,6 +218,7 @@
           ? `<button type="button" class="btn" data-action="reject">${escapeHtml(t('admin.decline'))}</button>`
           : `<button type="button" class="btn" data-action="pending">${escapeHtml(t('admin.backToPending'))}</button>`}
         <button type="button" class="btn" data-action="edit">${escapeHtml(t('admin.edit'))}</button>
+        <button type="button" class="btn" data-action="retranslate">${escapeHtml(t('admin.retranslate'))}</button>
         <span class="spacer"></span>
         <button type="button" class="btn btn--danger" data-action="delete">${escapeHtml(t('admin.delete'))}</button>
       </div>`;
@@ -267,8 +277,12 @@
   /* ------------------------------- editing ------------------------------- */
 
   function editHtml(submission) {
+    const otherLang = submission.originalLang === 'fa' ? 'en' : 'fa';
+    const translations = submission.answersTranslated || {};
+
     const fields = state.questions.map((q) => {
       const value = submission.answers[q.id] || '';
+      const translated = translations[q.id] || '';
       const control = q.type === 'select'
         ? `<select data-answer="${escapeHtml(q.id)}">
              <option value="">${escapeHtml(t('admin.noAnswer'))}</option>
@@ -277,10 +291,25 @@
         : q.type === 'text'
           ? `<input type="text" data-answer="${escapeHtml(q.id)}" value="${escapeHtml(value)}" maxlength="${q.maxLength || 200}">`
           : `<textarea data-answer="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 5, 10)}" maxlength="${q.maxLength || 5000}">${escapeHtml(value)}</textarea>`;
+      // Select answers are language-independent codes, so they have no
+      // translation to edit.
+      const translationField = q.type === 'select' ? '' : `
+        <div class="translation-pane">
+          <label class="field__label field__label--sub">${escapeHtml(t('admin.translationOf', { lang: t('lang.' + otherLang) }))}</label>
+          <textarea data-translation="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 4, 8)}"
+                    dir="${otherLang === 'fa' ? 'rtl' : 'ltr'}">${escapeHtml(translated)}</textarea>
+        </div>`;
+
       return `
         <div class="field">
           <label class="field__label">${escapeHtml(pick(q.label))}${q.required ? '' : `<span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`}</label>
-          ${control}
+          <div class="bilingual">
+            <div>
+              <label class="field__label field__label--sub">${escapeHtml(t('admin.originalIn', { lang: t('lang.' + submission.originalLang) }))}</label>
+              ${control}
+            </div>
+            ${translationField}
+          </div>
           <p class="field__error" data-error-for="${escapeHtml(q.id)}"></p>
         </div>`;
     }).join('');
@@ -289,6 +318,7 @@
       <div class="reader__body" style="padding:32px 40px 24px">
         <h2 class="section__title" style="margin-bottom:20px">${escapeHtml(t('admin.editing', { title: title(submission) }))}</h2>
         <p class="section__note">${escapeHtml(t('admin.editNote'))}</p>
+        <div class="callout" style="margin-bottom:24px">${escapeHtml(t('admin.translationNote'))}</div>
 
         <div class="private-note" style="border-style:solid">
           <h3>${escapeHtml(t('admin.placeAndTime'))}</h3>
@@ -296,6 +326,12 @@
             <div class="field" style="margin:0">
               <label class="field__label" for="edit-place">${escapeHtml(t('admin.placeName'))}</label>
               <input type="text" id="edit-place" value="${escapeHtml(submission.place.name)}" maxlength="160">
+            </div>
+            <div class="field" style="margin:0">
+              <label class="field__label" for="edit-place-translated">${escapeHtml(t('admin.translationOf', { lang: t('lang.' + otherLang) }))}</label>
+              <input type="text" id="edit-place-translated" maxlength="160"
+                     dir="${otherLang === 'fa' ? 'rtl' : 'ltr'}"
+                     value="${escapeHtml(submission.place.nameTranslated || '')}">
             </div>
             <div class="field" style="margin:0">
               <label class="field__label" for="edit-lat">${escapeHtml(t('admin.latitude'))}</label>
@@ -358,7 +394,16 @@
     document.querySelectorAll('[data-answer]').forEach((node) => {
       answers[node.dataset.answer] = node.value;
     });
+    const translation = {};
+    document.querySelectorAll('[data-translation]').forEach((node) => {
+      translation[node.dataset.translation] = node.value;
+    });
+
     return {
+      translation: {
+        answers: translation,
+        placeName: $('edit-place-translated') ? $('edit-place-translated').value : null,
+      },
       answers,
       place: {
         name: $('edit-place').value,
@@ -428,6 +473,25 @@
             await refresh(false);
           } catch (error) {
             toast(error.message, 'error');
+          }
+          return undefined;
+        }
+
+        if (action === 'retranslate') {
+          if (!confirm(t('admin.retranslateWarning'))) return undefined;
+          button.disabled = true;
+          const original = button.textContent;
+          button.textContent = t('admin.translating');
+          try {
+            await api(`/api/admin/submissions/${encodeURIComponent(submission.id)}/translate`, { method: 'POST' });
+            toast(t('admin.translated'));
+            await refresh(false);
+            const updated = state.submissions.find((item) => item.id === submission.id);
+            if (updated) renderDetail(updated);
+          } catch (error) {
+            toast(error.message, 'error');
+            button.disabled = false;
+            button.textContent = original;
           }
           return undefined;
         }

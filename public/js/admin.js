@@ -4,7 +4,7 @@
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
           formatTimestamp, toast } = window.NM;
-  const { t, pick, province } = window.I18N;
+  const { t, pick, province, digits } = window.I18N;
 
   const state = {
     questions: [],
@@ -72,7 +72,7 @@
 
     for (const [status, count] of Object.entries(state.counts)) {
       const node = document.querySelector(`[data-count="${status}"]`);
-      if (node) node.textContent = count;
+      if (node) node.textContent = digits(count);
     }
 
     renderQueue();
@@ -202,7 +202,7 @@
           <dd>
             ${escapeHtml(submission.place.name)}
             ${submission.place.province ? `<span class="secondary"> · ${escapeHtml(province(submission.place.province))}</span>` : ''}
-            <div class="secondary" dir="ltr">${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}</div>
+            <div class="secondary" dir="ltr">${escapeHtml(digits(`${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}`))}</div>
           </dd>
           <dt>${escapeHtml(t('reader.when'))}</dt>
           <dd>

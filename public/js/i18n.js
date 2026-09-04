@@ -131,8 +131,8 @@
       en: 'In your own words — anything from “Bandar Abbas” to “the Faculty of Literature at Tabriz University”.',
     },
     'submit.placeNamePlaceholder': {
-      en: 'e.g. The bakery at the corner of Ferdowsi and Enghelab',
-      fa: 'مثلاً نانوایی سر نبش فردوسی و انقلاب',
+      fa: 'از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز»',
+      en: 'From “Bandar Abbas” to “the Faculty of Literature at Tabriz University”',
     },
     'submit.when.title': { en: 'When was it?', fa: 'کی رخ داد؟' },
     'submit.when.note': {
@@ -451,13 +451,30 @@
     return nav.startsWith('fa') || nav.startsWith('pe') ? 'fa' : 'en';
   }
 
+  const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+  /**
+   * Renders numbers in the digits the language actually uses. Persian is
+   * written with Eastern Arabic-Indic digits, so Latin ones look imported.
+   *
+   * Only display text goes through this. Form inputs, stored values and
+   * anything the browser parses stay in Latin digits, because a date field
+   * given "۱۳۵۷" is a date field with nothing in it.
+   */
+  function digits(value) {
+    if (current !== 'fa') return String(value == null ? '' : value);
+    return String(value == null ? '' : value)
+      .replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)]);
+  }
+
   /** Looks up a key and fills {placeholders} from params. */
   function t(key, params) {
     const entry = STRINGS[key];
     let text = entry ? (entry[current] || entry.en) : key;
     if (params) {
       for (const [name, value] of Object.entries(params)) {
-        text = text.split(`{${name}}`).join(String(value));
+        // Interpolated values are display text, so they follow the language.
+        text = text.split(`{${name}}`).join(digits(value));
       }
     }
     return text;
@@ -541,7 +558,7 @@
     apply();
   }
 
-  global.I18N = { t, pick, province, lang, isRTL, setLang, toggle, apply, onChange, init, LANGS };
+  global.I18N = { t, pick, province, digits, lang, isRTL, setLang, toggle, apply, onChange, init, LANGS };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

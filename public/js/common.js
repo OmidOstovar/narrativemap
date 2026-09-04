@@ -62,6 +62,11 @@
     return global.I18N ? global.I18N.lang() : 'en';
   }
 
+  /** Numbers in the digits the current language is written with. */
+  function digits(value) {
+    return global.I18N ? global.I18N.digits(value) : String(value);
+  }
+
   function parts(iso) {
     const [y, m, d] = String(iso).split('-').map(Number);
     return { y, m, d };
@@ -70,18 +75,18 @@
   function gregorianPoint(iso, precision) {
     const { y, m, d } = parts(iso);
     const months = GREGORIAN_MONTHS[uiLang()] || GREGORIAN_MONTHS.en;
-    if (precision === 'year') return String(y);
-    if (precision === 'month') return `${months[m - 1]} ${y}`;
+    if (precision === 'year') return digits(y);
+    if (precision === 'month') return `${months[m - 1]} ${digits(y)}`;
     // An hour is a moment within a day, so the date reads the same either way.
-    return `${d} ${months[m - 1]} ${y}`;
+    return `${digits(d)} ${months[m - 1]} ${digits(y)}`;
   }
 
   function jalaliPoint(iso, precision) {
     const j = global.Jalali && global.Jalali.fromISO(iso, uiLang());
     if (!j) return null;
-    if (precision === 'year') return String(j.jy);
-    if (precision === 'month') return `${j.month} ${j.jy}`;
-    return `${j.jd} ${j.month} ${j.jy}`;
+    if (precision === 'year') return digits(j.jy);
+    if (precision === 'month') return `${j.month} ${digits(j.jy)}`;
+    return `${digits(j.jd)} ${j.month} ${digits(j.jy)}`;
   }
 
   /**
@@ -92,12 +97,12 @@
     if (period.precision !== 'hour' || !period.startTime) {
       return a === b ? a : `${a} – ${b}`;
     }
+    const from = digits(period.startTime);
+    const to = digits(period.endTime);
     if (a === b) {
-      return period.startTime === period.endTime
-        ? `${a}, ${period.startTime}`
-        : `${a}, ${period.startTime}–${period.endTime}`;
+      return period.startTime === period.endTime ? `${a}, ${from}` : `${a}, ${from}–${to}`;
     }
-    return `${a}, ${period.startTime} – ${b}, ${period.endTime}`;
+    return `${a}, ${from} – ${b}, ${to}`;
   }
 
   function formatPeriod(period) {
@@ -122,7 +127,7 @@
     if (!period) return '';
     const from = period.start.slice(0, 4);
     const to = period.end.slice(0, 4);
-    return from === to ? from : `${from}–${to}`;
+    return from === to ? digits(from) : `${digits(from)}–${digits(to)}`;
   }
 
   /**
@@ -145,10 +150,10 @@
     if (!iso) return '';
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleString(undefined, {
+    return digits(date.toLocaleString(uiLang() === 'fa' ? 'en-GB' : undefined, {
       year: 'numeric', month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
-    });
+    }));
   }
 
   /* ---------------------------- translation ------------------------------ */

@@ -3,7 +3,7 @@
   'use strict';
 
   const { api, escapeHtml, toast, debounce } = window.NM;
-  const { t, pick, province } = window.I18N;
+  const { t, pick, province, digits } = window.I18N;
 
   const state = {
     questions: [],
@@ -27,7 +27,7 @@
     return `
       <section class="step">
         <h2 class="step__title">
-          <span class="step__number">${String(number).padStart(2, '0')}</span>
+          <span class="step__number">${escapeHtml(digits(String(number).padStart(2, '0')))}</span>
           <span>${escapeHtml(title)}</span>
         </h2>
         ${help ? `<p class="step__help">${escapeHtml(help)}</p>` : ''}
@@ -102,9 +102,9 @@
         </div>
 
         <div class="field" style="margin-bottom:0">
-          <label class="field__label" for="place-name">${escapeHtml(t('submit.placeName'))}</label>
-          <p class="field__help">${escapeHtml(t('submit.placeNameHelp'))}</p>
-          <input type="text" id="place-name" maxlength="160">
+          <label class="visually-hidden" for="place-name">${escapeHtml(t('submit.placeName'))}</label>
+          <input type="text" id="place-name" maxlength="160"
+                 placeholder="${escapeHtml(t('submit.placeNamePlaceholder'))}">
           <p class="field__error" data-error-for="place.name"></p>
         </div>
         <p class="field__error" data-error-for="place.point"></p>
@@ -184,7 +184,7 @@
     if (!question || !question.maxLength) return;
 
     const length = input.value.length;
-    counter.textContent = `${length.toLocaleString()} / ${question.maxLength.toLocaleString()}`;
+    counter.textContent = digits(`${length} / ${question.maxLength}`);
     counter.classList.toggle('is-over', length > question.maxLength);
     counter.classList.toggle('is-close', length > question.maxLength * 0.9 && length <= question.maxLength);
 
@@ -390,7 +390,7 @@
     const { inside, province: found } = await window.NMMap.locate(lat, lng);
     state.place.province = found;
 
-    $('readout-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    $('readout-coords').textContent = digits(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
     $('readout-coords').classList.remove('unset');
     $('readout-province').textContent = province(found)
       || (inside ? t('submit.insideIran') : t('submit.outsideIran'));
@@ -463,7 +463,7 @@
     $('progress-text').textContent = done === steps
       ? t('submit.progress.done')
       : t('submit.progress.some', { done, total: steps });
-    $('progress-required').textContent = `${percent}%`;
+    $('progress-required').textContent = digits(`${percent}%`);
   }
 
   /* ------------------------------- submitting ---------------------------- */

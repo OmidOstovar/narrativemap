@@ -4,7 +4,7 @@
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
           versionFor, toast, debounce } = window.NM;
-  const { t, pick, province } = window.I18N;
+  const { t, pick, province, digits } = window.I18N;
 
   const state = {
     narratives: [],
@@ -114,7 +114,7 @@
   }
 
   function renderCount() {
-    $('count').textContent = state.filtered.length;
+    $('count').textContent = digits(state.filtered.length);
     const total = state.narratives.length;
     const shown = state.filtered.length;
     $('count-label').textContent = shown === total
@@ -199,7 +199,7 @@
         const lng = group.reduce((s, n) => s + n.place.lng, 0) / group.length;
         const marker = window.NMMap.pin([lat, lng], {
           className: 'pin--cluster',
-          label: String(group.length),
+          label: escapeHtml(digits(group.length)),
           size: [28, 22],
           anchor: [14, 11],
         });
@@ -271,8 +271,8 @@
     state.filters.from = min;
     state.filters.to = max;
 
-    $('scale-min').textContent = min;
-    $('scale-max').textContent = max;
+    $('scale-min').textContent = digits(min);
+    $('scale-max').textContent = digits(max);
     $('timeline').hidden = false;
 
     const onInput = () => {
@@ -306,7 +306,7 @@
 
   function renderTimelineValue() {
     const { from, to } = state.filters;
-    $('timeline-value').textContent = from === to ? String(from) : `${from} – ${to}`;
+    $('timeline-value').textContent = from === to ? digits(from) : digits(`${from} – ${to}`);
 
     const { min, max } = state.yearBounds;
     const span = Math.max(max - min, 1);
@@ -402,7 +402,7 @@
         <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
           ${n.place.province ? escapeHtml(province(n.place.province)) : escapeHtml(version.placeName)}
-          <div class="secondary" dir="ltr">${coords}</div>
+          <div class="secondary" dir="ltr">${escapeHtml(digits(coords))}</div>
         </dd>
         <dt>${escapeHtml(t('reader.when'))}</dt>
         <dd>
@@ -554,6 +554,12 @@
     applyFilters();
 
     window.I18N.onChange(() => {
+      renderTimelineValue();
+      const from = $('year-from');
+      if (from) {
+        $('scale-min').textContent = digits(state.yearBounds.min);
+        $('scale-max').textContent = digits(state.yearBounds.max);
+      }
       renderProvinceFilter();
       renderList();
       renderCount();

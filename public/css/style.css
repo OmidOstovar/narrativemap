@@ -164,7 +164,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
 .brand:hover { text-decoration: none; }
 .brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }
 /* The logo replaces the pin as soon as the file is there to load. */
-.brand__logo { display: none; height: 34px; width: auto; }
+.brand__logo { display: none; height: 44px; width: auto; }
 .brand__mark.has-logo .brand__logo { display: block; }
 .brand__mark.has-logo .brand__pin { display: none; }
 .brand__sub {

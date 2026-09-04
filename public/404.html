@@ -24,8 +24,7 @@
 <header class="site-header">
   <a class="brand" href="/">
     <span class="brand__mark">
-      <!-- The archive's own mark. Until public/img/logo.png exists the pin below
-           stands in for it; the moment the file is added, it takes over. -->
+      <!-- The archive's mark. The pin below stands in only if it fails to load. -->
       <img class="brand__logo" src="/img/logo.png" alt=""
            onload="this.parentNode.classList.add('has-logo')" onerror="this.remove()">
       <svg class="brand__pin" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -87,6 +87,15 @@ async function signIn(password = 'test-password') {
 
 /* ------------------------------- public API ------------------------------- */
 
+test('the version endpoint says which commit is running', async () => {
+  const response = await fetch(`${base}/api/version`);
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  // Only a deployment sets it; outside one, saying so beats guessing.
+  assert.ok('commit' in body);
+  assert.ok(!Number.isNaN(Date.parse(body.startedAt)), 'it says when it started');
+});
+
 test('questions endpoint exposes the questionnaire and province list', async () => {
   const body = await json(await call('/api/questions'));
   assert.ok(Array.isArray(body.questions));

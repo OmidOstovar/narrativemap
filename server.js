@@ -58,6 +58,26 @@ function clientKey(req) {
 
 /* ------------------------------- public API ------------------------------ */
 
+/** When this process started, so an old container is obvious from outside. */
+const STARTED_AT = new Date().toISOString();
+
+/**
+ * Which commit is actually running.
+ *
+ * There is no way to tell a stale deployment from a fresh one by looking at
+ * the site, and a browser cache looks exactly like a deploy that never
+ * happened. Railway puts the commit it built into the environment, so the
+ * server can simply say. Compare it against the repository: if it lags, the
+ * problem is the deploy, and if it matches, the problem is the browser.
+ */
+app.get('/api/version', (req, res) => {
+  const sha = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.SOURCE_COMMIT || null;
+  res.json({
+    commit: sha ? sha.slice(0, 7) : null,
+    startedAt: STARTED_AT,
+  });
+});
+
 app.get('/api/questions', (req, res) => {
   res.json({
     questions: QUESTIONS,

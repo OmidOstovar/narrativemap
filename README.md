@@ -52,6 +52,22 @@ scripts/build-geo.js   Regenerates public/data/iran.geo.json from source data
 test/api.test.js       End-to-end API tests
 ```
 
+### Fonts
+
+Persian is set in **XB Niloofar**, Latin in **EB Garamond**. Both are SIL Open
+Font License 1.1 and both are self-hosted in `public/fonts/`, so the site still
+loads nothing from anyone else — no Google Fonts request, no third party seeing
+who reads what.
+
+XB Niloofar is subset to Latin-1, the Arabic blocks, the presentation forms and
+U+200C, which takes it from 1.25 MB to about 60 KB per weight. U+200C matters:
+it is the zero-width non-joiner, and Persian is unreadable without it. EB
+Garamond is a variable font, so one file covers every weight from 400 to 800.
+
+Both faces are listed in each stack, one after the other, so whichever script a
+piece of text is in, the face that covers it is the one that paints it.
+`public/fonts/README.md` has the details and how to swap either one.
+
 ### Languages
 
 The interface is English and Persian, switched by a toggle in the header and
@@ -312,6 +328,7 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `COOKIE_SECURE` | `false` | Set to `true` when serving over HTTPS |
 | `TRUST_PROXY` | `false` | Set to `true` behind a reverse proxy |
 | `MIN_YEAR` | `1800` | Earliest year a narrative may be dated to |
+| `SHOW_ABOUT` | `false` | Serve the About page and show its header link |
 | `ANTHROPIC_API_KEY` | none | Enables automatic translation; without it, nothing is translated |
 | `TRANSLATION_MODEL` | `claude-opus-5` | Model used for translation |
 | `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per visitor per hour (per Telegram user, for the bot) |

@@ -240,6 +240,22 @@ function sanitiseTranslation(raw) {
 /* --------------------------------- pages --------------------------------- */
 
 /**
+ * The About page is written but not finished, so it is not served and its link
+ * is out of the header. Set SHOW_ABOUT=true to put both back — the page itself
+ * is still in public/about.html, and its nav link is a commented-out line in
+ * each page's header.
+ */
+const SHOW_ABOUT = process.env.SHOW_ABOUT === 'true';
+
+app.use((req, res, next) => {
+  if (!SHOW_ABOUT && /^\/about(\.html)?\/?$/.test(req.path)) {
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+    return;
+  }
+  next();
+});
+
+/**
  * Everything the browser holds must revalidate on each load.
  *
  * The pages and the API are two halves of one program: the API's shape changes

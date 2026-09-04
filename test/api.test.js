@@ -427,9 +427,17 @@ test('signing out invalidates the session cookie', async () => {
 /* --------------------------------- pages ---------------------------------- */
 
 test('the public pages are served', async () => {
-  for (const pathname of ['/', '/submit', '/about', '/admin', '/css/style.css', '/data/iran.geo.json']) {
+  for (const pathname of ['/', '/submit', '/admin', '/css/style.css', '/data/iran.geo.json',
+    '/fonts/xb-niloofar-regular.woff2', '/fonts/eb-garamond-latin.woff2']) {
     const response = await call(pathname);
     assert.equal(response.status, 200, `${pathname} should be served`);
+  }
+});
+
+test('the About page is hidden until it is switched on', async () => {
+  for (const pathname of ['/about', '/about.html', '/about/']) {
+    const response = await call(pathname);
+    assert.equal(response.status, 404, `${pathname} should not be served yet`);
   }
 });
 

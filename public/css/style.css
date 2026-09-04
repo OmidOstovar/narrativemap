@@ -1,4 +1,68 @@
 /* =========================================================================
+   Fonts — both self-hosted, so the site loads nothing from anyone else.
+   XB Niloofar for Persian, EB Garamond for Latin. Details and licences in
+   public/fonts/README.md.
+   ========================================================================= */
+
+@font-face {
+  font-family: 'XB Niloofar';
+  src: url('/fonts/xb-niloofar-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'XB Niloofar';
+  src: url('/fonts/xb-niloofar-bold.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* EB Garamond is variable: one file covers 400-800. latin-ext is only fetched
+   when a page actually uses a character from it. */
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('/fonts/eb-garamond-latin.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('/fonts/eb-garamond-latin-ext.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('/fonts/eb-garamond-italic-latin.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('/fonts/eb-garamond-italic-latin-ext.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* =========================================================================
    Narrative Map — design system
    Dark, archival chrome; warm accents drawn from Persian tilework.
    ========================================================================= */
@@ -37,10 +101,8 @@
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
 
-  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans',
-          'Noto Naskh Arabic', Vazirmatn, Tahoma, sans-serif;
-  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
-           Georgia, 'Noto Naskh Arabic', 'Times New Roman', serif;
+  --sans: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Tahoma, serif;
+  --serif: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Georgia, serif;
   --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   --header-height: 60px;
@@ -969,7 +1031,6 @@ input[type='date'] { cursor: text; }
   font-family: var(--serif);
   font-size: 18.5px;
 }
-[lang='fa'] .manifesto p:first-child { font-family: var(--sans); }
 
 .step {
   background: var(--ink-800);
@@ -987,7 +1048,6 @@ input[type='date'] { cursor: text; }
   line-height: 1.35;
   margin-bottom: 8px;
 }
-[lang='fa'] .step__title { font-family: var(--sans); }
 .step__number {
   font-family: var(--mono);
   font-size: 12px;
@@ -1292,14 +1352,16 @@ input[type='date'] { cursor: text; }
 
 [dir='rtl'] .tab { direction: rtl; }
 
-/* Persian reads more comfortably a touch larger and looser. */
-[lang='fa'] body { font-size: 15.5px; line-height: 1.75; }
-[lang='fa'] .qa__a { font-family: var(--sans); font-size: 16.5px; line-height: 1.95; }
+/* Persian sits smaller on the line than Latin at the same size, and reads
+   better with more room between lines. */
+[lang='fa'] body { font-size: 16px; line-height: 1.8; }
+[lang='fa'] .qa__a { font-size: 17px; line-height: 2; }
 [lang='fa'] .card__title,
 [lang='fa'] .reader__title,
 [lang='fa'] .page__title,
-[lang='fa'] .section__title { font-family: var(--sans); letter-spacing: 0; }
-[lang='fa'] textarea { font-family: var(--sans); font-size: 15.5px; line-height: 1.9; }
+[lang='fa'] .section__title,
+[lang='fa'] .step__title { letter-spacing: 0; }
+[lang='fa'] textarea { font-size: 16px; line-height: 1.95; }
 
 /* The timeline is a numeric axis and stays left-to-right in both languages. */
 .timeline { direction: ltr; }

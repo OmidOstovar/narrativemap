@@ -29,7 +29,7 @@
     /* ------------------------------ chrome ------------------------------ */
     'brand.name': { en: 'Yaad Aar', fa: 'یاد آر' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
-    'nav.map': { en: 'Map', fa: 'نقشه' },
+    'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
     'nav.submit': { en: 'Add a narrative', fa: 'ثبت روایت' },
     'nav.submitShort': { en: 'Add', fa: 'ثبت' },
     'nav.submitRest': { en: 'a narrative', fa: 'روایت' },

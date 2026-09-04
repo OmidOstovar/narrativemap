@@ -70,6 +70,7 @@ function validSubmission(overrides = {}) {
     answers: {
       narrative_kind: ['chronicle'],
       how_you_know: ['lived'],
+      narrative_title: 'A corner in Tehran',
       what_happened: 'Something happened at this corner, and this sentence is deliberately long enough to clear the minimum length the questionnaire asks for on the main narrative answer.',
       ...(overrides.answers || {}),
     },

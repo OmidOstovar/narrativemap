@@ -15,6 +15,10 @@
 
   let pickerApi = null;
   let pinMarker = null;
+  // Kept so the confirmation can be redrawn if the language changes after it.
+  let submitted = null;
+  // Kept so the same complaints come back in the new language, not in English.
+  let lastErrors = [];
 
   const $ = (id) => document.getElementById(id);
 
@@ -101,12 +105,6 @@
           </label>
         </div>
 
-        <div class="field" style="margin-bottom:0">
-          <label class="visually-hidden" for="place-name">${escapeHtml(t('submit.placeName'))}</label>
-          <input type="text" id="place-name" maxlength="160"
-                 placeholder="${escapeHtml(t('submit.placeNamePlaceholder'))}">
-          <p class="field__error" data-error-for="place.name"></p>
-        </div>
         <p class="field__error" data-error-for="place.point"></p>
       </div>`;
   }
@@ -167,12 +165,6 @@
     }).join('');
 
     $('steps').innerHTML = html;
-
-    $('steps').addEventListener('input', (event) => {
-      updateCounter(event.target);
-      updateProgress();
-    });
-    $('steps').addEventListener('change', updateProgress);
   }
 
   function updateCounter(input) {
@@ -207,6 +199,28 @@
       if (input) answers[question.id] = input.value;
     }
     return answers;
+  }
+
+  /**
+   * Writes a snapshot back into a freshly rendered form. Choices are matched by
+   * their stored value, which does not change with the language, so a Persian
+   * answer stays chosen when the form is redrawn in English.
+   */
+  function restoreAnswers(answers) {
+    for (const question of state.questions) {
+      const value = answers[question.id];
+      if (question.type === 'multiselect' || question.type === 'select') {
+        const chosen = Array.isArray(value) ? value : [value].filter(Boolean);
+        document.querySelectorAll(`[data-choice="${CSS.escape(question.id)}"]`)
+          .forEach((node) => { node.checked = chosen.includes(node.value); });
+        continue;
+      }
+      const input = $(`q-${question.id}`);
+      if (input && typeof value === 'string') {
+        input.value = value;
+        updateCounter(input);
+      }
+    }
   }
 
   /* ------------------------------ the period ----------------------------- */
@@ -283,6 +297,30 @@
     for (const input of host.querySelectorAll('input')) {
       input.addEventListener('input', () => { renderPeriodEcho(); updateProgress(); });
       input.addEventListener('change', () => { renderPeriodEcho(); updateProgress(); });
+    }
+    renderPeriodEcho();
+  }
+
+  /**
+   * The period widget's inputs, exactly as typed. `readPeriod` gives nothing
+   * back until the pair is complete, so a half-filled date would be lost when
+   * the form is redrawn; this keeps it.
+   */
+  const PERIOD_INPUT_IDS = ['period-start', 'period-end', 'period-start-time', 'period-end-time'];
+
+  function periodSnapshot() {
+    const snapshot = {};
+    for (const id of PERIOD_INPUT_IDS) {
+      const input = $(id);
+      if (input) snapshot[id] = input.value;
+    }
+    return snapshot;
+  }
+
+  function restorePeriod(snapshot) {
+    for (const id of PERIOD_INPUT_IDS) {
+      const input = $(id);
+      if (input && snapshot[id] !== undefined) input.value = snapshot[id];
     }
     renderPeriodEcho();
   }
@@ -451,9 +489,8 @@
       return !q.minLength || text.length >= q.minLength;
     });
 
-    const steps = required.length + 3; // questions + place name + pin + period
+    const steps = required.length + 2; // questions + pin + period
     let done = answered.length;
-    if ($('place-name') && $('place-name').value.trim()) done += 1;
     if (state.place.lat !== null) done += 1;
     if (readPeriod()) done += 1;
 
@@ -469,6 +506,7 @@
   /* ------------------------------- submitting ---------------------------- */
 
   function clearErrors() {
+    lastErrors = [];
     document.querySelectorAll('.field.has-error').forEach((f) => f.classList.remove('has-error'));
     document.querySelectorAll('[data-error-for]').forEach((el) => {
       el.textContent = '';
@@ -477,12 +515,23 @@
     $('form-error').hidden = true;
   }
 
+  /**
+   * The API answers with a `code` and any `params` beside its English
+   * `message`, so the browser can say the same thing in the reader's language.
+   */
+  function errorText(error) {
+    if (!error.code) return error.message;
+    const translated = t(error.code, error.params);
+    return translated === error.code ? error.message : translated;
+  }
+
   function showErrors(errors) {
+    lastErrors = errors;
     let firstNode = null;
     for (const error of errors) {
       const node = document.querySelector(`[data-error-for="${CSS.escape(error.field)}"]`);
       if (!node) continue;
-      node.textContent = error.message;
+      node.textContent = errorText(error);
       node.style.display = 'block';
       const field = node.closest('.field');
       if (field) field.classList.add('has-error');
@@ -492,6 +541,7 @@
   }
 
   function renderSuccess(result) {
+    submitted = result;
     $('page').innerHTML = `
       <div class="success">
         <div class="success__mark">
@@ -521,7 +571,6 @@
     const payload = {
       answers: collectAnswers(),
       place: {
-        name: $('place-name').value,
         lat: state.place.lat,
         lng: state.place.lng,
       },
@@ -539,13 +588,13 @@
       if (error.errors && error.errors.length) {
         showErrors(error.errors);
         $('form-error').className = 'callout callout--error';
-        $('form-error').textContent = t('submit.fixErrors', { message: error.message });
+        $('form-error').textContent = t('submit.fixErrors');
       } else {
         $('form-error').className = 'callout callout--error';
         $('form-error').textContent = error.message;
       }
       $('form-error').hidden = false;
-      toast(error.message, 'error');
+      toast(error.errors && error.errors.length ? t('submit.fixErrors') : error.message, 'error');
       button.disabled = false;
       button.textContent = t('submit.send');
     }
@@ -553,15 +602,17 @@
 
   /* --------------------------------- boot -------------------------------- */
 
-  async function boot() {
-    const meta = await api('/api/questions');
-    state.questions = meta.questions;
-    state.sequence = meta.sequence;
-    state.yearRange = meta.yearRange;
-
-    renderSteps();
-    renderPeriodInputs();
-    updateProgress();
+  /**
+   * Wires everything inside #steps. The block is rebuilt whenever the language
+   * changes, so its listeners are attached here, once per rendering, rather
+   * than once per page.
+   */
+  async function wireSteps() {
+    $('steps').addEventListener('input', (event) => {
+      updateCounter(event.target);
+      updateProgress();
+    });
+    $('steps').addEventListener('change', updateProgress);
 
     pickerApi = await window.NMMap.create('picker-map', {
       interactiveProvinces: false,
@@ -574,6 +625,7 @@
 
     $('picker-tiles').addEventListener('change', (event) => pickerApi.setTiles(event.target.checked));
 
+    $('precision').value = state.precision;
     $('precision').addEventListener('change', (event) => {
       state.precision = event.target.value;
       renderPeriodInputs();
@@ -588,19 +640,79 @@
       const lat = Number(button.dataset.lat);
       const lng = Number(button.dataset.lon);
       setPin(lat, lng, { zoom: 13 });
-      if (!$('place-name').value.trim()) {
-        $('place-name').value = button.firstChild.textContent.trim();
-      }
       $('place-results').innerHTML = '';
       $('place-search').value = '';
       updateProgress();
     });
+  }
+
+  /**
+   * Redraws the whole form in the language just chosen.
+   *
+   * Every label, hint and option inside #steps is written by this file rather
+   * than tagged in the HTML, so `I18N.apply` cannot reach any of it. Rebuilding
+   * the block is the only way to translate all of it at once — and nothing the
+   * contributor has entered may be lost in the process, so it is taken down
+   * first and put back afterwards.
+   */
+  async function relocalise() {
+    if (submitted) { renderSuccess(submitted); return; }
+    if (!state.questions.length || !$('steps')) return;
+
+    const answers = collectAnswers();
+    const period = periodSnapshot();
+    const name = $('contributor-name').value;
+    const email = $('contributor-email').value;
+    const tiles = $('picker-tiles').checked;
+    const scrolled = window.scrollY;
+    const errors = lastErrors;
+
+    // Leaflet has to let go of the container before it is thrown away.
+    if (pickerApi) { pickerApi.map.remove(); pickerApi = null; pinMarker = null; }
+
+    renderSteps();
+    renderPeriodInputs();
+    restoreAnswers(answers);
+    restorePeriod(period);
+    $('contributor-name').value = name;
+    $('contributor-email').value = email;
+    $('picker-tiles').checked = tiles;
+
+    await wireSteps();
+    if (tiles) pickerApi.setTiles(true);
+    if (state.place.lat !== null) {
+      // Re-dropping the pin also repaints the province in the new language.
+      await setPin(state.place.lat, state.place.lng, { zoom: 13 });
+    }
+    if (errors.length) {
+      showErrors(errors);
+      $('form-error').textContent = t('submit.fixErrors');
+    }
+    updateProgress();
+    window.scrollTo(0, scrolled);
+  }
+
+  async function boot() {
+    const meta = await api('/api/questions');
+    state.questions = meta.questions;
+    state.sequence = meta.sequence;
+    state.yearRange = meta.yearRange;
+
+    renderSteps();
+    renderPeriodInputs();
+    updateProgress();
+
+    await wireSteps();
 
     document.addEventListener('click', (event) => {
       if (!event.target.closest('.picker__search')) $('place-results').innerHTML = '';
     });
 
     $('form').addEventListener('submit', handleSubmit);
+
+    window.I18N.onChange(() => {
+      relocalise().catch((error) => console.error('could not redraw the form', error));
+    });
   }
 
   boot().catch((error) => {

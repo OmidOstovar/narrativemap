@@ -45,10 +45,6 @@ const STRINGS = {
   'error.email': { fa: 'این نشانی ایمیل درست به نظر نمی‌رسد.', en: 'That does not look like an email address.' },
   'ask.province': { fa: '📍 <b>استان را انتخاب کنید</b>', en: '📍 <b>Choose the province</b>' },
   'ask.city': { fa: '📍 <b>شهر را انتخاب کنید</b>\n\nاستان: {province}', en: '📍 <b>Choose the city</b>\n\nProvince: {province}' },
-  'ask.place': {
-    fa: '📍 <b>کجا بود؟</b>\n\nمی‌توانید یک جای کلی یا جزئی را مشخص کنید: از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز».',
-    en: '📍 <b>Where was it?</b>\n\nSomewhere broad or somewhere exact: anything from “Bandar Abbas” to “the Faculty of Literature at Tabriz University”.',
-  },
   'ask.location': {
     fa: '🗺 <b>نقطهٔ دقیق را بفرستید</b>\n\nاز گیرهٔ 📎 گزینهٔ Location را بزنید و نشانگر را روی همان نقطه بکشید.\n\n'
       + 'اگر نمی‌توانید، رد کنید — روایت فعلاً وسط استان می‌نشیند و بعداً جابه‌جا می‌شود.',

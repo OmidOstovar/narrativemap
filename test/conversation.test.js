@@ -34,7 +34,6 @@ function driveTo(session, target, overrides = {}) {
   const answers = Object.assign({
     province: { choice: 'گیلان' },
     city: { choice: 'رشت' },
-    place: { text: 'کوچهٔ پشت بازار' },
     location: { location: { latitude: 37.2808, longitude: 49.5832 } },
     precision: { choice: 'year' },
     name: { text: 'آزمونگر' },
@@ -73,9 +72,10 @@ test('a session walks the questionnaire in the order it declares', () => {
   assert.equal(session.step, 'question', 'the first step is the first question');
   assert.equal(session.questionId, 'narrative_kind');
 
-  driveTo(session, 'place');
+  driveTo(session, 'location');
   assert.equal(session.place.province, 'گیلان');
   assert.equal(session.place.provinceEn, 'Gilan');
+  assert.equal(session.place.name, 'رشت', 'the chosen city names the place');
   assert.deepEqual(session.answers.narrative_kind, ['chronicle']);
 });
 
@@ -263,7 +263,6 @@ test('optional questions may be skipped and are simply absent', () => {
   const scripted = {
     province: { choice: 'گیلان' },
     city: { choice: 'رشت' },
-    place: { text: 'a lane behind the market' },
     location: { location: { latitude: 37.2808, longitude: 49.5832 } },
     precision: { choice: 'year' },
     name: { skip: true },

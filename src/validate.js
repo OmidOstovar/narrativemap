@@ -28,9 +28,11 @@ function validatePlace(raw, errors) {
   const lat = Number(input.lat);
   const lng = Number(input.lng);
 
-  if (!name) {
-    errors.push({ field: 'place.name', code: 'error.placeNameRequired', message: 'Name the place this happened.' });
-  } else if (name.length > 160) {
+  // Nobody is asked to name the place any more: the pin fixes the spot and the
+  // province is derived from it. The field survives because the Telegram bot
+  // fills it with the city it offered, and because a moderator may add a
+  // street or a landmark during review. It is displayed only when set.
+  if (name.length > 160) {
     errors.push({ field: 'place.name', code: 'error.placeNameTooLong', message: 'Please keep the place name under 160 characters.' });
   }
 

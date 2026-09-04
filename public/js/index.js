@@ -9,6 +9,7 @@
   const state = {
     narratives: [],
     questions: [],
+    titleQuestionId: 'narrative_title',
     filtered: [],
     selectedId: null,
     yearBounds: { min: 1900, max: new Date().getFullYear() },
@@ -86,11 +87,23 @@
   }
 
   /**
-   * There is no title question — contributors are asked what happened, not to
-   * name it — so a narrative is labelled by the place they chose.
+   * The title the contributor gave the narrative, in the language being read.
+   * Older narratives were labelled by their place, so those still fall back to
+   * it, and to the province when even that is blank.
    */
   function title(n) {
-    return shown(n).placeName || n.place.name || t('reader.untitled');
+    const version = shown(n);
+    return (version.answers[state.titleQuestionId] || '').trim()
+      || (n.answers[state.titleQuestionId] || '').trim()
+      || version.placeName
+      || n.place.name
+      || province(n.place.province)
+      || t('reader.untitled');
+  }
+
+  /** The line under the title: where it happened, as specifically as we know. */
+  function placeLabel(n) {
+    return shown(n).placeName || n.place.name || province(n.place.province) || '';
   }
 
   function excerpt(n) {
@@ -188,7 +201,7 @@
           title: title(n),
         });
         marker.bindTooltip(
-          `<strong>${escapeHtml(title(n))}</strong><br>${escapeHtml(formatYears(n.period))} · ${escapeHtml(n.place.name)}`,
+          `<strong>${escapeHtml(title(n))}</strong><br>${escapeHtml(formatYears(n.period))}${placeLabel(n) ? ` · ${escapeHtml(placeLabel(n))}` : ''}`,
           { className: 'map-tip', direction: 'top', offset: [0, -8], opacity: 1 },
         );
         marker.on('click', () => select(n.id));
@@ -368,7 +381,8 @@
 
     const version = shown(n);
     const answers = state.questions
-      .filter((q) => q.id !== 'title')
+      // The title is already the heading of this panel.
+      .filter((q) => q.id !== state.titleQuestionId)
       .map((q) => {
         const isChoice = q.type === 'select' || q.type === 'multiselect';
         // Choice answers are stored as codes and render in either language, so
@@ -401,7 +415,7 @@
       <dl class="reader__facts">
         <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
-          ${n.place.province ? escapeHtml(province(n.place.province)) : escapeHtml(version.placeName)}
+          ${escapeHtml(province(n.place.province) || version.placeName || '')}
           <div class="secondary" dir="ltr">${escapeHtml(digits(coords))}</div>
         </dd>
         <dt>${escapeHtml(t('reader.when'))}</dt>
@@ -537,6 +551,7 @@
     ]);
 
     state.questions = meta.questions;
+    state.titleQuestionId = meta.titleQuestionId || state.titleQuestionId;
     state.narratives = data.narratives;
 
     renderProvinceFilter();

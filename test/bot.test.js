@@ -107,7 +107,6 @@ async function walkConversation(bot, client, overrides = {}) {
   const scripted = Object.assign({
     province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'گیلان')}`),
     city: () => tap(`c:${citiesOf('گیلان').indexOf('رشت')}`),
-    place: () => message('کوچهٔ پشت بازار ماهی‌فروش‌ها'),
     location: () => location(37.2808, 49.5832),
     precision: () => tap('pr:year'),
     name: () => message('مهمان'),
@@ -187,14 +186,13 @@ test('skipping the location marks the narrative approximate for the moderator', 
   await walkConversation(bot, client, {
     province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'یزد')}`),
     city: () => tap(`c:${citiesOf('یزد').indexOf('یزد')}`),
-    place: () => message('پشت‌بام خانهٔ قدیمی'),
     location: () => tap('sk'),
     name: () => tap('sk'),
   });
   await bot.handleUpdate(tap('rv:send'));
 
   const cookie = await signIn();
-  const submission = (await queue(cookie)).find((s) => s.place.name.includes('پشت‌بام'));
+  const submission = (await queue(cookie)).find((s) => s.place.province === 'Yazd');
 
   assert.ok(submission, 'the narrative arrived');
   assert.equal(submission.place.approximate, true);
@@ -240,7 +238,6 @@ test('an unusable answer is refused without losing the conversation', async () =
     const make = {
       province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'فارس')}`),
       city: () => tap(`c:${citiesOf('فارس').indexOf('شیراز')}`),
-      place: () => message('پلهٔ سوم'),
       location: () => tap('sk'),
       precision: () => tap('pr:year'),
     }[session.step];
@@ -290,6 +287,7 @@ test('a public submission cannot claim to be from Telegram or be approximate', a
       answers: {
         narrative_kind: ['chronicle'],
         how_you_know: ['lived'],
+        narrative_title: 'Claimed privileges',
         what_happened: 'A submission from the open internet claiming privileges it was never granted, written long enough to clear the minimum length.',
       },
       place: { name: 'Somewhere', lat: 35.6892, lng: 51.389, approximate: true },
@@ -315,6 +313,7 @@ test('a wrong bot token is treated as an ordinary visitor', async () => {
       answers: {
         narrative_kind: ['other'],
         how_you_know: ['other'],
+        narrative_title: 'A mismatched token',
         what_happened: 'This one carries a token that does not match the shared secret, so none of the privileges the bot is granted should apply to it at all.',
       },
       place: { name: 'Somewhere', lat: 32.6546, lng: 51.668 },

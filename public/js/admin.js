@@ -8,6 +8,7 @@
 
   const state = {
     questions: [],
+    titleQuestionId: 'narrative_title',
     yearRange: { min: 1800, max: new Date().getFullYear() },
     status: 'pending',
     submissions: [],
@@ -22,8 +23,14 @@
   const queueEl = () => $('queue');
   const detailEl = () => $('detail');
 
-  // No title question: a narrative is known by the place it belongs to.
-  const title = (s) => s.place.name || t('reader.untitled');
+  /** The title the contributor gave it; older ones are known by their place. */
+  const title = (s) => (s.answers[state.titleQuestionId] || '').trim()
+    || s.place.name
+    || province(s.place.province)
+    || t('reader.untitled');
+
+  /** Where it happened, as specifically as the submission says. */
+  const placeLabel = (s) => s.place.name || province(s.place.province) || '';
 
   /** Choice answers store stable codes; label them for the moderator. */
   function choiceLabels(question, value) {
@@ -45,6 +52,7 @@
 
     const meta = await api('/api/questions');
     state.questions = meta.questions;
+    state.titleQuestionId = meta.titleQuestionId || state.titleQuestionId;
     state.yearRange = meta.yearRange;
 
     wireShell();
@@ -107,7 +115,7 @@
         <button class="card${s.id === state.selectedId ? ' is-active' : ''}" data-id="${escapeHtml(s.id)}">
           <span class="card__title" dir="${dirFor(title(s))}">${escapeHtml(title(s))}</span>
           <span class="card__meta">
-            <span class="place">${escapeHtml(s.place.name)}</span>
+            <span class="place">${escapeHtml(placeLabel(s))}</span>
             <span>${escapeHtml(formatYears(s.period))}</span>
             <span>${escapeHtml(formatTimestamp(s.submittedAt))}</span>
           </span>
@@ -200,7 +208,7 @@
         <dl class="reader__facts">
           <dt>${escapeHtml(t('reader.place'))}</dt>
           <dd>
-            ${escapeHtml(submission.place.name)}
+            ${escapeHtml(placeLabel(submission))}
             ${submission.place.province ? `<span class="secondary"> · ${escapeHtml(province(submission.place.province))}</span>` : ''}
             <div class="secondary" dir="ltr">${escapeHtml(digits(`${submission.place.lat.toFixed(5)}, ${submission.place.lng.toFixed(5)}`))}</div>
           </dd>
@@ -456,6 +464,13 @@
     };
   }
 
+  /** The API sends a translatable `code` beside its English `message`. */
+  function errorText(error) {
+    if (!error.code) return error.message;
+    const translated = t(error.code, error.params);
+    return translated === error.code ? error.message : translated;
+  }
+
   function showEditErrors(errors) {
     document.querySelectorAll('[data-error-for]').forEach((node) => {
       node.textContent = '';
@@ -464,7 +479,7 @@
     for (const error of errors) {
       const node = document.querySelector(`[data-error-for="${CSS.escape(error.field)}"]`);
       if (!node) continue;
-      node.textContent = error.message;
+      node.textContent = errorText(error);
       node.style.display = 'block';
     }
   }

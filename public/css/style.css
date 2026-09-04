@@ -162,7 +162,11 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   white-space: nowrap;
 }
 .brand:hover { text-decoration: none; }
-.brand__mark { color: var(--saffron); display: block; }
+.brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }
+/* The logo replaces the pin as soon as the file is there to load. */
+.brand__logo { display: none; height: 34px; width: auto; }
+.brand__mark.has-logo .brand__logo { display: block; }
+.brand__mark.has-logo .brand__pin { display: none; }
 .brand__sub {
   color: var(--text-faint);
   font-weight: 400;
@@ -413,7 +417,13 @@ input[type='date'] { cursor: text; }
   min-height: 0;
 }
 
-.map-pane { position: relative; min-width: 0; background: var(--ink-900); }
+/*
+ * The reading panel waits just outside this pane, pushed off by a translate.
+ * Without clipping, that off-canvas copy counts towards the page's scrollable
+ * area — and under rtl a phone then opens the page scrolled onto the empty
+ * side of it, leaving the reader to scroll back to find the map.
+ */
+.map-pane { position: relative; min-width: 0; background: var(--ink-900); overflow: hidden; }
 #map { position: absolute; inset: 0; }
 
 /* --------------------------- sidebar: filters --------------------------- */

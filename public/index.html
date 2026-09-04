@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<script>
+/* The archive is Persian first, so the very first paint is too. This runs
+   before anything is drawn; i18n.js takes over once it loads. */
+(function () {
+  var langs = ['fa', 'en'];
+  var chosen = null;
+  try { chosen = localStorage.getItem('nm_lang'); } catch (e) { /* storage blocked */ }
+  var asked = new URLSearchParams(location.search).get('lang');
+  var lang = langs.indexOf(asked) >= 0 ? asked : (langs.indexOf(chosen) >= 0 ? chosen : 'fa');
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+}());
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title data-i18n="title.map">Narrative Map — Iran</title>
+<title data-i18n="title.map">یاد آر — روایت‌ها روی نقشهٔ ایران</title>
 <meta name="description" content="First-hand narratives placed on the map of Iran, each anchored to an exact place and a period in time.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -13,40 +26,46 @@
 
 <header class="site-header">
   <a class="brand" href="/">
-    <svg class="brand__mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
-    </svg>
-    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__mark">
+      <!-- The archive's own mark. Until public/img/logo.png exists the pin below
+           stands in for it; the moment the file is added, it takes over. -->
+      <img class="brand__logo" src="/img/logo.png" alt=""
+           onload="this.parentNode.classList.add('has-logo')" onerror="this.remove()">
+      <svg class="brand__pin" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
+      </svg>
+    </span>
+    <span data-i18n="brand.name">یاد آر</span>
   </a>
   <nav class="site-nav">
-    <a href="/" data-i18n="nav.map">Map</a>
-    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/" data-i18n="nav.map">نقشۀ روایات</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">ثبت</span> <span class="nav-long" data-i18n="nav.submitRest">روایت</span></a>
     <!-- About is hidden until the page is written. Uncomment the line below and
          set SHOW_ABOUT=true to bring it back.
-    <a href="/about" data-i18n="nav.about">About</a> -->
+    <a href="/about" data-i18n="nav.about">درباره</a> -->
   </nav>
 </header>
 
 <main class="app">
   <aside class="sidebar">
     <div class="filters">
-      <label class="visually-hidden" for="search" data-i18n="map.searchLabel">Search narratives</label>
-      <input type="search" id="search" data-i18n-placeholder="map.search" placeholder="Search titles, places, and text…" autocomplete="off">
+      <label class="visually-hidden" for="search" data-i18n="map.searchLabel">جست‌وجوی روایت‌ها</label>
+      <input type="search" id="search" data-i18n-placeholder="map.search" placeholder="جست‌وجو در عنوان‌ها، مکان‌ها و متن…" autocomplete="off">
       <div class="filters__row">
-        <label class="visually-hidden" for="province-filter" data-i18n="map.provinceLabel">Filter by province</label>
-        <select id="province-filter"><option value="" data-i18n="map.allProvinces">All provinces</option></select>
-        <label class="visually-hidden" for="sort" data-i18n="map.sortLabel">Sort narratives</label>
+        <label class="visually-hidden" for="province-filter" data-i18n="map.provinceLabel">فیلتر بر اساس استان</label>
+        <select id="province-filter"><option value="" data-i18n="map.allProvinces">همهٔ استان‌ها</option></select>
+        <label class="visually-hidden" for="sort" data-i18n="map.sortLabel">ترتیب روایت‌ها</label>
         <select id="sort">
-          <option value="chronological" data-i18n="map.sort.chronological">Oldest first</option>
-          <option value="reverse" data-i18n="map.sort.reverse">Newest first</option>
-          <option value="recent" data-i18n="map.sort.recent">Recently published</option>
-          <option value="title" data-i18n="map.sort.title">By title</option>
+          <option value="chronological" data-i18n="map.sort.chronological">قدیمی‌ترین اول</option>
+          <option value="reverse" data-i18n="map.sort.reverse">تازه‌ترین اول</option>
+          <option value="recent" data-i18n="map.sort.recent">به‌تازگی منتشرشده</option>
+          <option value="title" data-i18n="map.sort.title">بر اساس عنوان</option>
         </select>
       </div>
       <p class="result-count">
         <span><strong id="count">0</strong> <span id="count-label">narratives</span></span>
-        <button type="button" id="clear-filters" data-i18n="map.clearFilters" hidden>Clear filters</button>
+        <button type="button" id="clear-filters" data-i18n="map.clearFilters" hidden>حذف فیلترها</button>
       </p>
     </div>
     <ul class="narrative-list" id="list"></ul>
@@ -58,23 +77,23 @@
     <div class="map-controls">
       <label class="map-toggle">
         <input type="checkbox" id="tiles-toggle">
-        <span data-i18n="map.streetDetail">Street detail</span>
+        <span data-i18n="map.streetDetail">نمای خیابانی</span>
       </label>
     </div>
 
-    <section class="timeline" id="timeline" dir="ltr" hidden data-i18n-label="timeline.aria" aria-label="Filter narratives by time period">
+    <section class="timeline" id="timeline" dir="ltr" hidden data-i18n-label="timeline.aria" aria-label="فیلتر روایت‌ها بر اساس بازهٔ زمانی">
       <div class="timeline__head">
-        <span class="timeline__label" data-i18n="timeline.label">Time period</span>
+        <span class="timeline__label" data-i18n="timeline.label">بازهٔ زمانی</span>
         <span class="timeline__value" id="timeline-value">—</span>
-        <button type="button" class="timeline__reset" id="timeline-reset" data-i18n="timeline.reset">Reset</button>
+        <button type="button" class="timeline__reset" id="timeline-reset" data-i18n="timeline.reset">بازنشانی</button>
       </div>
       <div class="timeline__histogram" id="histogram" aria-hidden="true"></div>
       <div class="range" id="range">
         <div class="range__track"></div>
         <div class="range__fill" id="range-fill"></div>
-        <label class="visually-hidden" for="year-from" data-i18n="timeline.from">Earliest year</label>
+        <label class="visually-hidden" for="year-from" data-i18n="timeline.from">زودترین سال</label>
         <input type="range" id="year-from">
-        <label class="visually-hidden" for="year-to" data-i18n="timeline.to">Latest year</label>
+        <label class="visually-hidden" for="year-to" data-i18n="timeline.to">دیرترین سال</label>
         <input type="range" id="year-to">
       </div>
       <div class="range__scale"><span id="scale-min"></span><span id="scale-max"></span></div>
@@ -82,9 +101,9 @@
 
     <article class="reader" id="reader" aria-hidden="true" tabindex="-1">
       <div class="reader__bar">
-        <button type="button" class="btn btn--ghost btn--sm" id="reader-close" data-i18n-label="reader.close" data-i18n="reader.back" aria-label="Close narrative">← Back to map</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="reader-close" data-i18n-label="reader.close" data-i18n="reader.back" aria-label="بستن روایت">→ بازگشت به نقشه</button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn--ghost btn--sm" id="reader-link" data-i18n="reader.copyLink">Copy link</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="reader-link" data-i18n="reader.copyLink">کپی نشانی</button>
       </div>
       <div class="reader__body" id="reader-body"></div>
     </article>

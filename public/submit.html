@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<script>
+/* The archive is Persian first, so the very first paint is too. This runs
+   before anything is drawn; i18n.js takes over once it loads. */
+(function () {
+  var langs = ['fa', 'en'];
+  var chosen = null;
+  try { chosen = localStorage.getItem('nm_lang'); } catch (e) { /* storage blocked */ }
+  var asked = new URLSearchParams(location.search).get('lang');
+  var lang = langs.indexOf(asked) >= 0 ? asked : (langs.indexOf(chosen) >= 0 ? chosen : 'fa');
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+}());
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n="title.submit">Add your narrative — Narrative Map</title>
+<title data-i18n="title.submit">ثبت روایت — یاد آر</title>
 <meta name="description" content="Submit a narrative to the map of Iran. Answer a short set of questions, mark the exact place, and give the period it belongs to.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -13,34 +26,40 @@
 
 <header class="site-header">
   <a class="brand" href="/">
-    <svg class="brand__mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
-    </svg>
-    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__mark">
+      <!-- The archive's own mark. Until public/img/logo.png exists the pin below
+           stands in for it; the moment the file is added, it takes over. -->
+      <img class="brand__logo" src="/img/logo.png" alt=""
+           onload="this.parentNode.classList.add('has-logo')" onerror="this.remove()">
+      <svg class="brand__pin" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
+      </svg>
+    </span>
+    <span data-i18n="brand.name">یاد آر</span>
   </a>
   <nav class="site-nav">
-    <a href="/" data-i18n="nav.map">Map</a>
-    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/" data-i18n="nav.map">نقشۀ روایات</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">ثبت</span> <span class="nav-long" data-i18n="nav.submitRest">روایت</span></a>
     <!-- About is hidden until the page is written. Uncomment the line below and
          set SHOW_ABOUT=true to bring it back.
-    <a href="/about" data-i18n="nav.about">About</a> -->
+    <a href="/about" data-i18n="nav.about">درباره</a> -->
   </nav>
 </header>
 
 <main class="page" id="page">
-  <p class="page__eyebrow" data-i18n="submit.eyebrow">Add a narrative</p>
-  <h1 class="page__title" data-i18n="submit.title">Yaad Aar</h1>
+  <p class="page__eyebrow" data-i18n="submit.eyebrow">ثبت روایت</p>
+  <h1 class="page__title" data-i18n="submit.title">یاد آر</h1>
   <div class="manifesto">
-    <p data-i18n="manifesto.p1"></p>
-    <p data-i18n="manifesto.p2"></p>
-    <p data-i18n="manifesto.p3"></p>
+    <p data-i18n="manifesto.p1"> برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ما نیست. چه حیف که تنها در ذهن هر فرد بماند و قبل از جمعی شدن رنگ ببازد، که جهان نشود و ندانَدشان. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند.</p>
+    <p data-i18n="manifesto.p2">آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «یاد آر» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.</p>
+    <p data-i18n="manifesto.p3">فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.</p>
   </div>
 
   <div class="progress" id="progress" hidden>
     <div class="progress__bar"><div class="progress__fill" id="progress-fill"></div></div>
     <div class="progress__text">
-      <span id="progress-text" data-i18n="submit.progress.none">Nothing answered yet</span>
+      <span id="progress-text" data-i18n="submit.progress.none">هنوز چیزی پر نشده</span>
       <span id="progress-required"></span>
     </div>
   </div>
@@ -53,8 +72,8 @@
     <div class="callout" id="form-error" hidden></div>
 
     <div class="submit-actions">
-      <button type="submit" class="btn btn--primary" id="submit-btn" data-i18n="submit.send">Send for review</button>
-      <span class="note" data-i18n="submit.moderatorNote">A moderator reads every submission before it is published.</span>
+      <button type="submit" class="btn btn--primary" id="submit-btn" data-i18n="submit.send">ارسال</button>
+      <span class="note" data-i18n="submit.moderatorNote">متن ارسالی ابتدا بررسی و بعدا منتشر می‌شود - صرفا برای جلوگیری از اسپم شدن.</span>
     </div>
   </form>
 </main>

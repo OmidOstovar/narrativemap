@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<script>
+/* The archive is Persian first, so the very first paint is too. This runs
+   before anything is drawn; i18n.js takes over once it loads. */
+(function () {
+  var langs = ['fa', 'en'];
+  var chosen = null;
+  try { chosen = localStorage.getItem('nm_lang'); } catch (e) { /* storage blocked */ }
+  var asked = new URLSearchParams(location.search).get('lang');
+  var lang = langs.indexOf(asked) >= 0 ? asked : (langs.indexOf(chosen) >= 0 ? chosen : 'fa');
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+}());
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n="title.about">About — Narrative Map</title>
+<title data-i18n="title.about">دربارهٔ یاد آر</title>
 <meta name="description" content="How the Narrative Map works: what a narrative is, how places and periods are recorded, and how submissions are reviewed.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📍</text></svg>">
 <link rel="stylesheet" href="/css/style.css">
@@ -12,55 +25,58 @@
 
 <header class="site-header">
   <a class="brand" href="/">
-    <svg class="brand__mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
-    </svg>
-    <span data-i18n="brand.name">Narrative Map</span>
+    <span class="brand__mark">
+      <!-- The archive's own mark. Until public/img/logo.png exists the pin below
+           stands in for it; the moment the file is added, it takes over. -->
+      <img class="brand__logo" src="/img/logo.png" alt=""
+           onload="this.parentNode.classList.add('has-logo')" onerror="this.remove()">
+      <svg class="brand__pin" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="10" r="2.4" fill="currentColor"/>
+      </svg>
+    </span>
+    <span data-i18n="brand.name">یاد آر</span>
   </a>
   <nav class="site-nav">
-    <a href="/" data-i18n="nav.map">Map</a>
-    <a href="/submit"><span data-i18n="nav.submitShort">Add</span> <span class="nav-long" data-i18n="nav.submitRest">your narrative</span></a>
+    <a href="/" data-i18n="nav.map">نقشۀ روایات</a>
+    <a href="/submit"><span data-i18n="nav.submitShort">ثبت</span> <span class="nav-long" data-i18n="nav.submitRest">روایت</span></a>
   </nav>
 </header>
 
 <main class="page">
-  <p class="page__eyebrow" data-i18n="about.eyebrow">About</p>
-  <h1 class="page__title" data-i18n="about.title">A map made of what people remember.</h1>
-  <p class="page__lede" data-i18n="about.lede">
-    Most maps of Iran show roads, borders, and administrative units. This one shows
-    what happened to people, and exactly where.
-  </p>
+  <p class="page__eyebrow" data-i18n="about.eyebrow">دربارهٔ این نقشه</p>
+  <h1 class="page__title" data-i18n="about.title">نقشه‌ای از آنچه مردم به یاد دارند.</h1>
+  <p class="page__lede" data-i18n="about.lede">تنها روایت است که می‌ماند.</p>
 
   <div class="manifesto">
-    <p data-i18n="manifesto.p1"></p>
-    <p data-i18n="manifesto.p2"></p>
-    <p data-i18n="manifesto.p3"></p>
+    <p data-i18n="manifesto.p1"> برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ما نیست. چه حیف که تنها در ذهن هر فرد بماند و قبل از جمعی شدن رنگ ببازد، که جهان نشود و ندانَدشان. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند.</p>
+    <p data-i18n="manifesto.p2">آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «یاد آر» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.</p>
+    <p data-i18n="manifesto.p3">فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.</p>
   </div>
 
   <div class="page__prose">
-    <h2 data-i18n="about.what.title">What counts as a narrative</h2>
-    <p data-i18n="about.what.p1"></p>
-    <p data-i18n="about.what.p2"></p>
+    <h2 data-i18n="about.what.title">روایت یعنی چه</h2>
+    <p data-i18n="about.what.p1">روایت یعنی شرحی از زبان یک نفر، گره‌خورده به دو چیز که جابه‌جا نمی‌شوند: یک مکان و یک زمان. مکان می‌تواند کلی باشد یا جزئی — از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز» — و زمان به همان دقتی که راوی واقعاً می‌داند.</p>
+    <p data-i18n="about.what.p2">روایت‌ها آزاد نوشته نمی‌شوند: همه به یک مجموعه پرسش یکسان پاسخ می‌دهند، و همین است که شرح‌های بسیار متفاوت را کنار هم خواندنی می‌کند.</p>
 
-    <h2 data-i18n="about.how.title">How the place and the time are recorded</h2>
+    <h2 data-i18n="about.how.title">مکان و زمان چطور ثبت می‌شوند</h2>
     <ul>
-      <li data-i18n="about.how.place"></li>
-      <li data-i18n="about.how.time"></li>
+      <li data-i18n="about.how.place">مکان. یک نشانگر با دقتی در حد یک متر، به‌همراه نامی که راوی برایش به کار می‌برد. استان از روی مختصات به دست می‌آید.</li>
+      <li data-i18n="about.how.time">زمان. یک آغاز و یک پایان، با همان دقتی که راوی واقعاً دارد — تا حد سال، ماه، روز یا ساعت. ساعت همان است که شاهد در جای خودش به یاد دارد. نقشه بازه را به هر دو تقویم میلادی و هجری شمسی نشان می‌دهد.</li>
     </ul>
 
-    <h2 data-i18n="about.review.title">How submissions are reviewed</h2>
-    <p data-i18n="about.review.p1"></p>
-    <p data-i18n="about.review.p2"></p>
+    <h2 data-i18n="about.review.title">روایت‌ها چطور بررسی می‌شوند</h2>
+    <p data-i18n="about.review.p1">هیچ روایتی خودبه‌خود روی نقشهٔ عمومی نمی‌آید. هر روایت به صف بررسی خصوصی می‌رود، آنجا کامل خوانده می‌شود و یا منتشر می‌شود، یا برمی‌گردد، یا رد می‌شود.</p>
+    <p data-i18n="about.review.p2">اگر راوی نامی ننویسد، با عنوان «ناشناس» نمایش داده می‌شود.</p>
 
-    <h2 data-i18n="about.lang.title">Languages</h2>
-    <p data-i18n="about.lang.p"></p>
+    <h2 data-i18n="about.lang.title">زبان‌ها</h2>
+    <p data-i18n="about.lang.p">رابط کاربری به فارسی و انگلیسی در دسترس است — از کلید بالای صفحه استفاده کنید. پاسخ‌ها را می‌توانید به هر دو زبان بنویسید؛ متن فارسی و عربی به‌طور خودکار راست‌به‌چپ نمایش داده می‌شود.</p>
 
-    <h2 data-i18n="about.map.title">Where the map comes from</h2>
-    <p data-i18n="about.map.p"></p>
+    <h2 data-i18n="about.map.title">نقشه از کجا آمده</h2>
+    <p data-i18n="about.map.p">خطوط مرزی ایران و ۳۱ استان آن از geoBoundaries (CC BY 4.0) گرفته شده و همراه سایت عرضه می‌شود، تا نقشه بدون درخواست از جای دیگری بارگذاری شود. تنها لایهٔ «نمای خیابانی» است که کاشی‌های نقشه را از OpenStreetMap می‌گیرد.</p>
 
     <p style="margin-top:40px">
-      <a class="btn btn--primary" href="/submit" data-i18n="about.cta">Add your narrative</a>
+      <a class="btn btn--primary" href="/submit" data-i18n="about.cta">ثبت روایت</a>
     </p>
   </div>
 </main>

@@ -20,6 +20,7 @@ const SAMPLES = [
     contributor: 'ناشناس',
     originalLang: 'fa',
     answers: {
+      narrative_title: 'نمونهٔ روایت، سرپل ذهاب',
       narrative_kind: ['chronicle'],
       how_you_know: ['lived'],
       what_happened:
@@ -34,6 +35,7 @@ const SAMPLES = [
     contributor: 'Anonymous',
     originalLang: 'en',
     answers: {
+      narrative_title: 'A sample narrative, Tabriz',
       narrative_kind: ['impression'],
       how_you_know: ['family_friend'],
       what_happened:
@@ -52,6 +54,7 @@ const PENDING = [
     email: '',
     originalLang: 'fa',
     answers: {
+      narrative_title: 'نمونهٔ در انتظار بررسی، رشت',
       narrative_kind: ['chronicle', 'impression'],
       how_you_know: ['witnessed'],
       what_happened:

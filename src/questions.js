@@ -121,6 +121,20 @@ const QUESTIONS = [
     maxLength: 4000,
     rows: 6,
   },
+  {
+    id: 'narrative_title',
+    type: 'text',
+    label: {
+      fa: 'نامِ روایت',
+      en: 'The title of the narrative',
+    },
+    help: {
+      fa: 'عنوانی برای روایتِ خود انتخاب کنید. این عنوان وقتی نشانگر (ماوس) روی آن می‌رود نشان داده خواهد شد.',
+      en: 'Choose a title for your narrative. It is what a reader sees when the pointer rests on your pin.',
+    },
+    required: true,
+    maxLength: 120,
+  },
 ];
 
 const QUESTIONS_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
@@ -143,13 +157,13 @@ const FORM_SEQUENCE = [
   { kind: 'question', id: 'light_ahead' },
   { kind: 'pseudonym' },
   { kind: 'email' },
+  { kind: 'question', id: 'narrative_title' },
 ];
 
-/**
- * There is no title question: contributors are asked what happened, not to
- * name it. Pins and list cards are labelled with the place instead, which is
- * what the contributor actually chose, and previewed with the narrative.
- */
+/** The question a pin, a list card and the reading panel are labelled with. */
+const TITLE_QUESTION_ID = 'narrative_title';
+
+/** The question a list card is previewed with, under that title. */
 const SUMMARY_QUESTION_ID = 'what_happened';
 
 const SELECT_TYPES = new Set(['select', 'multiselect']);
@@ -247,6 +261,7 @@ module.exports = {
   QUESTIONS,
   QUESTIONS_BY_ID,
   FORM_SEQUENCE,
+  TITLE_QUESTION_ID,
   SUMMARY_QUESTION_ID,
   SELECT_TYPES,
   toArray,

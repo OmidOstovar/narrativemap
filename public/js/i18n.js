@@ -125,15 +125,6 @@
     'submit.province': { en: 'Province:', fa: 'استان:' },
     'submit.insideIran': { en: 'inside Iran', fa: 'داخل ایران' },
     'submit.outsideIran': { en: 'outside Iran', fa: 'خارج از ایران' },
-    'submit.placeName': { fa: 'اینجا را چه می‌نامید؟', en: 'What do you call this place?' },
-    'submit.placeNameHelp': {
-      fa: 'به زبان خودتان — از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز».',
-      en: 'In your own words — anything from “Bandar Abbas” to “the Faculty of Literature at Tabriz University”.',
-    },
-    'submit.placeNamePlaceholder': {
-      fa: 'از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز»',
-      en: 'From “Bandar Abbas” to “the Faculty of Literature at Tabriz University”',
-    },
     'submit.when.title': { en: 'When was it?', fa: 'کی رخ داد؟' },
     'submit.when.note': {
       fa: 'اگر مشاهده‌ای عینی بوده، ترجیحاً زمان دقیق را بنویسید: پنجشنبه ساعت نه. اگر می‌خواهید از حسِ ممتدی بگویید که در ماه‌های بعد رهایتان نکرده، زمان حدودی کافی است: اسفند.',
@@ -196,7 +187,10 @@
     'submit.success.ref': { en: 'Reference: {id}', fa: 'کد پیگیری: {id}' },
     'submit.success.back': { en: 'Back to the map', fa: 'بازگشت به نقشه' },
     'submit.success.another': { en: 'Add another narrative', fa: 'ثبت روایتی دیگر' },
-    'submit.fixErrors': { en: '{message} See the highlighted questions above.', fa: '{message} به پرسش‌های مشخص‌شده در بالا نگاه کنید.' },
+    'submit.fixErrors': {
+      en: 'Some answers still need work. See the highlighted questions above.',
+      fa: 'چند پاسخ هنوز کامل نیست. به پرسش‌های مشخص‌شده در بالا نگاه کنید.',
+    },
     'submit.loadFailed': { en: 'Could not load the form.', fa: 'فرم بارگذاری نشد.' },
     'map.loadFailed': { en: 'Could not load the map.', fa: 'نقشه بارگذاری نشد.' },
 
@@ -325,7 +319,6 @@
     'error.chooseAtLeastOne': { en: 'Choose at least one option.', fa: 'دست‌کم یک گزینه را انتخاب کنید.' },
     'error.tooShort': { en: 'Please write at least {min} characters.', fa: 'دست‌کم {min} نویسه بنویسید.' },
     'error.tooLong': { en: 'Please keep this under {max} characters.', fa: 'لطفاً کمتر از {max} نویسه بنویسید.' },
-    'error.placeNameRequired': { en: 'Name the place this happened.', fa: 'نام مکانی که این اتفاق افتاد را بنویسید.' },
     'error.placeNameTooLong': { en: 'Please keep the place name under 160 characters.', fa: 'نام مکان را کمتر از ۱۶۰ نویسه بنویسید.' },
     'error.pinRequired': { en: 'Drop a pin on the map to set the exact spot.', fa: 'برای مشخص‌کردن نقطهٔ دقیق، نشانگر را روی نقشه بگذارید.' },
     'error.outsideIran': {
@@ -438,17 +431,21 @@
     return current === 'fa' ? (PROVINCES[name] || name) : name;
   }
 
-  let current = 'en';
+  let current = 'fa';
 
+  /**
+   * Persian is the default: this is a Persian archive, and a first-time reader
+   * should meet it in its own language whatever their browser is set to. An
+   * explicit choice — the switch, or ?lang= in the address — always wins.
+   */
   function detect() {
+    const fromUrl = new URLSearchParams(location.search).get('lang');
+    if (LANGS.includes(fromUrl)) return fromUrl;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (LANGS.includes(saved)) return saved;
     } catch { /* storage blocked */ }
-    const fromUrl = new URLSearchParams(location.search).get('lang');
-    if (LANGS.includes(fromUrl)) return fromUrl;
-    const nav = (navigator.language || 'en').toLowerCase();
-    return nav.startsWith('fa') || nav.startsWith('pe') ? 'fa' : 'en';
+    return 'fa';
   }
 
   const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];

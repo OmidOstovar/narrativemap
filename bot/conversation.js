@@ -41,11 +41,12 @@ function readYear(text) {
 }
 
 /**
- * The place block expands into several messages — a province, a city, the
- * place in words, and a location — because a chat asks one thing at a time.
+ * The place block expands into several messages — a province, a city and a
+ * location — because a chat asks one thing at a time. Nobody is asked to name
+ * the place: the city answers that, and the pin fixes the rest.
  * Everything else maps one to one onto the shared sequence.
  */
-const PLACE_STEPS = ['province', 'city', 'place', 'location'];
+const PLACE_STEPS = ['province', 'city', 'location'];
 const PERIOD_STEPS = ['precision', 'date'];
 
 /** The bot's own step list, expanded from the questionnaire's sequence. */
@@ -140,9 +141,6 @@ function prompt(session) {
         text: t('ask.city', lang, { province: session.place.province }) + footer,
         keyboard: 'cities',
       };
-
-    case 'place':
-      return { text: t('ask.place', lang) + footer, keyboard: null };
 
     case 'location':
       return { text: t('ask.location', lang) + footer, keyboard: 'skip' };
@@ -283,14 +281,8 @@ function apply(session, input) {
       const cities = citiesOf(session.place.province);
       if (!cities.includes(input.choice)) return { ok: false, error: t('error.pickOption', lang) };
       session.place.city = input.choice;
-      return advance(session);
-    }
-
-    case 'place': {
-      const text = (input.text || '').trim();
-      if (!text) return { ok: false, error: t('error.needText', lang) };
-      if (text.length > 140) return { ok: false, error: t('error.tooLong', lang, { max: 140 }) };
-      session.place.name = `${text}، ${session.place.city}`.slice(0, 160);
+      // The city the contributor picked is the place's name; the pin does the rest.
+      session.place.name = input.choice;
       return advance(session);
     }
 
@@ -525,7 +517,7 @@ function reviewText(session) {
   const add = (label, value) => lines.push(`<b>${t(label, lang)}:</b> ${value}`);
 
   add('review.name', session.contributor || t('review.anonymous', lang));
-  add('review.place', `${session.place.name} — ${session.place.province}`);
+  add('review.place', `${session.place.city} — ${session.place.province}`);
   add('review.point', session.place.approximate
     ? t('review.pointApprox', lang)
     : `${Number(session.place.lat).toFixed(4)}, ${Number(session.place.lng).toFixed(4)}`);

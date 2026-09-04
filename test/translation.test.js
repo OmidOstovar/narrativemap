@@ -61,6 +61,7 @@ function submissionBody(overrides = {}) {
     answers: {
       narrative_kind: ['chronicle'],
       how_you_know: ['lived'],
+      narrative_title: 'روایتی از سرپل ذهاب',
       what_happened: PERSIAN,
       ...(overrides.answers || {}),
     },

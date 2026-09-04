@@ -27,7 +27,7 @@
     'title.404': { en: 'Not found — Yaad Aar', fa: 'پیدا نشد — یاد آر' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.name': { en: 'Yaad Aar', fa: 'یاد آر' },
+    'brand.name': { en: 'New Persian Letters', fa: 'نامه‌های ایرانی نو' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
     'nav.submit': { en: 'Add a narrative', fa: 'ثبت روایت' },

@@ -92,7 +92,7 @@
     'submit.eyebrow': { en: 'Add a narrative', fa: 'ثبت روایت' },
     'submit.title': { en: 'Yaad Aar', fa: 'یاد آر' },
     'manifesto.p1': {
-      fa: ' برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ماست. چه حیف که در ذهن هر فرد بماند، رنگ ببازد، جهان نشود و ندانَد. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند..',
+      fa: ' برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ما نیست. چه حیف که تنها در ذهن هر فرد بماند و قبل از جمعی شدن رنگ ببازد، که جهان نشود و ندانَدشان. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند.',
       en: 'Only the telling remains. The snow of time keeps falling to bury history — a history that is nothing but the collective experience of each one of us. What a waste, for it to stay inside a single mind, to lose its colour, never to reach the world and never to be known. Against forgetting: here you can write, so that it remains.',
     },
     'manifesto.p2': {
@@ -183,7 +183,7 @@
     'submit.sending': { en: 'Sending…', fa: 'در حال ارسال…' },
     'submit.moderatorNote': {
       en: 'A moderator reads every submission before it is published.',
-      fa: 'لازم است برای اطمینان از اسپم نبودن متن ارسالی، قبل از انتشار بررسی شود.',
+      fa: 'متن ارسالی ابتدا بررسی و بعدا منتشر می‌شود - صرفا برای جلوگیری از اسپم شدن.',
     },
     'submit.progress.none': { en: 'Nothing answered yet', fa: 'هنوز چیزی پر نشده' },
     'submit.progress.some': { en: '{done} of {total} required parts filled in', fa: '{done} از {total} بخش لازم پر شده' },

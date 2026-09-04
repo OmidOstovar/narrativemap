@@ -1,10 +1,13 @@
-# Narrative Map — Iran
+# یاد آر — Yaad Aar
 
 A map of Iran built from first-hand narratives. Each narrative is one person's
-account, anchored to an **exact place** (a pin, to about a metre) and a **period
-of time** (a start and an end, at whatever precision the contributor actually
-has). Anyone can submit one; nothing appears on the public map until a moderator
-has read it and accepted it.
+account, anchored to a **place** — as broad or as exact as they choose — and a
+**period of time**, at whatever precision they actually have. Anyone can submit
+one; nothing appears on the public map until a moderator has read it and
+accepted it.
+
+The archive is written for Persian speakers first, and every narrative is
+translated so it can be read by people who do not read Persian.
 
 Every narrative is a set of answers to the same questionnaire, so accounts from
 very different people stay readable side by side.
@@ -113,8 +116,28 @@ translated rather than followed — a narrative can contain anything.
 ### Changing the questions
 
 Edit `src/questions.js`. The public form, the server-side validation, the
-reading panel, and the moderator's edit view are all generated from that array,
-so adding, reordering, or rewording a question needs no other change.
+reading panel, the moderator's edit view **and the Telegram bot** are all
+generated from that file, so adding, reordering, or rewording a question needs
+no other change.
+
+Two exports drive it. `QUESTIONS` holds the questions themselves. `FORM_SEQUENCE`
+holds the order the contributor is asked things — and because the place, the
+period and the contributor's details are structured fields rather than
+questionnaire answers, but are asked in amongst the questions, they appear in
+that sequence too (`{ kind: 'place' }`, `{ kind: 'period' }`,
+`{ kind: 'pseudonym' }`, `{ kind: 'email' }`). Moving a question is a matter of
+moving one line; the numbering on the form and the order in the bot both follow.
+
+Question types are `text`, `textarea`, `select` and `multiselect`. A
+`multiselect` answer is stored as an array of option codes, in the order the
+questionnaire declares rather than the order they were clicked, so two
+narratives that chose the same things are stored identically. An option may
+carry a `detail`, shown under it on the form and listed in the bot — useful when
+the choice needs explaining more than naming.
+
+There is deliberately **no title question**: contributors are asked what
+happened, not to name it. Pins and list cards are labelled with the place, which
+is something the contributor actually chose.
 
 Every contributor-facing string in that file is an `{ en, fa }` pair, and
 `select` options carry a stable `value` that is what actually gets stored — so an

@@ -80,21 +80,58 @@ async function queue(cookie, status = 'pending') {
   return (await response.json()).submissions;
 }
 
-/** Answers whatever question the bot is currently on. */
-async function answerQuestions(bot, client) {
-  let guard = 0;
-  while (sessions.get(CHAT) && sessions.get(CHAT).step === 'question' && guard++ < 40) {
-    const question = QUESTIONS[sessions.get(CHAT).questionIndex];
-    if (question.type === 'select') {
-      const label = question.options[0].fa;
-      const data = buttonFor(client.last().keyboard, label);
-      assert.ok(data, `no button for option ${label}`);
-      await bot.handleUpdate(tap(data));
-    } else {
-      const length = Math.max(question.minLength || 0, 20) + 5;
-      await bot.handleUpdate(message('ی'.repeat(length)));
-    }
+/** Answers the question the bot is currently on, whatever kind it is. */
+async function answerCurrentQuestion(bot, client) {
+  const session = sessions.get(CHAT);
+  const question = QUESTIONS.find((q) => q.id === session.questionId);
+  assert.ok(question, `not on a question: ${session.step}`);
+
+  if (question.type === 'multiselect' || question.type === 'select') {
+    const label = question.options[0].fa;
+    const data = buttonFor(client.last().keyboard, label)
+      || buttonFor(client.last().keyboard, `☑ ${label}`);
+    assert.ok(data, `no button for option ${label}`);
+    await bot.handleUpdate(tap(data));
+    if (question.type === 'multiselect') await bot.handleUpdate(tap('o:__done'));
+    return;
   }
+  const length = Math.max(question.minLength || 0, 20) + 5;
+  await bot.handleUpdate(message('ی'.repeat(length)));
+}
+
+/**
+ * Walks the whole conversation the way a contributor would, following the
+ * sequence rather than a hardcoded order so the test survives a reordering.
+ */
+async function walkConversation(bot, client, overrides = {}) {
+  const scripted = Object.assign({
+    province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'گیلان')}`),
+    city: () => tap(`c:${citiesOf('گیلان').indexOf('رشت')}`),
+    place: () => message('کوچهٔ پشت بازار ماهی‌فروش‌ها'),
+    location: () => location(37.2808, 49.5832),
+    precision: () => tap('pr:year'),
+    name: () => message('مهمان'),
+    email: () => tap('sk'),
+  }, overrides);
+
+  for (let guard = 0; guard < 60; guard += 1) {
+    const session = sessions.get(CHAT);
+    if (!session || session.step === 'review') return;
+
+    if (session.step === 'question') {
+      await answerCurrentQuestion(bot, client);
+      continue;
+    }
+    if (session.step === 'date') {
+      await bot.handleUpdate(message('۱۳۵۷'));
+      if (sessions.get(CHAT).step === 'date') await bot.handleUpdate(message('۱۳۵۸'));
+      continue;
+    }
+    const make = scripted[session.step];
+    assert.ok(make, `no scripted answer for step ${session.step}`);
+    await bot.handleUpdate(make());
+  }
+  throw new Error('the conversation never reached the review');
 }
 
 test.beforeEach(() => { sessions.delete(CHAT); languages.delete(CHAT); });
@@ -115,24 +152,9 @@ test('a full Telegram conversation reaches the review queue', async () => {
 
   await bot.handleUpdate(message('/start'));
   await bot.handleUpdate(tap('go'));
-  assert.equal(sessions.get(CHAT).step, 'name');
+  assert.equal(sessions.get(CHAT).step, 'question', 'it opens on the first question');
 
-  await bot.handleUpdate(message('مهمان'));
-
-  const gilan = PROVINCES.findIndex((p) => p.fa === 'گیلان');
-  await bot.handleUpdate(tap(`p:${gilan}`));
-  const rasht = citiesOf('گیلان').indexOf('رشت');
-  await bot.handleUpdate(tap(`c:${rasht}`));
-
-  await bot.handleUpdate(message('کوچهٔ پشت بازار ماهی‌فروش‌ها'));
-  await bot.handleUpdate(location(37.2808, 49.5832));
-
-  await bot.handleUpdate(tap('pr:year'));
-  await bot.handleUpdate(message('۱۳۵۷'));
-  await bot.handleUpdate(message('۱۳۵۸'));
-
-  await answerQuestions(bot, client);
-
+  await walkConversation(bot, client);
   assert.equal(sessions.get(CHAT).step, 'review');
   assert.match(client.last().text, /مرور/);
 
@@ -150,6 +172,7 @@ test('a full Telegram conversation reaches the review queue', async () => {
   assert.equal(submission.place.lat, 37.2808);
   assert.equal(submission.contributor, 'مهمان');
   assert.equal(submission.period.start, '1978-03-21');
+  assert.ok(Array.isArray(submission.answers.narrative_kind));
   assert.equal(submission.place.approximate, undefined, 'a shared pin is not approximate');
 
   const publicList = await (await fetch(`${base}/api/narratives`)).json();
@@ -161,45 +184,69 @@ test('skipping the location marks the narrative approximate for the moderator', 
   const bot = createBot(client);
 
   await bot.handleUpdate(tap('go'));
-  await bot.handleUpdate(tap('sk'));
-
-  const yazd = PROVINCES.findIndex((p) => p.fa === 'یزد');
-  await bot.handleUpdate(tap(`p:${yazd}`));
-  await bot.handleUpdate(tap(`c:${citiesOf('یزد').indexOf('یزد')}`));
-  await bot.handleUpdate(message('پشت‌بام خانهٔ قدیمی'));
-  await bot.handleUpdate(tap('sk'));
-
-  await bot.handleUpdate(tap('pr:day'));
-  await bot.handleUpdate(message('1357'));
-  await bot.handleUpdate(tap('m:11'));
-  await bot.handleUpdate(message('22'));
-
-  await answerQuestions(bot, client);
+  await walkConversation(bot, client, {
+    province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'یزد')}`),
+    city: () => tap(`c:${citiesOf('یزد').indexOf('یزد')}`),
+    place: () => message('پشت‌بام خانهٔ قدیمی'),
+    location: () => tap('sk'),
+    name: () => tap('sk'),
+  });
   await bot.handleUpdate(tap('rv:send'));
 
   const cookie = await signIn();
-  const pending = await queue(cookie);
-  const submission = pending.find((s) => s.place.name.includes('پشت‌بام'));
+  const submission = (await queue(cookie)).find((s) => s.place.name.includes('پشت‌بام'));
 
   assert.ok(submission, 'the narrative arrived');
   assert.equal(submission.place.approximate, true);
   assert.equal(submission.place.province, 'Yazd', 'the fallback sits in the chosen province');
   assert.equal(submission.contributor, null, 'a skipped name is anonymous');
-  assert.equal(submission.period.start, '1979-02-11');
-  assert.equal(submission.period.end, '1979-02-11');
+});
+
+test('a multi-select shows what is already chosen and can be toggled', async () => {
+  const client = fakeClient();
+  const bot = createBot(client);
+  await bot.handleUpdate(tap('go'));
+
+  const question = QUESTIONS.find((q) => q.id === sessions.get(CHAT).questionId);
+  assert.equal(question.type, 'multiselect');
+
+  await bot.handleUpdate(tap(`o:${question.options[0].value}`));
+  assert.deepEqual(sessions.get(CHAT).chosen[question.id], [question.options[0].value]);
+  assert.ok(client.last().keyboard.inline_keyboard.flat().some((b) => b.text.startsWith('☑')),
+    'the chosen option is ticked');
+
+  await bot.handleUpdate(tap(`o:${question.options[0].value}`));
+  assert.deepEqual(sessions.get(CHAT).chosen[question.id], [], 'tapping again removes it');
+
+  const empty = sessions.get(CHAT).questionId;
+  await bot.handleUpdate(tap('o:__done'));
+  assert.equal(sessions.get(CHAT).questionId, empty, 'a required choice cannot be finished empty');
+
+  await bot.handleUpdate(tap(`o:${question.options[1].value}`));
+  await bot.handleUpdate(tap('o:__done'));
+  assert.deepEqual(sessions.get(CHAT).answers[question.id], [question.options[1].value]);
 });
 
 test('an unusable answer is refused without losing the conversation', async () => {
   const client = fakeClient();
   const bot = createBot(client);
-
   await bot.handleUpdate(tap('go'));
-  await bot.handleUpdate(tap('sk'));
-  await bot.handleUpdate(tap(`p:${PROVINCES.findIndex((p) => p.fa === 'فارس')}`));
-  await bot.handleUpdate(tap(`c:${citiesOf('فارس').indexOf('شیراز')}`));
-  await bot.handleUpdate(message('پلهٔ سوم'));
-  await bot.handleUpdate(tap('sk'));
-  await bot.handleUpdate(tap('pr:year'));
+
+  // Walk as far as the date, then give it something that is not a year.
+  for (let guard = 0; guard < 40; guard += 1) {
+    const session = sessions.get(CHAT);
+    if (session.step === 'date') break;
+    if (session.step === 'question') { await answerCurrentQuestion(bot, client); continue; }
+    const make = {
+      province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'فارس')}`),
+      city: () => tap(`c:${citiesOf('فارس').indexOf('شیراز')}`),
+      place: () => message('پلهٔ سوم'),
+      location: () => tap('sk'),
+      precision: () => tap('pr:year'),
+    }[session.step];
+    assert.ok(make, `unexpected step ${session.step}`);
+    await bot.handleUpdate(make());
+  }
 
   await bot.handleUpdate(message('نه یک سال'));
   assert.match(client.last().text, /سال/);
@@ -213,30 +260,10 @@ test('an unusable answer is refused without losing the conversation', async () =
   assert.equal(sessions.get(CHAT).step, 'question');
 });
 
-test('a required question cannot be skipped from the keyboard', async () => {
-  const client = fakeClient();
-  const bot = createBot(client);
-
-  await bot.handleUpdate(tap('go'));
-  await bot.handleUpdate(tap('sk'));
-  await bot.handleUpdate(tap(`p:${PROVINCES.findIndex((p) => p.fa === 'تهران')}`));
-  await bot.handleUpdate(tap(`c:${citiesOf('تهران').indexOf('تهران')}`));
-  await bot.handleUpdate(message('بازار بزرگ'));
-  await bot.handleUpdate(tap('sk'));
-  await bot.handleUpdate(tap('pr:year'));
-  await bot.handleUpdate(message('1357'));
-  await bot.handleUpdate(message('1357'));
-
-  assert.equal(QUESTIONS[0].required, true);
-  await bot.handleUpdate(tap('sk'));
-  assert.equal(sessions.get(CHAT).questionIndex, 0, 'it did not move on');
-});
-
 test('cancelling clears the conversation', async () => {
   const client = fakeClient();
   const bot = createBot(client);
   await bot.handleUpdate(tap('go'));
-  await bot.handleUpdate(message('کسی'));
   assert.ok(sessions.get(CHAT));
 
   await bot.handleUpdate(message('/cancel'));
@@ -251,8 +278,8 @@ test('language switches the whole conversation to English', async () => {
   assert.match(client.last().text, /English/);
 
   await bot.handleUpdate(tap('go'));
-  assert.match(client.last().text, /name should appear/);
   assert.equal(sessions.get(CHAT).lang, 'en');
+  assert.match(client.last().text, /What kind of narrative/);
 });
 
 test('a public submission cannot claim to be from Telegram or be approximate', async () => {
@@ -261,10 +288,9 @@ test('a public submission cannot claim to be from Telegram or be approximate', a
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       answers: {
-        title: 'Pretending to be the bot',
+        narrative_kind: ['chronicle'],
+        how_you_know: ['lived'],
         what_happened: 'A submission from the open internet claiming privileges it was never granted, written long enough to clear the minimum length.',
-        why_here: 'Because this is exactly the corner where it supposedly happened.',
-        how_you_know: 'lived',
       },
       place: { name: 'Somewhere', lat: 35.6892, lng: 51.389, approximate: true },
       period: { start: '1979-01-01', end: '1979-12-31', precision: 'year' },
@@ -276,9 +302,7 @@ test('a public submission cannot claim to be from Telegram or be approximate', a
   const { id } = await response.json();
 
   const cookie = await signIn();
-  const pending = await queue(cookie);
-  const submission = pending.find((s) => s.id === id);
-
+  const submission = (await queue(cookie)).find((s) => s.id === id);
   assert.equal(submission.private.source, 'web', 'a claimed source is ignored');
   assert.equal(submission.place.approximate, undefined, 'a claimed approximate flag is ignored');
 });
@@ -289,10 +313,9 @@ test('a wrong bot token is treated as an ordinary visitor', async () => {
     headers: { 'Content-Type': 'application/json', 'X-Bot-Token': 'not-the-secret' },
     body: JSON.stringify({
       answers: {
-        title: 'Wrong token',
-        what_happened: 'This one carries a token that does not match the shared secret, so none of the privileges the bot is granted should apply to it, and it must be treated as an ordinary visitor.',
-        why_here: 'Because the corner is where the whole thing is supposed to have taken place.',
-        how_you_know: 'lived',
+        narrative_kind: ['other'],
+        how_you_know: ['other'],
+        what_happened: 'This one carries a token that does not match the shared secret, so none of the privileges the bot is granted should apply to it at all.',
       },
       place: { name: 'Somewhere', lat: 32.6546, lng: 51.668 },
       period: { start: '1990-01-01', end: '1990-12-31', precision: 'year' },
@@ -303,8 +326,7 @@ test('a wrong bot token is treated as an ordinary visitor', async () => {
   assert.equal(response.status, 201);
   const { id } = await response.json();
   const cookie = await signIn();
-  const submission = (await queue(cookie)).find((s) => s.id === id);
-  assert.equal(submission.private.source, 'web');
+  assert.equal((await queue(cookie)).find((s) => s.id === id).private.source, 'web');
 });
 
 test('input after the session expires is answered, not dropped', async () => {

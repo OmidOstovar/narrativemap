@@ -85,8 +85,12 @@
     return versionFor(n);
   }
 
+  /**
+   * There is no title question — contributors are asked what happened, not to
+   * name it — so a narrative is labelled by the place they chose.
+   */
   function title(n) {
-    return shown(n).answers.title || n.answers.title || t('reader.untitled');
+    return shown(n).placeName || n.place.name || t('reader.untitled');
   }
 
   function excerpt(n) {
@@ -143,7 +147,7 @@
         <button class="card${n.id === state.selectedId ? ' is-active' : ''}" data-id="${escapeHtml(n.id)}">
           <span class="card__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}</span>
           <span class="card__meta">
-            <span class="place">${escapeHtml(shown(n).placeName)}</span>
+            <span class="place">${escapeHtml(province(n.place.province) || '')}</span>
             <span>${escapeHtml(formatYears(n.period))}</span>
           </span>
           <span class="card__excerpt" dir="${dirFor(excerpt(n))}">${escapeHtml(excerpt(n))}</span>
@@ -349,11 +353,13 @@
     return question ? pick(question.label) : id;
   }
 
-  /** Select answers store a stable code; show it in the reader's language. */
-  function answerText(question, value) {
-    if (question.type !== 'select') return value;
-    const option = (question.options || []).find((o) => o.value === value);
-    return option ? pick(option) : value;
+  /** Choice answers store stable codes; label them in the reader's language. */
+  function choiceLabels(question, value) {
+    const codes = Array.isArray(value) ? value : [value];
+    return codes.map((code) => {
+      const option = (question.options || []).find((o) => o.value === code);
+      return option ? pick(option) : code;
+    });
   }
 
   function renderReader(n) {
@@ -364,16 +370,24 @@
     const answers = state.questions
       .filter((q) => q.id !== 'title')
       .map((q) => {
-        const isChip = q.type === 'select';
-        // Select answers are stored as codes and render in either language, so
+        const isChoice = q.type === 'select' || q.type === 'multiselect';
+        // Choice answers are stored as codes and render in either language, so
         // they come from the original whichever version is being read.
-        const raw = isChip ? n.answers[q.id] : version.answers[q.id];
-        if (!raw) return '';
-        const text = isChip ? answerText(q, raw) : raw;
+        const raw = isChoice ? n.answers[q.id] : version.answers[q.id];
+        if (!raw || (Array.isArray(raw) && !raw.length)) return '';
+        if (isChoice) {
+          const chips = choiceLabels(q, raw)
+            .map((label) => `<span class="chip">${escapeHtml(label)}</span>`).join('');
+          return `
+            <section class="qa">
+              <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
+              <div class="chips">${chips}</div>
+            </section>`;
+        }
         return `
-          <section class="qa${isChip ? ' qa--chip' : ''}">
+          <section class="qa">
             <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
-            <div class="qa__a" dir="${dirFor(text)}">${isChip ? escapeHtml(text) : paragraphs(text)}</div>
+            <div class="qa__a" dir="${dirFor(raw)}">${paragraphs(raw)}</div>
           </section>`;
       }).join('');
 
@@ -387,8 +401,7 @@
       <dl class="reader__facts">
         <dt>${escapeHtml(t('reader.place'))}</dt>
         <dd>
-          ${escapeHtml(version.placeName)}
-          ${n.place.province ? `<span class="secondary"> · ${escapeHtml(province(n.place.province))}</span>` : ''}
+          ${n.place.province ? escapeHtml(province(n.place.province)) : escapeHtml(version.placeName)}
           <div class="secondary" dir="ltr">${coords}</div>
         </dd>
         <dt>${escapeHtml(t('reader.when'))}</dt>

@@ -68,10 +68,9 @@ function conditionalGet(pathname, etag) {
 function validSubmission(overrides = {}) {
   return {
     answers: {
-      title: 'A test narrative',
+      narrative_kind: ['chronicle'],
+      how_you_know: ['lived'],
       what_happened: 'Something happened at this corner, and this sentence is deliberately long enough to clear the minimum length the questionnaire asks for on the main narrative answer.',
-      why_here: 'Because this exact corner is where the whole thing took place, and nowhere else.',
-      how_you_know: 'lived',
       ...(overrides.answers || {}),
     },
     place: { name: 'A corner in Tehran', lat: 35.6892, lng: 51.3890, ...(overrides.place || {}) },
@@ -91,7 +90,8 @@ test('questions endpoint exposes the questionnaire and province list', async () 
   const body = await json(await call('/api/questions'));
   assert.ok(Array.isArray(body.questions));
   assert.ok(body.questions.length > 0);
-  assert.equal(body.questions[0].id, 'title');
+  assert.ok(body.questions[0].id, 'questions have ids');
+  assert.ok(Array.isArray(body.sequence) && body.sequence.length > 0, 'the form sequence is served');
   assert.equal(body.provinces.length, 31);
   assert.ok(body.yearRange.min < body.yearRange.max);
 });
@@ -104,7 +104,7 @@ test('every question is available in both languages', async () => {
     if (question.help) {
       assert.ok(question.help.en && question.help.fa, `${question.id} help is not bilingual`);
     }
-    if (question.type === 'select') {
+    if (question.type === 'select' || question.type === 'multiselect') {
       for (const option of question.options) {
         assert.ok(option.value, 'select options need a stable value');
         assert.ok(option.en && option.fa, `option ${option.value} is not bilingual`);
@@ -134,7 +134,7 @@ test('validation errors carry a translatable code', async () => {
 test('a select answer outside the allowed codes is rejected', async () => {
   const response = await call('/api/submissions', {
     method: 'POST',
-    body: validSubmission({ answers: { how_you_know: 'I lived it' } }),
+    body: validSubmission({ answers: { how_you_know: ['I lived it'] } }),
   });
   assert.equal(response.status, 400);
   assert.ok((await json(response)).errors.some((e) => e.field === 'how_you_know'));
@@ -160,7 +160,7 @@ test('a valid submission is accepted and held as pending', async () => {
 test('missing required answers are rejected field by field', async () => {
   const payload = validSubmission();
   delete payload.answers.what_happened;
-  payload.answers.how_you_know = '';
+  payload.answers.how_you_know = [];
 
   const response = await call('/api/submissions', { method: 'POST', body: payload });
   assert.equal(response.status, 400);
@@ -207,7 +207,6 @@ test('an hour-precision period keeps its times', async () => {
   const created = await json(await call('/api/submissions', {
     method: 'POST',
     body: validSubmission({
-      answers: { title: 'An afternoon' },
       period: { start: '1979-02-11', end: '1979-02-11', precision: 'hour', startTime: '14:00', endTime: '16:30' },
     }),
   }));
@@ -299,7 +298,7 @@ test('approving a submission publishes it to the map', async () => {
   const { cookie } = await signIn();
   const created = await json(await call('/api/submissions', {
     method: 'POST',
-    body: validSubmission({ answers: { title: 'To be published' } }),
+    body: validSubmission({ place: { name: 'To be published' } }),
   }));
 
   const queue = await json(await call('/api/admin/submissions?status=pending', { cookie }));
@@ -314,7 +313,7 @@ test('approving a submission publishes it to the map', async () => {
   const publicList = await json(await call('/api/narratives'));
   const published = publicList.narratives.find((n) => n.id === created.id);
   assert.ok(published, 'approved narrative appears publicly');
-  assert.equal(published.answers.title, 'To be published');
+  assert.equal(published.place.name, 'To be published');
   assert.equal(published.private, undefined, 'private fields never reach the public API');
   assert.equal(published.contributor, 'Tester');
 
@@ -365,14 +364,13 @@ test('unpublishing removes a narrative from the map again', async () => {
 test('a moderator edit updates the published narrative', async () => {
   const { cookie } = await signIn();
   const created = await json(await call('/api/submissions', {
-    method: 'POST', body: validSubmission({ answers: { title: 'Before the edit' } }),
+    method: 'POST', body: validSubmission({ place: { name: 'Before the edit' } }),
   }));
   await call(`/api/admin/submissions/${created.id}/status`, {
     method: 'POST', cookie, body: { status: 'approved' },
   });
 
   const edited = validSubmission({
-    answers: { title: 'After the edit' },
     place: { name: 'Moved to Tabriz', lat: 38.0800, lng: 46.2919 },
   });
   const response = await call(`/api/admin/submissions/${created.id}`, {
@@ -381,14 +379,14 @@ test('a moderator edit updates the published narrative', async () => {
   assert.equal(response.status, 200);
 
   const published = (await json(await call(`/api/narratives/${created.id}`))).narrative;
-  assert.equal(published.answers.title, 'After the edit');
+  assert.equal(published.place.name, 'Moved to Tabriz');
   assert.equal(published.place.province, 'East Azerbaijan');
 });
 
 test('an invalid edit is refused and leaves the narrative untouched', async () => {
   const { cookie } = await signIn();
   const created = await json(await call('/api/submissions', {
-    method: 'POST', body: validSubmission({ answers: { title: 'Keeps its title' } }),
+    method: 'POST', body: validSubmission({ place: { name: 'Keeps its place' } }),
   }));
   await call(`/api/admin/submissions/${created.id}/status`, {
     method: 'POST', cookie, body: { status: 'approved' },
@@ -400,13 +398,13 @@ test('an invalid edit is refused and leaves the narrative untouched', async () =
   assert.equal(response.status, 400);
 
   const published = (await json(await call(`/api/narratives/${created.id}`))).narrative;
-  assert.equal(published.answers.title, 'Keeps its title');
+  assert.equal(published.place.name, 'Keeps its place');
 });
 
 test('deleting a submission removes it entirely', async () => {
   const { cookie } = await signIn();
   const created = await json(await call('/api/submissions', {
-    method: 'POST', body: validSubmission({ answers: { title: 'Temporary' } }),
+    method: 'POST', body: validSubmission({ place: { name: 'Temporary' } }),
   }));
 
   const deleted = await call(`/api/admin/submissions/${created.id}`, { method: 'DELETE', cookie });

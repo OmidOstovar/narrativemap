@@ -7,6 +7,7 @@
 
   const state = {
     questions: [],
+    sequence: [],
     yearRange: { min: 1800, max: new Date().getFullYear() },
     place: { lat: null, lng: null, province: null },
     precision: 'year',
@@ -19,58 +20,165 @@
 
   /* ----------------------------- questionnaire --------------------------- */
 
-  function renderQuestions() {
-    $('questions').innerHTML = state.questions.map((question, index) => {
-      const id = `q-${question.id}`;
-      const optional = question.required
-        ? ''
-        : `<span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`;
-      const help = question.help
-        ? `<p class="field__help">${escapeHtml(pick(question.help))}</p>`
-        : '';
-      const placeholder = question.placeholder ? pick(question.placeholder) : '';
+  /* --------------------------- the form sequence ------------------------- */
 
-      let control;
-      if (question.type === 'textarea') {
-        control = `<textarea id="${id}" name="${escapeHtml(question.id)}" rows="${question.rows || 5}"
-                     maxlength="${question.maxLength || 5000}"
-                     ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}></textarea>`;
-      } else if (question.type === 'select') {
-        const options = [`<option value="">${escapeHtml(t('submit.chooseOne'))}</option>`]
-          .concat(question.options.map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(pick(o))}</option>`));
-        control = `<select id="${id}" name="${escapeHtml(question.id)}">${options.join('')}</select>`;
-      } else {
-        control = `<input type="text" id="${id}" name="${escapeHtml(question.id)}"
-                     maxlength="${question.maxLength || 200}"
-                     ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}>`;
-      }
+  /** One numbered block, whatever it contains. */
+  function stepBlock(number, title, help, body) {
+    return `
+      <section class="step">
+        <h2 class="step__title">
+          <span class="step__number">${String(number).padStart(2, '0')}</span>
+          <span>${escapeHtml(title)}</span>
+        </h2>
+        ${help ? `<p class="step__help">${escapeHtml(help)}</p>` : ''}
+        ${body}
+      </section>`;
+  }
 
-      const counter = question.maxLength && question.type !== 'select'
-        ? `<div class="counter" data-counter-for="${escapeHtml(question.id)}"></div>`
-        : '';
+  function optionalTag(question) {
+    return question.required
+      ? ''
+      : ` <span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`;
+  }
 
-      return `
-        <div class="field" data-field="${escapeHtml(question.id)}">
-          <label class="field__label" for="${id}">
-            <span class="field__number">${String(index + 1).padStart(2, '0')}</span>${escapeHtml(pick(question.label))}${optional}
+  function questionBody(question) {
+    const id = `q-${question.id}`;
+    const placeholder = question.placeholder ? pick(question.placeholder) : '';
+
+    if (question.type === 'multiselect' || question.type === 'select') {
+      const multiple = question.type === 'multiselect';
+      const choices = question.options.map((option) => `
+        <label class="choice">
+          <input type="${multiple ? 'checkbox' : 'radio'}"
+                 name="${escapeHtml(question.id)}"
+                 value="${escapeHtml(option.value)}"
+                 data-choice="${escapeHtml(question.id)}">
+          <span class="choice__body">
+            <span class="choice__label">${escapeHtml(pick(option))}</span>
+            ${option.detail ? `<span class="choice__detail">${escapeHtml(pick(option.detail))}</span>` : ''}
+          </span>
+        </label>`).join('');
+      return `<div class="choices" id="${id}" role="group">${choices}</div>
+              <p class="field__error" data-error-for="${escapeHtml(question.id)}"></p>`;
+    }
+
+    const control = question.type === 'textarea'
+      ? `<textarea id="${id}" name="${escapeHtml(question.id)}" rows="${question.rows || 6}"
+                   maxlength="${question.maxLength || 5000}"
+                   ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}></textarea>`
+      : `<input type="text" id="${id}" name="${escapeHtml(question.id)}"
+                maxlength="${question.maxLength || 200}"
+                ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ''}>`;
+
+    const counter = question.maxLength
+      ? `<div class="counter" data-counter-for="${escapeHtml(question.id)}"></div>`
+      : '';
+
+    return `${control}${counter}
+            <p class="field__error" data-error-for="${escapeHtml(question.id)}"></p>`;
+  }
+
+  /** The place picker, unchanged in behaviour but now one numbered step. */
+  function placeBody() {
+    return `
+      <div class="picker">
+        <div class="picker__search">
+          <label class="visually-hidden" for="place-search">${escapeHtml(t('submit.searchLabel'))}</label>
+          <input type="search" id="place-search" placeholder="${escapeHtml(t('submit.search'))}" autocomplete="off">
+          <ul class="picker__results" id="place-results"></ul>
+        </div>
+
+        <div class="picker__map">
+          <div id="picker-map" style="position:absolute;inset:0"></div>
+          <div class="picker__hint" id="picker-hint">${escapeHtml(t('submit.pinHint'))}</div>
+        </div>
+
+        <div class="picker__readout">
+          <span>${escapeHtml(t('submit.pin'))} <span class="coords unset" id="readout-coords" dir="ltr">${escapeHtml(t('submit.pinUnset'))}</span></span>
+          <span>${escapeHtml(t('submit.province'))} <span class="province unset" id="readout-province">—</span></span>
+          <label class="map-toggle" style="margin-inline-start:auto;box-shadow:none;background:transparent;padding:0;border:none">
+            <input type="checkbox" id="picker-tiles"> ${escapeHtml(t('map.streetDetail'))}
           </label>
-          ${help}
-          ${control}
-          ${counter}
-          <p class="field__error" data-error-for="${escapeHtml(question.id)}"></p>
-        </div>`;
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label class="field__label" for="place-name">${escapeHtml(t('submit.placeName'))}</label>
+          <p class="field__help">${escapeHtml(t('submit.placeNameHelp'))}</p>
+          <input type="text" id="place-name" maxlength="160">
+          <p class="field__error" data-error-for="place.name"></p>
+        </div>
+        <p class="field__error" data-error-for="place.point"></p>
+      </div>`;
+  }
+
+  function periodBody() {
+    return `
+      <div class="field">
+        <label class="field__label" for="precision">${escapeHtml(t('submit.precision'))}</label>
+        <select id="precision">
+          ${['year', 'month', 'day', 'hour'].map((p) => `<option value="${p}">${escapeHtml(t(`submit.precision.${p}`))}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-row" id="period-inputs"></div>
+      <p class="field__help" id="period-echo" style="margin-top:10px"></p>
+      <p class="field__error" data-error-for="period"></p>`;
+  }
+
+  function pseudonymBody() {
+    return `
+      <input type="text" id="contributor-name" maxlength="80" placeholder="${escapeHtml(t('reader.anonymous'))}">
+      <p class="field__error" data-error-for="contributor.name"></p>`;
+  }
+
+  function emailBody() {
+    return `
+      <input type="email" id="contributor-email" maxlength="160" placeholder="you@example.com">
+      <p class="field__error" data-error-for="contributor.email"></p>`;
+  }
+
+  /** Renders every step in the order the questionnaire declares. */
+  function renderSteps() {
+    let number = 0;
+    const html = state.sequence.map((entry) => {
+      number += 1;
+      if (entry.kind === 'question') {
+        const question = state.questions.find((q) => q.id === entry.id);
+        if (!question) return '';
+        return stepBlock(
+          number,
+          pick(question.label) + (question.required ? '' : ` (${t('submit.optional')})`),
+          question.help ? pick(question.help) : '',
+          questionBody(question),
+        );
+      }
+      if (entry.kind === 'place') {
+        return stepBlock(number, t('submit.where.title'), t('submit.where.note'), placeBody());
+      }
+      if (entry.kind === 'period') {
+        return stepBlock(number, t('submit.when.title'), t('submit.when.note'), periodBody());
+      }
+      if (entry.kind === 'pseudonym') {
+        return stepBlock(number, t('submit.about.title'), t('submit.about.note'), pseudonymBody());
+      }
+      if (entry.kind === 'email') {
+        return stepBlock(number, `${t('submit.email')} (${t('submit.optional')})`, t('submit.emailHelp'), emailBody());
+      }
+      return '';
     }).join('');
 
-    $('questions').addEventListener('input', (event) => {
+    $('steps').innerHTML = html;
+
+    $('steps').addEventListener('input', (event) => {
       updateCounter(event.target);
       updateProgress();
     });
-    $('questions').addEventListener('change', updateProgress);
+    $('steps').addEventListener('change', updateProgress);
   }
 
   function updateCounter(input) {
     const name = input.name;
-    const counter = document.querySelector(`[data-counter-for="${CSS.escape(name || '')}"]`);
+    if (!name) return;
+    const counter = document.querySelector(`[data-counter-for="${CSS.escape(name)}"]`);
     if (!counter) return;
     const question = state.questions.find((q) => q.id === name);
     if (!question || !question.maxLength) return;
@@ -89,6 +197,12 @@
   function collectAnswers() {
     const answers = {};
     for (const question of state.questions) {
+      if (question.type === 'multiselect' || question.type === 'select') {
+        const chosen = [...document.querySelectorAll(`[data-choice="${CSS.escape(question.id)}"]:checked`)]
+          .map((node) => node.value);
+        answers[question.id] = question.type === 'multiselect' ? chosen : (chosen[0] || '');
+        continue;
+      }
       const input = $(`q-${question.id}`);
       if (input) answers[question.id] = input.value;
     }
@@ -327,17 +441,19 @@
   /* ------------------------------- progress ------------------------------ */
 
   function updateProgress() {
+    const answers = collectAnswers();
     const required = state.questions.filter((q) => q.required);
     const answered = required.filter((q) => {
-      const input = $(`q-${q.id}`);
-      const value = input ? input.value.trim() : '';
-      if (!value) return false;
-      return !q.minLength || value.length >= q.minLength;
+      const value = answers[q.id];
+      if (Array.isArray(value)) return value.length > 0;
+      const text = (value || '').trim();
+      if (!text) return false;
+      return !q.minLength || text.length >= q.minLength;
     });
 
     const steps = required.length + 3; // questions + place name + pin + period
     let done = answered.length;
-    if ($('place-name').value.trim()) done += 1;
+    if ($('place-name') && $('place-name').value.trim()) done += 1;
     if (state.place.lat !== null) done += 1;
     if (readPeriod()) done += 1;
 
@@ -440,9 +556,10 @@
   async function boot() {
     const meta = await api('/api/questions');
     state.questions = meta.questions;
+    state.sequence = meta.sequence;
     state.yearRange = meta.yearRange;
 
-    renderQuestions();
+    renderSteps();
     renderPeriodInputs();
     updateProgress();
 
@@ -483,7 +600,6 @@
       if (!event.target.closest('.picker__search')) $('place-results').innerHTML = '';
     });
 
-    $('place-name').addEventListener('input', updateProgress);
     $('form').addEventListener('submit', handleSubmit);
   }
 

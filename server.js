@@ -28,7 +28,7 @@ const generatedPassword = ensureAdminPassword();
 
 const db = require('./src/db');
 const auth = require('./src/auth');
-const { QUESTIONS } = require('./src/questions');
+const { QUESTIONS, FORM_SEQUENCE } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
 const { detectSubmissionLanguage } = require('./src/translate');
@@ -61,6 +61,8 @@ function clientKey(req) {
 app.get('/api/questions', (req, res) => {
   res.json({
     questions: QUESTIONS,
+    // The order the form and the bot ask things in, so both stay in step.
+    sequence: FORM_SEQUENCE,
     provinces: PROVINCE_NAMES,
     yearRange: { min: MIN_YEAR, max: maxYear() },
   });

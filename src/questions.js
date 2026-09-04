@@ -2,152 +2,198 @@
 
 /**
  * The questionnaire. This is the single source of truth: the public form is
- * rendered from it, the API validates against it, and narrative pages render
- * answers in this order. Edit this file to change what contributors are asked.
+ * rendered from it, the API validates against it, the Telegram bot walks it,
+ * and narrative pages render answers in this order.
  *
- * Every piece of contributor-facing text is a { en, fa } pair. The client picks
- * the half matching the interface language.
+ * Every contributor-facing string is an { en, fa } pair. The Persian is the
+ * original — this archive is written for Persian speakers first — and the
+ * English is its translation.
  *
- * Changing a question's `id` orphans the answers already stored under the old
- * id, so prefer editing the labels and leaving `id` alone. Removing a question
- * hides its answers from the site but does not delete them from the database.
- *
- * type:     'text' | 'textarea' | 'select'
- * required: answers must be non-empty to submit
+ * type:     'text' | 'textarea' | 'select' | 'multiselect'
+ * required: must be answered to submit
  * minLength/maxLength: enforced on the server, hinted in the browser
  *
- * `select` options carry a stable `value` that is what actually gets stored, so
- * an answer given in English still renders in Persian for a Persian reader.
+ * `select` and `multiselect` options carry a stable `value` that is what gets
+ * stored, so an answer chosen in Persian still renders in English for an
+ * English reader. Changing a `value` orphans answers already given under it.
  */
 const QUESTIONS = [
   {
-    id: 'title',
-    type: 'text',
+    id: 'narrative_kind',
+    type: 'multiselect',
     label: {
-      en: 'If this narrative had a title, what would it be?',
-      fa: 'اگر این روایت عنوانی داشت، چه بود؟',
+      fa: 'روایتتان از چه جنس است؟',
+      en: 'What kind of narrative is this?',
     },
     help: {
-      en: 'This is what people see on the map pin and in the list of narratives.',
-      fa: 'همین چیزی است که روی نشانگر نقشه و در فهرست روایت‌ها دیده می‌شود.',
-    },
-    placeholder: {
-      en: 'The last summer on our street',
-      fa: 'آخرین تابستان کوچهٔ ما',
+      fa: 'می‌توانید چند گزینه را انتخاب کنید.',
+      en: 'You can choose more than one.',
     },
     required: true,
-    maxLength: 120,
+    options: [
+      {
+        value: 'chronicle',
+        fa: 'وقایع‌نگاری',
+        en: 'Chronicle',
+        detail: {
+          fa: 'مثلاً در خیابانی جایی، اتفاقی افتاده که می‌خواهید بازگو کنید.',
+          en: 'Something happened, on a street or in some place, and you want to recount it.',
+        },
+      },
+      {
+        value: 'impression',
+        fa: 'تأثُّرنگاری',
+        en: 'What it left behind',
+        detail: {
+          fa: 'مثلاً کسی را در این وقایع از دست داده‌اید و می‌خواهید آنچه فقدانش با شما کرده را بازگو کنید، یا مثلاً چیزهایی دیده‌اید که رهایتان نمی‌کنند و مدام تداعی می‌شوند و می‌خواهید بازگویشان کنید.',
+          en: 'You lost someone in these events and want to tell what that absence has done to you; or you saw things that will not let go of you, that keep returning, and you want to set them down.',
+        },
+      },
+      {
+        value: 'other',
+        fa: 'جور دیگری.',
+        en: 'Some other way.',
+      },
+    ],
+  },
+  {
+    id: 'how_you_know',
+    type: 'multiselect',
+    label: {
+      fa: 'از کجا مطلعید؟',
+      en: 'How do you know this?',
+    },
+    help: {
+      fa: 'می‌توانید چند گزینه را انتخاب کنید.',
+      en: 'You can choose more than one.',
+    },
+    required: true,
+    options: [
+      { value: 'lived', fa: 'شخصاً از سر گذراندم.', en: 'I lived through it myself.' },
+      { value: 'witnessed', fa: 'شخصاً آنجا بودم، اما بر کسِ دیگری گذشت.', en: 'I was there myself, but it happened to someone else.' },
+      { value: 'family_friend', fa: 'خانواده یا دوستِ نزدیکی تعریف کرد.', en: 'Family or a close friend told me.' },
+      { value: 'other', fa: 'جور دیگری.', en: 'Some other way.' },
+    ],
   },
   {
     id: 'what_happened',
     type: 'textarea',
     label: {
-      en: 'What happened at this place? Tell it the way you would tell a friend.',
-      fa: 'اینجا چه گذشت؟ همان‌طور بنویسید که برای یک دوست تعریف می‌کنید.',
+      fa: 'چه گذشت؟ روایت کنید.',
+      en: 'What happened? Tell it.',
     },
     help: {
-      en: 'Take as much room as you need. Long is fine — this is the heart of the narrative.',
-      fa: 'هرقدر لازم است بنویسید. طولانی بودنش اشکالی ندارد — این قلب روایت است.',
+      fa: 'تصور کنید برای دوستی تعریف می‌کنید، همان‌طور بنویسید. تا جای ممکن جزئیات اضافه کنید، در مورد رنگ و رفتار و فضاهای غیرمعمول، در مورد ترس و درد و نگرانی‌های لحظاتِ فشرده.',
+      en: 'Imagine you are telling a friend, and write it that way. Add as much detail as you can — colours, the way people behaved, anything out of the ordinary; the fear, the pain, the worry of those compressed moments.',
     },
     required: true,
-    minLength: 120,
-    maxLength: 8000,
-    rows: 12,
+    minLength: 80,
+    maxLength: 12000,
+    rows: 14,
   },
   {
-    id: 'why_here',
+    id: 'what_it_left',
     type: 'textarea',
     label: {
-      en: 'Why this exact spot, rather than the neighbourhood or the city around it?',
-      fa: 'چرا دقیقاً همین نقطه، نه محله یا شهرِ دورش؟',
+      fa: 'چه اثری بر جا گذاشت؟',
+      en: 'What did it leave behind?',
     },
     help: {
-      en: 'What makes these particular coordinates the right ones for the story.',
-      fa: 'چه چیزی همین مختصات را برای این روایت درست می‌کند.',
-    },
-    required: true,
-    minLength: 40,
-    maxLength: 2000,
-    rows: 5,
-  },
-  {
-    id: 'senses',
-    type: 'textarea',
-    label: {
-      en: 'What did it look, sound, or smell like? Give one detail nobody could have guessed.',
-      fa: 'آنجا چه شکلی بود، چه صدایی داشت، چه بویی می‌داد؟ یک جزئیات بگویید که هیچ‌کس نمی‌توانست حدس بزند.',
+      fa: 'اگر آنچه روایت کردید اثر ماندگاری بر شما داشته و بعد از آن چیزی متحول شده، بنویسید.',
+      en: 'If what you have described left a lasting mark on you, or something changed afterwards, write it here.',
     },
     required: false,
-    maxLength: 1500,
-    rows: 4,
+    maxLength: 4000,
+    rows: 6,
   },
   {
-    id: 'who_else',
+    id: 'light_ahead',
     type: 'textarea',
     label: {
-      en: 'Who else is in this story, and how would they want to be named — or not named?',
-      fa: 'چه کسان دیگری در این روایت هستند، و دوست دارند چطور نامیده شوند — یا اصلاً نامیده نشوند؟',
+      fa: 'چه روشنی‌ای در افق می‌بینید؟',
+      en: 'What light do you see on the horizon?',
     },
     help: {
-      en: 'Please do not use anyone’s full name without their permission.',
-      fa: 'لطفاً نام کامل کسی را بدون اجازه‌اش ننویسید.',
+      fa: 'چطور علی‌رغم تمام این دشواری‌ها، چراغ زندگی را روشن نگه می‌دارید.',
+      en: 'How, in spite of all this difficulty, you keep the lamp of life burning.',
     },
     required: false,
-    maxLength: 1500,
-    rows: 4,
-  },
-  {
-    id: 'what_changed',
-    type: 'textarea',
-    label: {
-      en: 'What did this change, for you or for the place itself?',
-      fa: 'این ماجرا چه چیزی را عوض کرد، برای شما یا برای خودِ آن مکان؟',
-    },
-    required: false,
-    maxLength: 2000,
-    rows: 5,
-  },
-  {
-    id: 'how_you_know',
-    type: 'select',
-    label: {
-      en: 'How do you know this story?',
-      fa: 'این روایت را از کجا می‌دانید؟',
-    },
-    required: true,
-    options: [
-      { value: 'lived', en: 'I lived it', fa: 'خودم از سر گذراندمش' },
-      { value: 'witnessed', en: 'I was there, but it happened to someone else', fa: 'آنجا بودم، اما برای کس دیگری اتفاق افتاد' },
-      { value: 'family', en: 'Someone in my family told me', fa: 'یکی از خانواده برایم تعریف کرد' },
-      { value: 'friend', en: 'A friend or a neighbour told me', fa: 'دوست یا همسایه‌ای برایم تعریف کرد' },
-      { value: 'archive', en: 'I found it in documents, photographs, or archives', fa: 'در اسناد، عکس‌ها یا آرشیوها پیدایش کردم' },
-      { value: 'other', en: 'Another way', fa: 'جور دیگری' },
-    ],
-  },
-  {
-    id: 'before_reading',
-    type: 'textarea',
-    label: {
-      en: 'Is there anything a reader should know before they start?',
-      fa: 'چیزی هست که خواننده پیش از شروع بهتر است بداند؟',
-    },
-    help: {
-      en: 'Context, a content warning, a correction to something widely believed — anything.',
-      fa: 'زمینه، هشدار دربارهٔ محتوا، تصحیح چیزی که همه اشتباه می‌دانند — هرچه باشد.',
-    },
-    required: false,
-    maxLength: 1000,
-    rows: 3,
+    maxLength: 4000,
+    rows: 6,
   },
 ];
 
 const QUESTIONS_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 
-/** The question whose answer is used as the narrative's display title. */
-const TITLE_QUESTION_ID = 'title';
+/**
+ * The order the contributor is asked things, on the form and in the bot.
+ *
+ * The place, the period and the contributor's details are structured fields
+ * rather than questionnaire answers, but they are asked in amongst the
+ * questions, so the sequence lives here and both surfaces follow it. This is
+ * what makes the numbering on the form match the order in the bot.
+ */
+const FORM_SEQUENCE = [
+  { kind: 'question', id: 'narrative_kind' },
+  { kind: 'question', id: 'how_you_know' },
+  { kind: 'place' },
+  { kind: 'period' },
+  { kind: 'question', id: 'what_happened' },
+  { kind: 'question', id: 'what_it_left' },
+  { kind: 'question', id: 'light_ahead' },
+  { kind: 'pseudonym' },
+  { kind: 'email' },
+];
 
-/** The question whose answer is used for list previews and search snippets. */
+/**
+ * There is no title question: contributors are asked what happened, not to
+ * name it. Pins and list cards are labelled with the place instead, which is
+ * what the contributor actually chose, and previewed with the narrative.
+ */
 const SUMMARY_QUESTION_ID = 'what_happened';
+
+const SELECT_TYPES = new Set(['select', 'multiselect']);
+
+/** Multi-select answers are arrays; a legacy single value still reads. */
+function toArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value) return [value];
+  return [];
+}
+
+function validateChoice(question, raw, errors) {
+  const allowed = new Set(question.options.map((o) => o.value));
+
+  if (question.type === 'select') {
+    const value = typeof raw === 'string' ? raw.trim() : '';
+    if (!value) {
+      if (question.required) {
+        errors.push({ field: question.id, code: 'error.required', message: 'This question needs an answer.' });
+      }
+      return undefined;
+    }
+    if (!allowed.has(value)) {
+      errors.push({ field: question.id, code: 'error.chooseOption', message: 'Choose one of the listed options.' });
+      return undefined;
+    }
+    return value;
+  }
+
+  const chosen = toArray(raw).map((v) => String(v).trim()).filter(Boolean);
+  const unique = [...new Set(chosen)];
+  if (!unique.length) {
+    if (question.required) {
+      errors.push({ field: question.id, code: 'error.chooseAtLeastOne', message: 'Choose at least one option.' });
+    }
+    return undefined;
+  }
+  if (unique.some((v) => !allowed.has(v))) {
+    errors.push({ field: question.id, code: 'error.chooseOption', message: 'Choose from the listed options.' });
+    return undefined;
+  }
+  // Stored in the questionnaire's own order, not the order they were clicked.
+  return question.options.map((o) => o.value).filter((v) => unique.includes(v));
+}
 
 /**
  * Validates a raw `{questionId: answer}` object against the questionnaire.
@@ -160,20 +206,17 @@ function validateAnswers(raw) {
   const input = raw && typeof raw === 'object' ? raw : {};
 
   for (const q of QUESTIONS) {
-    const value = typeof input[q.id] === 'string' ? input[q.id].trim() : '';
+    if (SELECT_TYPES.has(q.type)) {
+      const value = validateChoice(q, input[q.id], errors);
+      if (value !== undefined) answers[q.id] = value;
+      continue;
+    }
 
+    const value = typeof input[q.id] === 'string' ? input[q.id].trim() : '';
     if (!value) {
       if (q.required) {
         errors.push({ field: q.id, code: 'error.required', message: 'This question needs an answer.' });
       }
-      continue;
-    }
-    if (q.type === 'select') {
-      if (!q.options.some((option) => option.value === value)) {
-        errors.push({ field: q.id, code: 'error.chooseOption', message: 'Choose one of the listed options.' });
-        continue;
-      }
-      answers[q.id] = value;
       continue;
     }
     if (q.minLength && value.length < q.minLength) {
@@ -203,7 +246,9 @@ function validateAnswers(raw) {
 module.exports = {
   QUESTIONS,
   QUESTIONS_BY_ID,
-  TITLE_QUESTION_ID,
+  FORM_SEQUENCE,
   SUMMARY_QUESTION_ID,
+  SELECT_TYPES,
+  toArray,
   validateAnswers,
 };

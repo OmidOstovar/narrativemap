@@ -8,7 +8,7 @@
  * which matters because the flow is long and easy to break.
  */
 
-const { QUESTIONS } = require('../src/questions');
+const { QUESTIONS, FORM_SEQUENCE, SELECT_TYPES } = require('../src/questions');
 const { PROVINCES, citiesOf, EN_BY_FA } = require('./provinces');
 const { t, PERSIAN_MONTHS } = require('./strings');
 
@@ -40,15 +40,35 @@ function readYear(text) {
   return null;
 }
 
-/** Steps that come before the questionnaire. */
-const PRE_STEPS = ['name', 'province', 'city', 'place', 'location', 'precision', 'date'];
+/**
+ * The place block expands into several messages — a province, a city, the
+ * place in words, and a location — because a chat asks one thing at a time.
+ * Everything else maps one to one onto the shared sequence.
+ */
+const PLACE_STEPS = ['province', 'city', 'place', 'location'];
+const PERIOD_STEPS = ['precision', 'date'];
+
+/** The bot's own step list, expanded from the questionnaire's sequence. */
+const STEPS = FORM_SEQUENCE.flatMap((entry) => {
+  if (entry.kind === 'place') return PLACE_STEPS.map((name) => ({ kind: name }));
+  if (entry.kind === 'period') return PERIOD_STEPS.map((name) => ({ kind: name }));
+  if (entry.kind === 'pseudonym') return [{ kind: 'name' }];
+  if (entry.kind === 'email') return [{ kind: 'email' }];
+  return [{ kind: 'question', id: entry.id }];
+});
+
+/** Kept for the tests and for anything reading the old shape. */
+const PRE_STEPS = STEPS.filter((s) => s.kind !== 'question').map((s) => s.kind);
 
 function newSession(lang) {
   return {
     lang: lang || 'fa',
-    step: 'name',
+    stepIndex: 0,
+    step: STEPS[0].kind,
+    questionId: STEPS[0].id || null,
+    chosen: {},
     answers: {},
-    questionIndex: 0,
+    email: null,
     place: { province: null, provinceEn: null, city: null, name: null, lat: null, lng: null, approximate: false },
     period: {
       precision: 'year',
@@ -66,13 +86,38 @@ function newSession(lang) {
 }
 
 function totalSteps() {
-  return PRE_STEPS.length + QUESTIONS.length;
+  return STEPS.length;
 }
 
 function stepNumber(session) {
-  const pre = PRE_STEPS.indexOf(session.step);
-  if (pre >= 0) return pre + 1;
-  return PRE_STEPS.length + session.questionIndex + 1;
+  return Math.min(session.stepIndex + 1, STEPS.length);
+}
+
+/** Moves to the next step, or to the review if there are none left. */
+function advance(session) {
+  session.stepIndex += 1;
+  if (session.stepIndex >= STEPS.length) {
+    session.step = 'review';
+    session.questionId = null;
+    return { ok: true };
+  }
+  const next = STEPS[session.stepIndex];
+  session.step = next.kind;
+  session.questionId = next.id || null;
+  return { ok: true };
+}
+
+/** Steps back, used when a contributor asks for the province list again. */
+function goBackTo(session, kind) {
+  const index = STEPS.findIndex((s) => s.kind === kind);
+  if (index < 0) return;
+  session.stepIndex = index;
+  session.step = kind;
+  session.questionId = STEPS[index].id || null;
+}
+
+function currentQuestion(session) {
+  return QUESTIONS.find((q) => q.id === session.questionId) || null;
 }
 
 /** The prompt for whatever the session is waiting on. */
@@ -108,9 +153,13 @@ function prompt(session) {
     case 'date':
       return datePrompt(session, footer);
 
+    case 'email':
+      return { text: t('ask.email', lang) + footer, keyboard: 'skip' };
+
     case 'question': {
-      const question = QUESTIONS[session.questionIndex];
-      return questionPrompt(question, lang, footer);
+      const question = currentQuestion(session);
+      if (!question) return { text: t('unknown', lang), keyboard: null };
+      return questionPrompt(question, session, footer);
     }
 
     case 'review':
@@ -155,12 +204,37 @@ function readTime(text) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-function questionPrompt(question, lang, footer) {
+function questionPrompt(question, session, footer) {
+  const lang = session.lang;
   const label = question.label[lang] || question.label.fa;
   const help = question.help ? `\n\n<i>${question.help[lang] || question.help.fa}</i>` : '';
+
+  if (SELECT_TYPES.has(question.type)) {
+    // A chat cannot show tick-boxes, so choices toggle and the contributor
+    // says when they are done. What is already chosen is echoed back.
+    const chosen = session.chosen[question.id] || [];
+    const detail = question.options
+      .filter((o) => o.detail)
+      .map((o) => `• <b>${o[lang] || o.fa}</b> — ${o.detail[lang] || o.detail.fa}`)
+      .join('\n');
+    const echo = chosen.length
+      ? `\n\n${t('choice.chosen', lang, {
+        list: chosen.map((code) => {
+          const option = question.options.find((o) => o.value === code);
+          return option ? (option[lang] || option.fa) : code;
+        }).join('، '),
+      })}`
+      : '';
+    return {
+      text: `<b>${label}</b>${help}${detail ? `\n\n${detail}` : ''}${echo}${footer}`,
+      keyboard: 'options',
+      question,
+    };
+  }
+
   return {
     text: `<b>${label}</b>${help}${footer}`,
-    keyboard: question.type === 'select' ? 'options' : (question.required ? null : 'skip'),
+    keyboard: question.required ? null : 'skip',
     question,
   };
 }
@@ -177,13 +251,22 @@ function apply(session, input) {
 
   switch (session.step) {
     case 'name': {
-      if (input.skip) { session.contributor = null; session.step = 'province'; return { ok: true }; }
+      if (input.skip) { session.contributor = null; return advance(session); }
       const name = (input.text || '').trim();
       if (!name) return { ok: false, error: t('error.needText', lang) };
       if (name.length > 80) return { ok: false, error: t('error.tooLong', lang, { max: 80 }) };
       session.contributor = name;
-      session.step = 'province';
-      return { ok: true };
+      return advance(session);
+    }
+
+    case 'email': {
+      if (input.skip) { session.email = null; return advance(session); }
+      const email = (input.text || '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        return { ok: false, error: t('error.email', lang) };
+      }
+      session.email = email.slice(0, 160);
+      return advance(session);
     }
 
     case 'province': {
@@ -192,17 +275,15 @@ function apply(session, input) {
       session.place.province = province.fa;
       session.place.provinceEn = province.en;
       session.place.city = null;
-      session.step = 'city';
-      return { ok: true };
+      return advance(session);
     }
 
     case 'city': {
-      if (input.choice === '__back') { session.step = 'province'; return { ok: true }; }
+      if (input.choice === '__back') { goBackTo(session, 'province'); return { ok: true }; }
       const cities = citiesOf(session.place.province);
       if (!cities.includes(input.choice)) return { ok: false, error: t('error.pickOption', lang) };
       session.place.city = input.choice;
-      session.step = 'place';
-      return { ok: true };
+      return advance(session);
     }
 
     case 'place': {
@@ -210,8 +291,7 @@ function apply(session, input) {
       if (!text) return { ok: false, error: t('error.needText', lang) };
       if (text.length > 140) return { ok: false, error: t('error.tooLong', lang, { max: 140 }) };
       session.place.name = `${text}، ${session.place.city}`.slice(0, 160);
-      session.step = 'location';
-      return { ok: true };
+      return advance(session);
     }
 
     case 'location': {
@@ -219,15 +299,13 @@ function apply(session, input) {
         session.place.lat = null;
         session.place.lng = null;
         session.place.approximate = true;
-        session.step = 'precision';
-        return { ok: true };
+        return advance(session);
       }
       if (!input.location) return { ok: false, error: t('ask.location', lang) };
       session.place.lat = input.location.latitude;
       session.place.lng = input.location.longitude;
       session.place.approximate = false;
-      session.step = 'precision';
-      return { ok: true };
+      return advance(session);
     }
 
     case 'precision': {
@@ -235,8 +313,7 @@ function apply(session, input) {
         return { ok: false, error: t('error.pickOption', lang) };
       }
       session.period.precision = input.choice;
-      session.step = 'date';
-      return { ok: true };
+      return advance(session);
     }
 
     case 'date':
@@ -269,8 +346,7 @@ function applyDate(session, input) {
     if (read.calendar !== period.calendar) period.calendar = read.calendar;
     if (read.year < period.startYear) return { ok: false, error: t('error.endBeforeStart', lang) };
     period.endYear = read.year;
-    session.step = 'question';
-    return { ok: true };
+    return advance(session);
   }
 
   if (period.month === null) {
@@ -279,7 +355,7 @@ function applyDate(session, input) {
       return { ok: false, error: t('error.pickOption', lang) };
     }
     period.month = month;
-    if (period.precision === 'month') session.step = 'question';
+    if (period.precision === 'month') return advance(session);
     return { ok: true };
   }
 
@@ -293,7 +369,7 @@ function applyDate(session, input) {
       period.day = null;
       return { ok: false, error: t('error.date', lang) };
     }
-    if (period.precision === 'day') session.step = 'question';
+    if (period.precision === 'day') return advance(session);
     return { ok: true };
   }
 
@@ -308,8 +384,7 @@ function applyDate(session, input) {
     const time = readTime(input.text);
     if (!time) return { ok: false, error: t('error.time', lang) };
     period.endTime = time;
-    session.step = 'question';
-    return { ok: true };
+    return advance(session);
   }
 
   return { ok: false, error: t('unknown', lang) };
@@ -327,18 +402,39 @@ function isRealCalendarDate(period) {
 
 function applyQuestion(session, input) {
   const lang = session.lang;
-  const question = QUESTIONS[session.questionIndex];
+  const question = currentQuestion(session);
+  if (!question) return { ok: false, error: t('unknown', lang) };
+
+  if (SELECT_TYPES.has(question.type)) {
+    const chosen = session.chosen[question.id] || [];
+
+    if (input.choice === '__done') {
+      if (!chosen.length) {
+        return question.required
+          ? { ok: false, error: t('choice.needOne', lang) }
+          : advance(session);
+      }
+      session.answers[question.id] = question.type === 'multiselect' ? chosen : chosen[0];
+      return advance(session);
+    }
+
+    const option = question.options.find((o) => o.value === input.choice);
+    if (!option) return { ok: false, error: t('error.pickOption', lang) };
+
+    if (question.type === 'multiselect') {
+      // Tapping an option again takes it back off the list.
+      session.chosen[question.id] = chosen.includes(option.value)
+        ? chosen.filter((v) => v !== option.value)
+        : [...chosen, option.value];
+      return { ok: true, stay: true };
+    }
+    session.answers[question.id] = option.value;
+    return advance(session);
+  }
 
   if (input.skip) {
     if (question.required) return { ok: false, error: t('error.needText', lang) };
-    return advanceQuestion(session);
-  }
-
-  if (question.type === 'select') {
-    const option = question.options.find((o) => o.value === input.choice);
-    if (!option) return { ok: false, error: t('error.pickOption', lang) };
-    session.answers[question.id] = option.value;
-    return advanceQuestion(session);
+    return advance(session);
   }
 
   const text = (input.text || '').trim();
@@ -350,17 +446,7 @@ function applyQuestion(session, input) {
     return { ok: false, error: t('error.tooLong', lang, { max: question.maxLength }) };
   }
   session.answers[question.id] = text;
-  return advanceQuestion(session);
-}
-
-function advanceQuestion(session) {
-  session.questionIndex += 1;
-  if (session.questionIndex >= QUESTIONS.length) {
-    session.step = 'review';
-  } else {
-    session.step = 'question';
-  }
-  return { ok: true };
+  return advance(session);
 }
 
 /* --------------------------------- output -------------------------------- */
@@ -448,11 +534,18 @@ function reviewText(session) {
 
   for (const question of QUESTIONS) {
     const value = session.answers[question.id];
-    if (!value) continue;
+    if (!value || (Array.isArray(value) && !value.length)) continue;
     const label = question.label[lang] || question.label.fa;
-    const shown = question.type === 'select'
-      ? (question.options.find((o) => o.value === value) || {})[lang] || value
-      : (value.length > 220 ? `${value.slice(0, 220)}…` : value);
+    let shown;
+    if (SELECT_TYPES.has(question.type)) {
+      const codes = Array.isArray(value) ? value : [value];
+      shown = codes.map((code) => {
+        const option = question.options.find((o) => o.value === code);
+        return option ? (option[lang] || option.fa) : code;
+      }).join('، ');
+    } else {
+      shown = value.length > 220 ? `${value.slice(0, 220)}…` : value;
+    }
     lines.push(`<b>${label}</b>\n${shown}\n`);
   }
   return lines.join('\n');
@@ -480,7 +573,7 @@ function toSubmission(session, { centroidFor }) {
       approximate: session.place.approximate,
     },
     period,
-    contributor: { name: session.contributor, email: null },
+    contributor: { name: session.contributor, email: session.email || null },
     source: 'telegram',
   };
 }
@@ -488,5 +581,5 @@ function toSubmission(session, { centroidFor }) {
 module.exports = {
   newSession, prompt, apply, reviewText, describePeriod,
   resolvePeriod, toSubmission, readYear, readTime, normaliseDigits,
-  totalSteps, PRE_STEPS,
+  totalSteps, STEPS, PRE_STEPS,
 };

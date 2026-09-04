@@ -37,7 +37,9 @@ function targetLanguage(originalLang) {
 
 /** True when a narrative has nothing worth sending to a model. */
 function hasTranslatableText(answers) {
-  return QUESTIONS.some((q) => q.type !== 'select' && answers[q.id]);
+  return QUESTIONS.some((q) => (
+    q.type !== 'select' && q.type !== 'multiselect' && answers[q.id]
+  ));
 }
 
 async function translateOne(publicId) {

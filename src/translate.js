@@ -96,8 +96,8 @@ function collectFields(answers, placeName) {
   for (const question of QUESTIONS) {
     const value = answers[question.id];
     if (!value) continue;
-    // A select answer is a stored code that already renders in both languages.
-    if (question.type === 'select') continue;
+    // Choice answers are stored codes that already render in both languages.
+    if (question.type === 'select' || question.type === 'multiselect') continue;
     fields.push({ key: `answer_${question.id}`, label: question.label.en, value });
   }
   if (placeName) {

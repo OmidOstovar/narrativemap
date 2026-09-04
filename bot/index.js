@@ -92,10 +92,19 @@ function buildKeyboard(kind, session) {
     }
 
     case 'options': {
-      const question = QUESTIONS[session.questionIndex];
-      return inlineKeyboard(question.options.map((o) => ({
-        text: o[lang] || o.fa, callback_data: `o:${o.value}`,
-      })), 1);
+      const question = QUESTIONS.find((q) => q.id === session.questionId);
+      if (!question) return undefined;
+      const chosen = session.chosen[question.id] || [];
+      const buttons = question.options.map((o) => ({
+        // A tick shows what is already on the list, since a chat has no
+        // checkboxes and the message above may have scrolled away.
+        text: `${chosen.includes(o.value) ? '☑ ' : ''}${o[lang] || o.fa}`,
+        callback_data: `o:${o.value}`,
+      }));
+      if (question.type === 'multiselect') {
+        buttons.push({ text: t('choice.done', lang), callback_data: 'o:__done' });
+      }
+      return inlineKeyboard(buttons, 1);
     }
 
     case 'review':
@@ -162,6 +171,11 @@ function createBot(client) {
     }
 
     const result = convo.apply(session, input);
+    if (result.ok && result.stay) {
+      // The choice list changed but the question has not been answered yet.
+      await askCurrent(chatId, session);
+      return;
+    }
     if (!result.ok) {
       await client.sendMessage(chatId, result.error, {
         reply_markup: buildKeyboard(convo.prompt(session).keyboard, session),

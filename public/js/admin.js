@@ -22,14 +22,19 @@
   const queueEl = () => $('queue');
   const detailEl = () => $('detail');
 
-  const title = (s) => s.answers.title || t('reader.untitled');
+  // No title question: a narrative is known by the place it belongs to.
+  const title = (s) => s.place.name || t('reader.untitled');
 
-  /** Select answers store a stable code; show it in the moderator's language. */
-  function answerText(question, value) {
-    if (question.type !== 'select') return value;
-    const option = (question.options || []).find((o) => o.value === value);
-    return option ? pick(option) : value;
+  /** Choice answers store stable codes; label them for the moderator. */
+  function choiceLabels(question, value) {
+    const codes = Array.isArray(value) ? value : [value].filter(Boolean);
+    return codes.map((code) => {
+      const option = (question.options || []).find((o) => o.value === code);
+      return option ? pick(option) : code;
+    });
   }
+
+  const isChoice = (q) => q.type === 'select' || q.type === 'multiselect';
 
   /* -------------------------------- session ------------------------------ */
 
@@ -145,16 +150,24 @@
     const tstatus = (submission.private && submission.private.translationStatus) || 'pending';
     const otherLang = submission.originalLang === 'fa' ? 'en' : 'fa';
     const answers = state.questions
-      .filter((q) => q.id !== 'title' && submission.answers[q.id])
+      .filter((q) => submission.answers[q.id])
       .map((q) => {
         const raw = submission.answers[q.id];
-        const isChip = q.type === 'select';
-        const shown = answerText(q, raw);
-        const translated = !isChip && (submission.answersTranslated || {})[q.id];
+        if (!raw || (Array.isArray(raw) && !raw.length)) return '';
+        if (isChoice(q)) {
+          const chips = choiceLabels(q, raw)
+            .map((label) => `<span class="chip">${escapeHtml(label)}</span>`).join('');
+          return `
+            <section class="qa">
+              <h3 class="qa__q">${escapeHtml(pick(q.label))}</h3>
+              <div class="chips">${chips}</div>
+            </section>`;
+        }
+        const translated = (submission.answersTranslated || {})[q.id];
         return `
-          <section class="qa${isChip ? ' qa--chip' : ''}">
+          <section class="qa">
             <h3 class="qa__q">${escapeHtml(pick(q.label))}</h3>
-            <div class="qa__a" dir="${dirFor(shown)}">${isChip ? escapeHtml(shown) : paragraphs(raw)}</div>
+            <div class="qa__a" dir="${dirFor(raw)}">${paragraphs(raw)}</div>
             ${translated ? `
               <div class="qa__translation" dir="${dirFor(translated)}">
                 <span class="qa__translation-label">${escapeHtml(t('admin.translationOf', { lang: t('lang.' + otherLang) }))}</span>
@@ -163,7 +176,10 @@
           </section>`;
       }).join('');
 
-    const unanswered = state.questions.filter((q) => q.id !== 'title' && !submission.answers[q.id]);
+    const unanswered = state.questions.filter((q) => {
+      const value = submission.answers[q.id];
+      return !value || (Array.isArray(value) && !value.length);
+    });
 
     return `
       <div class="reader__body" style="padding:32px 40px 24px">
@@ -283,17 +299,21 @@
     const fields = state.questions.map((q) => {
       const value = submission.answers[q.id] || '';
       const translated = translations[q.id] || '';
-      const control = q.type === 'select'
-        ? `<select data-answer="${escapeHtml(q.id)}">
-             <option value="">${escapeHtml(t('admin.noAnswer'))}</option>
-             ${q.options.map((o) => `<option value="${escapeHtml(o.value)}"${o.value === value ? ' selected' : ''}>${escapeHtml(pick(o))}</option>`).join('')}
-           </select>`
+      const chosen = Array.isArray(value) ? value : [value].filter(Boolean);
+      const control = isChoice(q)
+        ? `<div class="choices">${q.options.map((o) => `
+            <label class="choice">
+              <input type="${q.type === 'multiselect' ? 'checkbox' : 'radio'}"
+                     name="edit-${escapeHtml(q.id)}" value="${escapeHtml(o.value)}"
+                     data-answer-choice="${escapeHtml(q.id)}"${chosen.includes(o.value) ? ' checked' : ''}>
+              <span class="choice__body"><span class="choice__label">${escapeHtml(pick(o))}</span></span>
+            </label>`).join('')}</div>`
         : q.type === 'text'
           ? `<input type="text" data-answer="${escapeHtml(q.id)}" value="${escapeHtml(value)}" maxlength="${q.maxLength || 200}">`
           : `<textarea data-answer="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 5, 10)}" maxlength="${q.maxLength || 5000}">${escapeHtml(value)}</textarea>`;
       // Select answers are language-independent codes, so they have no
       // translation to edit.
-      const translationField = q.type === 'select' ? '' : `
+      const translationField = isChoice(q) ? '' : `
         <div class="translation-pane">
           <label class="field__label field__label--sub">${escapeHtml(t('admin.translationOf', { lang: t('lang.' + otherLang) }))}</label>
           <textarea data-translation="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 4, 8)}"
@@ -402,6 +422,12 @@
     document.querySelectorAll('[data-answer]').forEach((node) => {
       answers[node.dataset.answer] = node.value;
     });
+    for (const question of state.questions) {
+      if (!isChoice(question)) continue;
+      const chosen = [...document.querySelectorAll(`[data-answer-choice="${CSS.escape(question.id)}"]:checked`)]
+        .map((node) => node.value);
+      answers[question.id] = question.type === 'multiselect' ? chosen : (chosen[0] || '');
+    }
     const translation = {};
     document.querySelectorAll('[data-translation]').forEach((node) => {
       translation[node.dataset.translation] = node.value;

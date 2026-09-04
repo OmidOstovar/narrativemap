@@ -9,7 +9,7 @@
  */
 const STRINGS = {
   'welcome': {
-    fa: '📖 <b>تجربهٔ شما بخشی از تاریخ است، و حیف است که ناپدید شود.</b>\n\n'
+    fa: '📖 <b>تنها روایت است که می‌ماند.</b>\n\n'
       + 'هم آنچه دیده‌اید، هم آنچه از سر گذرانده‌اید — می‌توانید ناشناس بگویید.\n\n'
       + 'روایت‌ها روی نقشهٔ ایران منتشر می‌شوند، هر کدام سر جای خودش و در زمان خودش.\n\n'
       + 'هیچ روایتی پیش از خوانده‌شدن و تأیید منتشر نمی‌شود.',
@@ -31,15 +31,23 @@ const STRINGS = {
   'back': { fa: '« بازگشت', en: '« Back' },
   'step': { fa: 'گام {n} از {total}', en: 'Step {n} of {total}' },
 
+  'choice.done': { fa: '✓ همین‌ها', en: '✓ That is all' },
+  'choice.chosen': { fa: 'انتخاب‌شده: {list}', en: 'Chosen: {list}' },
+  'choice.needOne': { fa: 'دست‌کم یک گزینه را انتخاب کنید.', en: 'Choose at least one option.' },
   'ask.name': {
-    fa: '👤 <b>نامتان را بنویسید</b>\n\nواقعی یا مستعار، فرقی نمی‌کند. اگر می‌خواهید ناشناس بمانید، رد کنید.',
-    en: '👤 <b>What name should appear with this?</b>\n\nReal or a pen name, it makes no difference. Skip to stay anonymous.',
+    fa: '👤 <b>نام مستعارتان</b>\n\nروایت‌ها ناشناس خواهند بود؛ هر نامی که مایلید نمایش داده شود بنویسید. اگر می‌خواهید ناشناس بمانید، رد کنید.',
+    en: '👤 <b>Your chosen name</b>\n\nNarratives are anonymous. Write whatever name you would like shown, or skip to stay anonymous.',
   },
+  'ask.email': {
+    fa: '✉️ <b>ایمیل</b> (اختیاری)\n\nصرفاً برای اما و اگرهای احتمالی آینده. اگر نمی‌خواهید، رد کنید.',
+    en: '✉️ <b>Email</b> (optional)\n\nOnly for the ifs and maybes of some future moment. Skip if you would rather not.',
+  },
+  'error.email': { fa: 'این نشانی ایمیل درست به نظر نمی‌رسد.', en: 'That does not look like an email address.' },
   'ask.province': { fa: '📍 <b>استان را انتخاب کنید</b>', en: '📍 <b>Choose the province</b>' },
   'ask.city': { fa: '📍 <b>شهر را انتخاب کنید</b>\n\nاستان: {province}', en: '📍 <b>Choose the city</b>\n\nProvince: {province}' },
   'ask.place': {
-    fa: '📍 <b>دقیق‌تر بگویید کجا</b>\n\nبه زبان خودتان — «حیاط خانهٔ مادربزرگم در خیابان سپه»، نه فقط نام شهر.',
-    en: '📍 <b>Where exactly?</b>\n\nIn your own words — “my grandmother’s courtyard on Sepah Street”, not just the city.',
+    fa: '📍 <b>کجا بود؟</b>\n\nمی‌توانید یک جای کلی یا جزئی را مشخص کنید: از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز».',
+    en: '📍 <b>Where was it?</b>\n\nSomewhere broad or somewhere exact: anything from “Bandar Abbas” to “the Faculty of Literature at Tabriz University”.',
   },
   'ask.location': {
     fa: '🗺 <b>نقطهٔ دقیق را بفرستید</b>\n\nاز گیرهٔ 📎 گزینهٔ Location را بزنید و نشانگر را روی همان نقطه بکشید.\n\n'
@@ -48,8 +56,8 @@ const STRINGS = {
       + 'If you cannot, skip it — the narrative sits at the centre of the province until it is moved.',
   },
   'ask.precision': {
-    fa: '📅 <b>زمان را با چه دقتی می‌دانید؟</b>',
-    en: '📅 <b>How precisely do you know the time?</b>',
+    fa: '📅 <b>کی شد؟</b>\n\nاگر مشاهده‌ای عینی بوده، ترجیحاً زمان دقیق را بنویسید. اگر از حسی ممتد می‌گویید، زمان حدودی کافی است.\n\nزمان را با چه دقتی می‌دانید؟',
+    en: '📅 <b>When was it?</b>\n\nIf you saw it yourself, give the time as exactly as you can. If you are describing a feeling that stayed with you, roughly is enough.\n\nHow precisely do you know it?',
   },
   'precision.hour': { fa: 'تا حد ساعت', en: 'To the hour' },
   'precision.year': { fa: 'تا حد سال', en: 'To the year' },

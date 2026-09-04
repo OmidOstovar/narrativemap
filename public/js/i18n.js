@@ -92,7 +92,7 @@
     'submit.eyebrow': { en: 'Add a narrative', fa: 'ثبت روایت' },
     'submit.title': { en: 'Yaad Aar', fa: 'یاد آر' },
     'manifesto.p1': {
-      fa: 'تنها روایت است که می‌ماند. برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ماست. چه حیف که در ذهن هر فرد بماند، رنگ ببازد، جهان نشود و ندانَد. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند.',
+      fa: ' برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ماست. چه حیف که در ذهن هر فرد بماند، رنگ ببازد، جهان نشود و ندانَد. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند..',
       en: 'Only the telling remains. The snow of time keeps falling to bury history — a history that is nothing but the collective experience of each one of us. What a waste, for it to stay inside a single mind, to lose its colour, never to reach the world and never to be known. Against forgetting: here you can write, so that it remains.',
     },
     'manifesto.p2': {
@@ -107,7 +107,7 @@
       en: 'Every narrative here is anchored to one exact place in Iran and one period of time. Answer the questions below, mark the spot, and send it in. Nothing appears on the public map until it has been read and accepted.',
       fa: 'هر روایت اینجا به یک نقطهٔ مشخص در ایران و یک بازهٔ زمانی گره خورده است. به پرسش‌های زیر پاسخ دهید، نقطه را روی نقشه مشخص کنید و بفرستید. هیچ روایتی تا خوانده و تأیید نشود روی نقشهٔ عمومی نمی‌آید.',
     },
-    'submit.where.title': { en: 'Where was it?', fa: 'کجا بود؟' },
+    'submit.where.title': { en: 'Where was it?', fa: 'کجا رخ داد؟' },
     'submit.where.note': {
       fa: 'می‌توانید یک جای کلی یا جزئی را مشخص کنید: از «بندرعباس» تا «دانشکدهٔ ادبیات دانشگاه تبریز».',
       en: 'You can give somewhere broad or somewhere exact: anything from “Bandar Abbas” to “the Faculty of Literature at Tabriz University”.',
@@ -134,12 +134,12 @@
       en: 'e.g. The bakery at the corner of Ferdowsi and Enghelab',
       fa: 'مثلاً نانوایی سر نبش فردوسی و انقلاب',
     },
-    'submit.when.title': { en: 'When was it?', fa: 'کی شد؟' },
+    'submit.when.title': { en: 'When was it?', fa: 'کی رخ داد؟' },
     'submit.when.note': {
       fa: 'اگر مشاهده‌ای عینی بوده، ترجیحاً زمان دقیق را بنویسید: پنجشنبه ساعت نه. اگر می‌خواهید از حسِ ممتدی بگویید که در ماه‌های بعد رهایتان نکرده، زمان حدودی کافی است: اسفند.',
       en: 'If you saw it yourself, give the time as exactly as you can — Thursday, nine o’clock. If you are describing a feeling that stayed with you over the months that followed, roughly is enough — Esfand.',
     },
-    'submit.precision': { en: 'How precisely do you know the time?', fa: 'زمان را با چه دقتی می‌دانید؟' },
+    'submit.precision': { en: 'How precisely do you know the time?', fa: 'دقت بازۀ زمانی مورد نظرتان را انتخاب کنید.' },
     'submit.precision.hour': { en: 'To the hour', fa: 'تا حد ساعت' },
     'submit.precision.year': { en: 'To the year', fa: 'تا حد سال' },
     'submit.precision.month': { en: 'To the month', fa: 'تا حد ماه' },
@@ -179,16 +179,16 @@
       fa: 'صرفاً برای اما و اگرهای احتمالی آینده.',
       en: 'Only for the ifs and maybes of some future moment.',
     },
-    'submit.send': { en: 'Send for review', fa: 'ارسال برای بررسی' },
+    'submit.send': { en: 'Send for review', fa: 'ارسال' },
     'submit.sending': { en: 'Sending…', fa: 'در حال ارسال…' },
     'submit.moderatorNote': {
       en: 'A moderator reads every submission before it is published.',
-      fa: 'هر روایت پیش از انتشار خوانده می‌شود.',
+      fa: 'لازم است برای اطمینان از اسپم نبودن متن ارسالی، قبل از انتشار بررسی شود.',
     },
     'submit.progress.none': { en: 'Nothing answered yet', fa: 'هنوز چیزی پر نشده' },
     'submit.progress.some': { en: '{done} of {total} required parts filled in', fa: '{done} از {total} بخش لازم پر شده' },
     'submit.progress.done': { en: 'Everything required is filled in.', fa: 'همهٔ بخش‌های لازم پر شده‌اند.' },
-    'submit.success.title': { en: 'Your narrative is with the moderator.', fa: 'روایت شما برای بررسی فرستاده شد.' },
+    'submit.success.title': { en: 'Your narrative is with the moderator.', fa: 'روایتتان ارسال شد. ممنون از اینکه به اشتراک گذاشتید.' },
     'submit.success.body': {
       en: 'It will appear on the public map once it has been read and accepted.',
       fa: 'به‌محض اینکه خوانده و تأیید شود، روی نقشهٔ عمومی می‌آید.',

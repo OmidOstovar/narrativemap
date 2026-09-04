@@ -33,7 +33,7 @@ const QUESTIONS = [
     options: [
       {
         value: 'chronicle',
-        fa: 'وقایع‌نگاری',
+        fa: 'واقعه‌نگاری',
         en: 'Chronicle',
         detail: {
           fa: 'مثلاً در خیابانی جایی، اتفاقی افتاده که می‌خواهید بازگو کنید.',
@@ -42,8 +42,8 @@ const QUESTIONS = [
       },
       {
         value: 'impression',
-        fa: 'تأثُّرنگاری',
-        en: 'What it left behind',
+        fa: 'شرح حال',
+        en: 'selfgraphy',
         detail: {
           fa: 'مثلاً کسی را در این وقایع از دست داده‌اید و می‌خواهید آنچه فقدانش با شما کرده را بازگو کنید، یا مثلاً چیزهایی دیده‌اید که رهایتان نمی‌کنند و مدام تداعی می‌شوند و می‌خواهید بازگویشان کنید.',
           en: 'You lost someone in these events and want to tell what that absence has done to you; or you saw things that will not let go of you, that keep returning, and you want to set them down.',

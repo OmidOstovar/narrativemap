@@ -167,6 +167,12 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
 .brand__logo { display: none; height: 44px; width: auto; }
 .brand__mark.has-logo .brand__logo { display: block; }
 .brand__mark.has-logo .brand__pin { display: none; }
+/*
+ * The bar says what the archive is for, and then, quieter behind it, what it
+ * is called. The name carries the emphasis on its own once the line is gone.
+ */
+.brand__name { color: var(--text-muted); font-weight: 500; }
+
 .brand__sub {
   color: var(--text-faint);
   font-weight: 400;
@@ -1263,6 +1269,11 @@ input[type='date'] { cursor: text; }
   .brand__sub { display: none; }
   .page { padding: 32px 18px 72px; }
   .section { padding: 20px; }
+}
+
+@media (max-width: 760px) {
+  .brand__line { display: none; }
+  .brand__name { color: var(--text); font-weight: 600; }
 }
 
 @media (max-width: 560px) {

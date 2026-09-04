@@ -20,14 +20,15 @@
 
   const STRINGS = {
     /* ---------------------------- page titles --------------------------- */
-    'title.map': { en: 'Yaad Aar — narratives on the map of Iran', fa: 'یاد آر — روایت‌ها روی نقشهٔ ایران' },
-    'title.submit': { en: 'Add a narrative — Yaad Aar', fa: 'ثبت روایت — یاد آر' },
-    'title.about': { en: 'About — Yaad Aar', fa: 'دربارهٔ یاد آر' },
-    'title.admin': { en: 'Review queue — Yaad Aar', fa: 'صف بررسی — یاد آر' },
-    'title.404': { en: 'Not found — Yaad Aar', fa: 'پیدا نشد — یاد آر' },
+    'title.map': { en: 'Irani Letters — narratives on the map of Iran', fa: 'نامه‌های ایرانی — روایت‌ها روی نقشهٔ ایران' },
+    'title.submit': { en: 'Add a narrative — Irani Letters', fa: 'ثبت روایت — نامه‌های ایرانی' },
+    'title.about': { en: 'About — Irani Letters', fa: 'دربارهٔ نامه‌های ایرانی' },
+    'title.admin': { en: 'Review queue — Irani Letters', fa: 'صف بررسی — نامه‌های ایرانی' },
+    'title.404': { en: 'Not found — Irani Letters', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.name': { en: 'New Persian Letters', fa: 'نامه‌های ایرانی نو' },
+    'brand.tagline': { en: 'Set down what happened in Dey', fa: 'ثبت آنچه در دی‌ماه گذشت' },
+    'brand.name': { en: 'New Irani Letters', fa: 'نامه‌های ایرانی نو' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
     'nav.submit': { en: 'Add a narrative', fa: 'ثبت روایت' },
@@ -96,8 +97,8 @@
       en: 'Only the telling remains. The snow of time keeps falling to bury history — a history that is nothing but the collective experience of each one of us. What a waste, for it to stay inside a single mind, to lose its colour, never to reach the world and never to be known. Against forgetting: here you can write, so that it remains.',
     },
     'manifesto.p2': {
-      fa: 'آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «یاد آر» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.',
-      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets Yaad Aar apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
+      fa: 'آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «نقشۀ روایاتِ نامه‌های ایرانی» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.',
+      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets the narrative map of Irani Letters apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
     },
     'manifesto.p3': {
       fa: 'فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.',

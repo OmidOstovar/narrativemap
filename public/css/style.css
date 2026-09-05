@@ -163,8 +163,13 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
 }
 .brand:hover { text-decoration: none; }
 .brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }
-/* The logo replaces the pin as soon as the file is there to load. */
-.brand__logo { display: none; height: 44px; width: auto; }
+/*
+ * The logo replaces the pin as soon as the file is there to load. 50px, not
+ * the 44 the older mark used: this artwork carries the flag above the rider,
+ * so the lion itself gets a smaller share of the height and needs more of it
+ * to read. The bar is 60px, which leaves the mark room to breathe.
+ */
+.brand__logo { display: none; height: 50px; width: auto; }
 .brand__mark.has-logo .brand__logo { display: block; }
 .brand__mark.has-logo .brand__pin { display: none; }
 /*

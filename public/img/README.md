@@ -12,9 +12,11 @@ of `src` in the five pages. `logo.png` is the same pale drawing without the
 flag, cut from a white ground here. `logo-dark.png` is the first version, in
 deeper colours, cut from a black one.
 
-`icon-32.png` is the browser-tab icon and `icon-180.png` the one iOS uses on a
-home screen. Both are cut from the same drawing, minus the rider, who stands
-well above the lion: keeping her only shrinks everything else until the icon is
-a smudge. What is left — the lion and the sabre — is nearly square and fills it.
-Both sit on the bar's own dark ground rather than being transparent, because
-this artwork is too pale to read against a light browser tab.
+The same file is the browser-tab icon. Cut-down square icons were tried and
+dropped: they had to sit on an opaque ground, which showed as a black box
+behind the mark in a Chrome or Edge tab. Pointing the tab straight at the mark
+keeps its transparency, and costs nothing — the browser has already fetched it
+for the bar.
+
+On an iOS home screen the transparent parts fill with black, which is how iOS
+treats any transparent icon.

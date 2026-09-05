@@ -141,7 +141,6 @@
       listEl.innerHTML = `
         <li class="empty-state">
           <strong>${escapeHtml(t('map.empty.title'))}</strong>
-          ${escapeHtml(t('map.empty.body'))}
           <p style="margin-top:14px"><a href="/submit">${escapeHtml(t('map.empty.cta'))}</a></p>
         </li>`;
       return;

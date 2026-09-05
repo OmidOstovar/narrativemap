@@ -56,7 +56,6 @@
     'map.clearFilters': { en: 'Clear filters', fa: 'حذف فیلترها' },
     'map.streetDetail': { en: 'Street detail', fa: 'نمای خیابانی' },
     'map.empty.title': { en: 'No narratives yet.', fa: 'هنوز روایتی ثبت نشده.' },
-    'map.empty.body': { en: 'This map fills up one story at a time.', fa: 'این نقشه یکی‌یکی پر می‌شود.' },
     'map.empty.cta': { en: 'Be the first to add one →', fa: 'اولین روایت را شما ثبت کنید →' },
     'map.noMatch.title': { en: 'Nothing matches these filters.', fa: 'چیزی با این فیلترها پیدا نشد.' },
     'map.noMatch.body': {

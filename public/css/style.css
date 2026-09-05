@@ -160,7 +160,11 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  /* The line gives way before the bar does: on the narrowest phones it is
+     trimmed rather than pushing the page wider than the screen. */
+  min-width: 0;
 }
+.brand__line { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .brand:hover { text-decoration: none; }
 .brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }
 /*
@@ -187,8 +191,12 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   margin-left: 2px;
 }
 
-.site-nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+/* The nav keeps its size; the mark's line is what gives way when the bar is
+   short of room, and the links never wrap onto a second line. */
+.site-nav { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: none; }
+.nav-short { display: none; }
 .site-nav a {
+  white-space: nowrap;
   color: var(--text-muted);
   padding: 7px 12px;
   border-radius: var(--radius-sm);
@@ -1276,9 +1284,12 @@ input[type='date'] { cursor: text; }
   .section { padding: 20px; }
 }
 
-@media (max-width: 760px) {
-  .brand__line { display: none; }
-  .brand__name { color: var(--text); font-weight: 600; }
+/* Both halves of the mark stay on a phone, so the mark tightens instead of
+   one of them going: closer spacing and a slightly smaller logo buy the width
+   the English line needs, which is longer than the Persian. */
+@media (max-width: 560px) {
+  .brand { gap: 7px; }
+  .brand__logo { height: 44px; }
 }
 
 @media (max-width: 560px) {
@@ -1286,6 +1297,10 @@ input[type='date'] { cursor: text; }
   .site-nav { gap: 2px; }
   .site-nav a { padding: 7px 7px; font-size: 13px; }
   .site-nav .nav-long { display: none; }
+  /* «نقشۀ روایات» / "Narrative map" is the widest thing in the bar; a phone
+     gets the short label so the mark keeps both of its halves. */
+  .site-nav .nav-full { display: none; }
+  .site-nav .nav-short { display: inline; }
   .lang-toggle { padding: 6px 8px; margin-inline-start: 2px; }
   .brand { font-size: 14px; gap: 6px; }
   .picker__map { height: 300px; }

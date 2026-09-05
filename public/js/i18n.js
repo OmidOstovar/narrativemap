@@ -27,10 +27,11 @@
     'title.404': { en: 'Not found — Irani Letters', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.tagline': { en: 'Tell of Iran, of life after Dey', fa: 'از ایران بگو، از زندگی پس از دی‌ماه' },
+    'brand.tagline': { en: 'Tell of Dey', fa: 'از دی‌ماه بگو' },
     'brand.name': { en: 'New Irani Letters', fa: 'نامه‌های ایرانی' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
+    'nav.mapShort': { en: 'Map', fa: 'نقشه' },
     'nav.submit': { en: 'Add a narrative', fa: 'ثبت روایت' },
     'nav.submitShort': { en: 'Add', fa: 'ثبت' },
     'nav.submitRest': { en: 'a narrative', fa: 'روایت' },

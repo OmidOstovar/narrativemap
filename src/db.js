@@ -4,9 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { statePath, adoptLegacy } = require('./state');
 
+// WAL keeps its journal beside the database; all three files move together.
 const DB_PATH = process.env.DATABASE_PATH
-  || path.join(__dirname, '..', 'data', 'narrativemap.db');
+  || adoptLegacy('narrativemap.db', ['', '-wal', '-shm']);
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 

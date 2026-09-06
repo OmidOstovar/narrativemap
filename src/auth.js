@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { statePath } = require('./state');
 
 const COOKIE_NAME = 'nm_admin';
 const SESSION_HOURS = 12;
@@ -13,7 +14,7 @@ const SESSION_HOURS = 12;
  */
 function loadSecret() {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  const file = path.join(__dirname, '..', 'data', '.session-secret');
+  const file = statePath('.session-secret');
   try {
     return fs.readFileSync(file, 'utf8').trim();
   } catch {

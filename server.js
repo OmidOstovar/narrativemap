@@ -11,7 +11,7 @@ const express = require('express');
  */
 function ensureAdminPassword() {
   if (process.env.ADMIN_PASSWORD) return null;
-  const file = path.join(__dirname, 'data', '.admin-password');
+  const file = require('./src/state').statePath('.admin-password');
   try {
     process.env.ADMIN_PASSWORD = fs.readFileSync(file, 'utf8').trim();
     return null;

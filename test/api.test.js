@@ -94,6 +94,7 @@ test('the version endpoint says which commit is running', async () => {
   // Only a deployment sets it; outside one, saying so beats guessing.
   assert.ok('commit' in body);
   assert.ok(!Number.isNaN(Date.parse(body.startedAt)), 'it says when it started');
+  assert.equal(typeof body.submissionsSurviveDeploys, 'boolean', 'it answers the storage question');
 });
 
 test('questions endpoint exposes the questionnaire and province list', async () => {

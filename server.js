@@ -75,6 +75,9 @@ app.get('/api/version', (req, res) => {
   res.json({
     commit: sha ? sha.slice(0, 7) : null,
     startedAt: STARTED_AT,
+    // Whether the database sits on storage that survives a deploy. The path
+    // itself stays private; only the answer is public.
+    submissionsSurviveDeploys: require('./src/state').ON_PERSISTENT_STORAGE,
   });
 });
 

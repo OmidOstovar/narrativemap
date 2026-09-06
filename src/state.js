@@ -44,4 +44,11 @@ function adoptLegacy(name, suffixes = ['']) {
   return target;
 }
 
-module.exports = { STATE_DIR, statePath, adoptLegacy };
+/**
+ * True when state is somewhere that outlives the container. Reported by
+ * /api/version as a plain yes or no, so the question "will a deploy wipe the
+ * submissions?" can be answered by opening a page rather than reading a log.
+ */
+const ON_PERSISTENT_STORAGE = STATE_DIR !== LEGACY_DIR;
+
+module.exports = { STATE_DIR, LEGACY_DIR, ON_PERSISTENT_STORAGE, statePath, adoptLegacy };

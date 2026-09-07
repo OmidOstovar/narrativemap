@@ -1288,21 +1288,24 @@ input[type='date'] { cursor: text; }
    one of them going: closer spacing and a slightly smaller logo buy the width
    the English line needs, which is longer than the Persian. */
 @media (max-width: 560px) {
-  .brand { gap: 7px; }
+  /* The English line is half again as long as the Persian, so the mark loses a
+     point of type and some spacing here rather than trailing off mid-word on
+     an ordinary phone. */
+  .brand { gap: 7px; font-size: 13px; }
   .brand__logo { height: 44px; }
 }
 
 @media (max-width: 560px) {
   .site-header { gap: 8px; padding: 0 12px; }
   .site-nav { gap: 2px; }
-  .site-nav a { padding: 7px 7px; font-size: 13px; }
+  .site-nav a { padding: 7px 5px; font-size: 13px; }
   .site-nav .nav-long { display: none; }
   /* «نقشۀ روایات» / "Narrative map" is the widest thing in the bar; a phone
      gets the short label so the mark keeps both of its halves. */
   .site-nav .nav-full { display: none; }
   .site-nav .nav-short { display: inline; }
   .lang-toggle { padding: 6px 8px; margin-inline-start: 2px; }
-  .brand { font-size: 14px; gap: 6px; }
+  .brand { gap: 6px; }
   .picker__map { height: 300px; }
 }
 

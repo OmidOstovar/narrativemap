@@ -27,7 +27,7 @@
     'title.404': { en: 'Not found — Irani Letters', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.tagline': { en: 'Tell of Dey', fa: 'از دی‌ماه بگو' },
+    'brand.tagline': { en: 'Tell the world of them', fa: 'از او بگو به دنیا' },
     'brand.name': { en: 'New Irani Letters', fa: 'نامه‌های ایرانی' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
@@ -91,7 +91,10 @@
 
     /* ------------------------------ submit ------------------------------ */
     'submit.eyebrow': { en: 'Add a narrative', fa: 'ثبت روایت' },
-    'submit.title': { en: 'Yaad Aar', fa: 'یاد آر' },
+    'submit.title': {
+      en: 'Yaad Aar: 2026, 2022, 2019, 2017, and before',
+      fa: 'یاد آر: ۴۰۴، ۴۰۱، ۹۸، ۹۶، و پیش از آن',
+    },
     'manifesto.p1': {
       fa: ' برفِ زمان می‌بارد تا تاریخ را دفن کند، تاریخی که چیزی جز تجربه‌هایِ جمعیِ فردفردِ ما نیست. چه حیف که تنها در ذهن هر فرد بماند و قبل از جمعی شدن رنگ ببازد، که جهان نشود و ندانَدشان. علیه فراموشی، اینجا می‌توانید بنویسید تا بماند. تنها روایت‌شده است که می‌ماند.',
       en: 'Only the telling remains. The snow of time keeps falling to bury history — a history that is nothing but the collective experience of each one of us. What a waste, for it to stay inside a single mind, to lose its colour, never to reach the world and never to be known. Against forgetting: here you can write, so that it remains.',

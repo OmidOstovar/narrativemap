@@ -44,6 +44,15 @@ test('a mounted volume is where state goes', () => {
   assert.equal(state.statePath('narrativemap.db'), path.join(mount, 'narrativemap.db'));
 });
 
+test('a volume counts as persistent even mounted at the legacy path', () => {
+  const legacy = path.join(__dirname, '..', 'data');
+  const onVolume = loadWith({ STATE_DIR: '', RAILWAY_VOLUME_MOUNT_PATH: legacy });
+  assert.equal(onVolume.ON_PERSISTENT_STORAGE, true, 'where it points is not the question');
+
+  const bare = loadWith({ STATE_DIR: '', RAILWAY_VOLUME_MOUNT_PATH: '' });
+  assert.equal(bare.ON_PERSISTENT_STORAGE, false, 'no volume, no promise');
+});
+
 test('a database left behind is carried onto the volume, journal and all', () => {
   const mount = tempDir();
   const legacy = path.join(__dirname, '..', 'data');

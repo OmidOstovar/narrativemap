@@ -14,9 +14,8 @@ const path = require('node:path');
  */
 const LEGACY_DIR = path.join(__dirname, '..', 'data');
 
-const STATE_DIR = process.env.STATE_DIR
-  || process.env.RAILWAY_VOLUME_MOUNT_PATH
-  || LEGACY_DIR;
+const MOUNTED = process.env.STATE_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || '';
+const STATE_DIR = MOUNTED || LEGACY_DIR;
 
 function statePath(name) {
   return path.join(STATE_DIR, name);
@@ -45,10 +44,13 @@ function adoptLegacy(name, suffixes = ['']) {
 }
 
 /**
- * True when state is somewhere that outlives the container. Reported by
- * /api/version as a plain yes or no, so the question "will a deploy wipe the
- * submissions?" can be answered by opening a page rather than reading a log.
+ * True when the platform handed us storage that outlives the container.
+ *
+ * This asks whether a volume was mounted, not where it points. Comparing paths
+ * would call a volume mounted at the legacy path — the obvious choice, since it
+ * is where the app wrote before — ephemeral, and say the archive was in danger
+ * when it was the one arrangement that had always been safe.
  */
-const ON_PERSISTENT_STORAGE = STATE_DIR !== LEGACY_DIR;
+const ON_PERSISTENT_STORAGE = Boolean(MOUNTED);
 
 module.exports = { STATE_DIR, LEGACY_DIR, ON_PERSISTENT_STORAGE, statePath, adoptLegacy };

@@ -250,11 +250,11 @@ function getApproved(publicId) {
 }
 
 const listByStatusStatement = db.prepare(`
-  SELECT * FROM narratives WHERE status = ?
+  SELECT *, (SELECT COUNT(*) FROM narrative_hearings h WHERE h.narrative_id = narratives.id) AS heard_count FROM narratives WHERE status = ?
   ORDER BY submitted_at DESC, id DESC
 `);
 const listAllStatement = db.prepare(
-  'SELECT * FROM narratives ORDER BY submitted_at DESC, id DESC',
+  'SELECT *, (SELECT COUNT(*) FROM narrative_hearings h WHERE h.narrative_id = narratives.id) AS heard_count FROM narratives ORDER BY submitted_at DESC, id DESC',
 );
 
 function listForReview(status) {
@@ -264,7 +264,7 @@ function listForReview(status) {
   return rows.map((row) => toNarrative(row, { includePrivate: true }));
 }
 
-const getAnyStatement = db.prepare('SELECT * FROM narratives WHERE public_id = ?');
+const getAnyStatement = db.prepare('SELECT *, (SELECT COUNT(*) FROM narrative_hearings h WHERE h.narrative_id = narratives.id) AS heard_count FROM narratives WHERE public_id = ?');
 
 function getAny(publicId) {
   return toNarrative(getAnyStatement.get(publicId), { includePrivate: true });

@@ -118,6 +118,7 @@
             <span class="place">${escapeHtml(placeLabel(s))}</span>
             <span>${escapeHtml(formatYears(s.period))}</span>
             <span>${escapeHtml(formatTimestamp(s.submittedAt))}</span>
+            ${s.heardBy ? `<span class="card__heard">${escapeHtml(digits(s.heardBy))} ◆</span>` : ''}
           </span>
           <span class="card__excerpt">${escapeHtml((s.answers.what_happened || '').replace(/\s+/g, ' ').slice(0, 160))}</span>
         </button>
@@ -219,6 +220,9 @@
           </dd>
           <dt>${escapeHtml(t('reader.toldBy'))}</dt>
           <dd>${escapeHtml(submission.contributor || t('reader.anonymous'))}</dd>
+          ${submission.status === 'approved' ? `
+            <dt>${escapeHtml(t('admin.heard'))}</dt>
+            <dd>${escapeHtml(digits(submission.heardBy || 0))}</dd>` : ''}
         </dl>
 
         ${submission.place.approximate

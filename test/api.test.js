@@ -597,3 +597,18 @@ test('nothing about the reader is stored beyond the key they invented', async ()
   assert.deepEqual(columns.sort(), ['created_at', 'narrative_id', 'reader_key'],
     'no address, no agent, nothing that could identify a reader');
 });
+
+test('the moderator sees how many have heard a published narrative', async () => {
+  const { cookie } = await signIn();
+  const id = await publishOne();
+  for (const reader of ['queue-reader-aaaaaaaaaa', 'queue-reader-bbbbbbbbbb']) {
+    await call(`/api/narratives/${id}/heard`, { method: 'POST', body: { reader, heard: true } });
+  }
+
+  const queue = await json(await call('/api/admin/submissions?status=approved', { cookie }));
+  const found = queue.submissions.find((s) => s.id === id);
+  assert.equal(found.heardBy, 2, 'the count reaches the review queue');
+
+  const detail = await json(await call(`/api/admin/submissions/${id}`, { cookie }));
+  assert.equal(detail.submission.heardBy, 2);
+});

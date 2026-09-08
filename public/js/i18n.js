@@ -50,6 +50,7 @@
     'map.sort.chronological': { en: 'Oldest first', fa: 'قدیمی‌ترین اول' },
     'map.sort.reverse': { en: 'Newest first', fa: 'تازه‌ترین اول' },
     'map.sort.recent': { en: 'Recently published', fa: 'به‌تازگی منتشرشده' },
+    'map.sort.heard': { en: 'Most heard', fa: 'بیشتر شنیده‌شده' },
     'map.sort.title': { en: 'By title', fa: 'بر اساس عنوان' },
     'map.count.one': { en: 'narrative', fa: 'روایت' },
     'map.count.many': { en: 'narratives', fa: 'روایت' },
@@ -250,6 +251,7 @@
     'admin.retranslate': { en: 'Translate again', fa: 'ترجمهٔ دوباره' },
     'admin.translating': { en: 'Translating…', fa: 'در حال ترجمه…' },
     'admin.translated': { en: 'Translation updated.', fa: 'ترجمه به‌روز شد.' },
+    'admin.heard': { en: 'Heard by', fa: 'شنیده‌اند' },
     'admin.testEmail': { en: 'Test the backup email', fa: 'آزمودن ایمیل پشتیبان' },
     'admin.testEmailSending': { en: 'Sending…', fa: 'در حال ارسال…' },
     'admin.testEmailSent': {

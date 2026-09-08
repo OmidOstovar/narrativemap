@@ -63,6 +63,9 @@
       reverse: (a, b) => b.period.start.localeCompare(a.period.start),
       recent: (a, b) => b.submittedAt.localeCompare(a.submittedAt),
       title: (a, b) => title(a).localeCompare(title(b)),
+      // Ties keep the chronology rather than falling into insertion order.
+      heard: (a, b) => (b.heardBy || 0) - (a.heardBy || 0)
+        || a.period.start.localeCompare(b.period.start),
     };
     result = result.slice().sort(comparators[sort] || comparators.chronological);
 

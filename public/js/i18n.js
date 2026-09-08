@@ -247,6 +247,18 @@
     'admin.retranslate': { en: 'Translate again', fa: 'ترجمهٔ دوباره' },
     'admin.translating': { en: 'Translating…', fa: 'در حال ترجمه…' },
     'admin.translated': { en: 'Translation updated.', fa: 'ترجمه به‌روز شد.' },
+    'admin.translationOff': {
+      en: 'Translation is switched off: the server has no ANTHROPIC_API_KEY. Set it in the service variables and try again.',
+      fa: 'ترجمه خاموش است: کلید ANTHROPIC_API_KEY روی سرور تنظیم نشده. آن را در متغیرهای سرویس بگذارید و دوباره امتحان کنید.',
+    },
+    'admin.translationNothing': {
+      en: 'Nothing here needs translating.',
+      fa: 'چیزی برای ترجمه‌کردن نیست.',
+    },
+    'admin.translationFailed': {
+      en: 'The translation failed. {message}',
+      fa: 'ترجمه ناموفق بود. {message}',
+    },
     'admin.tstatus.pending': { en: 'translation queued', fa: 'ترجمه در صف' },
     'admin.tstatus.done': { en: 'translated', fa: 'ترجمه‌شده' },
     'admin.tstatus.edited': { en: 'translation edited', fa: 'ترجمه ویرایش‌شده' },

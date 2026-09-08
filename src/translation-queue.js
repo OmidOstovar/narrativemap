@@ -48,15 +48,13 @@ async function translateOne(publicId) {
 
   if (!hasTranslatableText(narrative.answers)) {
     db.setTranslation(publicId, { status: 'skipped', error: null });
-    return { status: 'skipped' };
+    return { status: 'skipped', reason: 'nothing to translate' };
   }
 
   if (!isConfigured()) {
-    db.setTranslation(publicId, {
-      status: 'skipped',
-      error: 'No translation credentials configured.',
-    });
-    return { status: 'skipped' };
+    const reason = 'No translation credentials configured.';
+    db.setTranslation(publicId, { status: 'skipped', error: reason });
+    return { status: 'skipped', reason: 'not configured' };
   }
 
   const from = narrative.originalLang;

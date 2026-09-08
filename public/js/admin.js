@@ -534,8 +534,20 @@
           const original = button.textContent;
           button.textContent = t('admin.translating');
           try {
-            await api(`/api/admin/submissions/${encodeURIComponent(submission.id)}/translate`, { method: 'POST' });
-            toast(t('admin.translated'));
+            const outcome = await api(`/api/admin/submissions/${encodeURIComponent(submission.id)}/translate`, { method: 'POST' });
+            const status = (outcome && outcome.result && outcome.result.status) || 'done';
+            const reason = outcome && outcome.result && outcome.result.reason;
+            if (status === 'done') {
+              toast(t('admin.translated'));
+            } else if (status === 'skipped' && reason === 'not configured') {
+              toast(t('admin.translationOff'), 'error');
+            } else if (status === 'skipped') {
+              toast(t('admin.translationNothing'), 'error');
+            } else {
+              toast(t('admin.translationFailed', {
+                message: (outcome.result && outcome.result.error) || '',
+              }), 'error');
+            }
             await refresh(false);
             const updated = state.submissions.find((item) => item.id === submission.id);
             if (updated) renderDetail(updated);

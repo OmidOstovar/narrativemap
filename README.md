@@ -324,7 +324,7 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `ADMIN_PASSWORD` | generated | Password for the review queue |
 | `SESSION_SECRET` | generated | Signs the moderator's session cookie |
 | `PORT` | `3000` | Port to listen on |
-| `DATABASE_PATH` | `./data/narrativemap.db` | Where SQLite writes |
+| `DATABASE_PATH` | volume, else `./data/narrativemap.db` | Where SQLite writes. Follows `RAILWAY_VOLUME_MOUNT_PATH` when a volume is mounted |
 | `COOKIE_SECURE` | `false` | Set to `true` when serving over HTTPS |
 | `TRUST_PROXY` | `false` | Set to `true` behind a reverse proxy |
 | `MIN_YEAR` | `1800` | Earliest year a narrative may be dated to |
@@ -334,6 +334,9 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per visitor per hour (per Telegram user, for the bot) |
 | `BOT_API_TOKEN` | none | Shared secret letting the bot submit for many contributors |
 | `LOGIN_LIMIT_PER_15_MIN` | `10` | Sign-in attempts per IP per 15 minutes |
+| `SMTP_URL` | none | Mail server for backup copies, e.g. `smtps://you%40gmail.com:app-password@smtp.gmail.com:465` |
+| `BACKUP_EMAIL_TO` | none | Address that receives a copy of every submission as it arrives |
+| `BACKUP_EMAIL_FROM` | the SMTP user | Sender address, when it differs from the account signed in |
 
 Before going live: set `ADMIN_PASSWORD` and `SESSION_SECRET` explicitly, set
 `COOKIE_SECURE=true` behind HTTPS, and clear the sample narratives with

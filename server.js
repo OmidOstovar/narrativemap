@@ -28,6 +28,7 @@ const generatedPassword = ensureAdminPassword();
 
 const db = require('./src/db');
 const auth = require('./src/auth');
+const mailer = require('./src/mailer');
 const { QUESTIONS, FORM_SEQUENCE, TITLE_QUESTION_ID } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
@@ -140,6 +141,10 @@ app.post('/api/submissions', (req, res) => {
   // Translate after replying: the contributor should not wait on a model, and
   // a translation outage must never cost a narrative.
   translations.enqueue(id).catch((error) => console.error('translation queue:', error));
+
+  // A second copy, out of reach of anything that could go wrong here. Same
+  // rule: a mail server having a bad day must not cost a narrative either.
+  mailer.backup(id, submission).catch((error) => console.error('backup email:', error));
 
   res.status(201).json({
     id,

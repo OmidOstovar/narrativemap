@@ -23,7 +23,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
     "express": "^4.22.2",
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "nodemailer": "^10.0.1"
   },
   "private": true,
   "engines": {

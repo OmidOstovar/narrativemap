@@ -58,6 +58,12 @@ const botLimit = auth.createRateLimiter({
   windowMs: 60 * 60 * 1000,
   max: Number(process.env.SUBMIT_LIMIT_PER_HOUR || 10),
 });
+// Generous: a reader working through the map may mark a great many in a
+// sitting, and the limit is only here to blunt a script.
+const hearingLimit = auth.createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: Number(process.env.HEARING_LIMIT_PER_HOUR || 300),
+});
 
 function clientKey(req) {
   return req.ip || req.socket.remoteAddress || 'unknown';
@@ -108,6 +114,17 @@ app.get('/api/narratives', (req, res) => {
   res.json({ narratives: db.listApproved() });
 });
 
+/** Which of the published narratives this reader has already marked. */
+app.get('/api/narratives/heard', (req, res) => {
+  const reader = typeof req.query.reader === 'string' ? req.query.reader.trim() : '';
+  if (!/^[A-Za-z0-9_-]{16,64}$/.test(reader)) {
+    res.json({ heard: [] });
+    return;
+  }
+  const ids = db.listApproved().map((n) => n.id);
+  res.json({ heard: db.heardByReader(reader, ids) });
+});
+
 app.get('/api/narratives/:id', (req, res) => {
   const narrative = db.getApproved(req.params.id);
   if (!narrative) {
@@ -115,6 +132,36 @@ app.get('/api/narratives/:id', (req, res) => {
     return;
   }
   res.json({ narrative });
+});
+
+/**
+ * A reader marking that a narrative reached them.
+ *
+ * The reader identifies themselves with a key their own browser invented. The
+ * server never derives one from an address, and stores nothing else, so the
+ * table cannot say who read what — only how many.
+ */
+app.post('/api/narratives/:id/heard', (req, res) => {
+  const limit = hearingLimit(clientKey(req));
+  if (!limit.ok) {
+    res.set('Retry-After', String(limit.retryAfter));
+    res.status(429).json({ error: 'Too many at once. Try again shortly.' });
+    return;
+  }
+
+  const reader = req.body && typeof req.body.reader === 'string' ? req.body.reader.trim() : '';
+  if (!/^[A-Za-z0-9_-]{16,64}$/.test(reader)) {
+    res.status(400).json({ error: 'A reader key is required.' });
+    return;
+  }
+
+  const heard = !(req.body && req.body.heard === false);
+  const result = db.setHeard(req.params.id, reader, heard);
+  if (!result) {
+    res.status(404).json({ error: 'No published narrative with that id.' });
+    return;
+  }
+  res.json(result);
 });
 
 app.post('/api/submissions', (req, res) => {

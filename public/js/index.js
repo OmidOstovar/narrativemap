@@ -3,13 +3,15 @@
   'use strict';
 
   const { api, escapeHtml, paragraphs, dirFor, formatYears, formatPeriodPair,
-          versionFor, toast, debounce } = window.NM;
+          versionFor, toast, debounce, readerKey } = window.NM;
   const { t, pick, province, digits } = window.I18N;
 
   const state = {
     narratives: [],
     questions: [],
     titleQuestionId: 'narrative_title',
+    // Which narratives this reader has already marked as having reached them.
+    heard: new Set(),
     filtered: [],
     selectedId: null,
     yearBounds: { min: 1900, max: new Date().getFullYear() },
@@ -161,10 +163,56 @@
           <span class="card__meta">
             <span class="place">${escapeHtml(province(n.place.province) || '')}</span>
             <span>${escapeHtml(formatYears(n.period))}</span>
+            ${n.heardBy ? `<span class="card__heard">${escapeHtml(digits(n.heardBy))} ◆</span>` : ''}
           </span>
           <span class="card__excerpt" dir="${dirFor(excerpt(n))}">${escapeHtml(excerpt(n))}</span>
         </button>
       </li>`).join('');
+  }
+
+  /**
+   * Marks, or unmarks, that this narrative reached the reader. The button
+   * answers immediately and is put back if the server disagrees: a count is
+   * not worth making someone wait on the network for.
+   */
+  async function toggleHeard(id) {
+    const narrative = state.narratives.find((n) => n.id === id);
+    if (!narrative) return;
+
+    const wanted = !state.heard.has(id);
+    if (wanted) state.heard.add(id); else state.heard.delete(id);
+    narrative.heardBy = Math.max(0, (narrative.heardBy || 0) + (wanted ? 1 : -1));
+    paintHearing(narrative);
+
+    try {
+      const result = await api(`/api/narratives/${encodeURIComponent(id)}/heard`, {
+        method: 'POST',
+        body: { reader: readerKey(), heard: wanted },
+      });
+      if (result.heard) state.heard.add(id); else state.heard.delete(id);
+      narrative.heardBy = result.count;
+    } catch (error) {
+      if (wanted) state.heard.delete(id); else state.heard.add(id);
+      narrative.heardBy = Math.max(0, (narrative.heardBy || 0) + (wanted ? -1 : 1));
+      toast(error.message, 'error');
+    }
+    paintHearing(narrative);
+    renderList();
+  }
+
+  /** Repaints just the button and its count, without rebuilding the panel. */
+  function paintHearing(narrative) {
+    const heard = state.heard.has(narrative.id);
+    const button = document.querySelector(`[data-heard-for="${CSS.escape(narrative.id)}"]`);
+    if (button) {
+      button.classList.toggle('is-heard', heard);
+      button.querySelector('.hearing__mark').textContent = heard ? '◆' : '◇';
+      button.querySelector('.hearing__label').textContent = t(heard ? 'reader.heardDone' : 'reader.heard');
+    }
+    const count = document.querySelector(`[data-heard-count="${CSS.escape(narrative.id)}"]`);
+    if (count) {
+      count.textContent = narrative.heardBy ? t('reader.heardBy', { count: narrative.heardBy }) : '';
+    }
   }
 
   /* ------------------------------- markers ------------------------------- */
@@ -425,10 +473,25 @@
         <dt>${escapeHtml(t('reader.toldBy'))}</dt>
         <dd>${escapeHtml(n.contributor || t('reader.anonymous'))}</dd>
       </dl>
-      ${answers}`;
+      ${answers}
+      <div class="hearing">
+        <button type="button" class="hearing__button${state.heard.has(n.id) ? ' is-heard' : ''}"
+                data-heard-for="${escapeHtml(n.id)}">
+          <span class="hearing__mark" aria-hidden="true">${state.heard.has(n.id) ? '◆' : '◇'}</span>
+          <span class="hearing__label">${escapeHtml(t(state.heard.has(n.id) ? 'reader.heardDone' : 'reader.heard'))}</span>
+        </button>
+        <span class="hearing__count" data-heard-count="${escapeHtml(n.id)}">${
+  n.heardBy ? escapeHtml(t('reader.heardBy', { count: n.heardBy })) : ''
+}</span>
+      </div>`;
 
     readerEl.classList.add('is-open');
     readerEl.setAttribute('aria-hidden', 'false');
+    const heardButton = readerBody.querySelector('[data-heard-for]');
+    if (heardButton) {
+      heardButton.addEventListener('click', () => toggleHeard(heardButton.dataset.heardFor));
+    }
+
     readerBody.scrollTop = 0;
     readerEl.focus({ preventScroll: true });
   }
@@ -552,6 +615,17 @@
     state.questions = meta.questions;
     state.titleQuestionId = meta.titleQuestionId || state.titleQuestionId;
     state.narratives = data.narratives;
+
+    // What this reader marked on an earlier visit, so the buttons come back
+    // as they left them. A failure here costs nothing worth stopping for.
+    api(`/api/narratives/heard?reader=${encodeURIComponent(readerKey())}`)
+      .then((seen) => {
+        state.heard = new Set(seen.heard || []);
+        renderList();
+        const open = state.narratives.find((n) => n.id === state.selectedId);
+        if (open) paintHearing(open);
+      })
+      .catch(() => { /* the buttons simply start empty */ });
 
     renderProvinceFilter();
 

@@ -40,6 +40,30 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_narratives_period ON narratives (period_start, period_end);
 `);
 
+/*
+ * Readers marking that a narrative reached them.
+ *
+ * `reader_key` is a random string the browser makes for itself and keeps in
+ * its own storage. It is never derived from an address, a session or anything
+ * about the person: its only job is to stop one reader counting twice and to
+ * let them take it back. Nothing here says who read what — for an archive of
+ * testimony against a state, a table linking readers to narratives would be
+ * the most dangerous thing in the building, so it is not kept.
+ *
+ * The cost is that the count can be inflated by clearing storage. Against
+ * holding a record of who read which testimony, that is a cheap price.
+ */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS narrative_hearings (
+    narrative_id INTEGER NOT NULL REFERENCES narratives (id) ON DELETE CASCADE,
+    reader_key   TEXT    NOT NULL,
+    created_at   TEXT    NOT NULL,
+    PRIMARY KEY (narrative_id, reader_key)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_hearings_narrative ON narrative_hearings (narrative_id);
+`);
+
 /**
  * Columns added after the first release. SQLite has no "ADD COLUMN IF NOT
  * EXISTS", so check the table first — this runs against databases that already
@@ -114,6 +138,7 @@ function toNarrative(row, { includePrivate = false } = {}) {
     },
     contributor: row.contributor_name || null,
     submittedAt: row.submitted_at,
+    heardBy: row.heard_count || 0,
   };
   // A pin the contributor could not place exactly; the moderator moves it.
   if (row.approximate) narrative.place.approximate = true;
@@ -208,7 +233,7 @@ function listAwaitingTranslation(limit = 20) {
 }
 
 const listApprovedStatement = db.prepare(`
-  SELECT * FROM narratives WHERE status = 'approved'
+  SELECT *, (SELECT COUNT(*) FROM narrative_hearings h WHERE h.narrative_id = narratives.id) AS heard_count FROM narratives WHERE status = 'approved'
   ORDER BY period_start ASC, id ASC
 `);
 
@@ -217,7 +242,7 @@ function listApproved() {
 }
 
 const getApprovedStatement = db.prepare(
-  `SELECT * FROM narratives WHERE public_id = ? AND status = 'approved'`,
+  `SELECT *, (SELECT COUNT(*) FROM narrative_hearings h WHERE h.narrative_id = narratives.id) AS heard_count FROM narratives WHERE public_id = ? AND status = 'approved'`,
 );
 
 function getApproved(publicId) {
@@ -310,9 +335,58 @@ function deleteNarrative(publicId) {
   return deleteStatement.run(publicId).changes > 0;
 }
 
+/* -------------------------------- hearings ------------------------------- */
+
+const approvedRowIdStatement = db.prepare(
+  `SELECT id FROM narratives WHERE public_id = ? AND status = 'approved'`,
+);
+const addHearingStatement = db.prepare(
+  'INSERT OR IGNORE INTO narrative_hearings (narrative_id, reader_key, created_at) VALUES (?, ?, ?)',
+);
+const removeHearingStatement = db.prepare(
+  'DELETE FROM narrative_hearings WHERE narrative_id = ? AND reader_key = ?',
+);
+const countHearingsStatement = db.prepare(
+  'SELECT COUNT(*) AS n FROM narrative_hearings WHERE narrative_id = ?',
+);
+const hasHeardStatement = db.prepare(
+  'SELECT 1 FROM narrative_hearings WHERE narrative_id = ? AND reader_key = ?',
+);
+
+/**
+ * Marks, or unmarks, that a narrative reached this reader. Returns the count
+ * and where the reader now stands, or null when there is no such narrative to
+ * mark — an unpublished one is not there to be heard.
+ */
+function setHeard(publicId, readerKey, heard) {
+  const row = approvedRowIdStatement.get(publicId);
+  if (!row) return null;
+
+  if (heard) addHearingStatement.run(row.id, readerKey, new Date().toISOString());
+  else removeHearingStatement.run(row.id, readerKey);
+
+  return {
+    heard: Boolean(hasHeardStatement.get(row.id, readerKey)),
+    count: countHearingsStatement.get(row.id).n,
+  };
+}
+
+/** Which of these narratives this reader has already marked. */
+function heardByReader(readerKey, publicIds) {
+  if (!readerKey || !publicIds.length) return [];
+  const placeholders = publicIds.map(() => '?').join(', ');
+  return db.prepare(`
+    SELECT n.public_id FROM narrative_hearings h
+    JOIN narratives n ON n.id = h.narrative_id
+    WHERE h.reader_key = ? AND n.public_id IN (${placeholders})
+  `).all(readerKey, ...publicIds).map((r) => r.public_id);
+}
+
 module.exports = {
   db,
   DB_PATH,
+  setHeard,
+  heardByReader,
   STATUSES,
   SOURCES,
   TRANSLATION_STATUSES,

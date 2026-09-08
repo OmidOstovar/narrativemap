@@ -18,6 +18,7 @@ process.env.SUBMIT_LIMIT_PER_HOUR = '1000';
 process.env.LOGIN_LIMIT_PER_15_MIN = '1000';
 
 const app = require('../server');
+const db = require('../src/db');
 
 let server;
 let base;
@@ -498,4 +499,101 @@ test('malformed JSON is rejected cleanly', async () => {
     body: '{ not json',
   });
   assert.equal(response.status, 400);
+});
+
+/* ------------------------------- hearings -------------------------------- */
+
+/** Publishes one narrative and hands back its public id. */
+async function publishOne(overrides) {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST', body: validSubmission(overrides),
+  }));
+  await call(`/api/admin/submissions/${created.id}/status`, {
+    method: 'POST', cookie, body: { status: 'approved' },
+  });
+  return created.id;
+}
+
+const READER = 'reader-key-for-the-tests-01';
+
+test('a reader can mark a narrative as heard, and take it back', async () => {
+  const id = await publishOne();
+
+  const first = await json(await call(`/api/narratives/${id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  }));
+  assert.deepEqual(first, { heard: true, count: 1 });
+
+  // Marking twice is not two hearings; one reader is one reader.
+  const again = await json(await call(`/api/narratives/${id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  }));
+  assert.deepEqual(again, { heard: true, count: 1 });
+
+  const undone = await json(await call(`/api/narratives/${id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: false },
+  }));
+  assert.deepEqual(undone, { heard: false, count: 0 });
+});
+
+test('separate readers each count once', async () => {
+  const id = await publishOne();
+  for (const reader of ['reader-aaaaaaaaaaaaaaaa', 'reader-bbbbbbbbbbbbbbbb']) {
+    await call(`/api/narratives/${id}/heard`, { method: 'POST', body: { reader, heard: true } });
+  }
+  const narrative = await json(await call(`/api/narratives/${id}`));
+  assert.equal(narrative.narrative.heardBy, 2);
+});
+
+test('the count travels with the narrative on the public map', async () => {
+  const id = await publishOne();
+  await call(`/api/narratives/${id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  });
+  const listed = await json(await call('/api/narratives'));
+  const found = listed.narratives.find((n) => n.id === id);
+  assert.equal(found.heardBy, 1);
+});
+
+test('a reader is told which narratives they already marked', async () => {
+  const mine = await publishOne();
+  const other = await publishOne();
+  await call(`/api/narratives/${mine}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  });
+
+  const seen = await json(await call(`/api/narratives/heard?reader=${READER}`));
+  assert.ok(seen.heard.includes(mine));
+  assert.ok(!seen.heard.includes(other), 'only what this reader marked');
+});
+
+test('an unpublished narrative cannot be marked', async () => {
+  const created = await json(await call('/api/submissions', {
+    method: 'POST', body: validSubmission(),
+  }));
+  const response = await call(`/api/narratives/${created.id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  });
+  assert.equal(response.status, 404, 'a narrative still in the queue is not there to be heard');
+});
+
+test('a missing or malformed reader key is refused', async () => {
+  const id = await publishOne();
+  for (const reader of [undefined, '', 'short', 'has spaces in it and is long enough']) {
+    const response = await call(`/api/narratives/${id}/heard`, {
+      method: 'POST', body: { reader, heard: true },
+    });
+    assert.equal(response.status, 400, `refused: ${JSON.stringify(reader)}`);
+  }
+});
+
+test('nothing about the reader is stored beyond the key they invented', async () => {
+  const id = await publishOne();
+  await call(`/api/narratives/${id}/heard`, {
+    method: 'POST', body: { reader: READER, heard: true },
+  });
+  const columns = db.db.prepare('PRAGMA table_info(narrative_hearings)').all().map((c) => c.name);
+  assert.deepEqual(columns.sort(), ['created_at', 'narrative_id', 'reader_key'],
+    'no address, no agent, nothing that could identify a reader');
 });

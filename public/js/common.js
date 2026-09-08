@@ -156,6 +156,38 @@
     }));
   }
 
+  /* ------------------------------- readers ------------------------------- */
+
+  /**
+   * A name this browser gives itself, so a reader can mark a narrative once
+   * and take it back, without the archive learning anything about them.
+   *
+   * It is random, made here rather than issued by the server, and tied to
+   * nothing — no address, no session, no account. If storage is unavailable
+   * one is held in memory for the visit, which still stops double counting on
+   * the page in front of them.
+   */
+  let memoryKey = null;
+  function readerKey() {
+    const STORAGE_KEY = 'nm_reader';
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return saved;
+    } catch { /* storage blocked */ }
+
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    const key = [...bytes].map((b) => b.toString(36).padStart(2, '0')).join('').slice(0, 32);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, key);
+    } catch {
+      memoryKey = memoryKey || key;
+      return memoryKey;
+    }
+    return key;
+  }
+
   /* ---------------------------- translation ------------------------------ */
 
   /**
@@ -247,6 +279,7 @@
   document.addEventListener('DOMContentLoaded', markActiveNav);
 
   global.NM = {
+    readerKey,
     api, escapeHtml, paragraphs, dirFor,
     formatPeriod, formatPeriodJalali, formatPeriodPair, formatYears, formatTimestamp,
     gregorianPoint, jalaliPoint,

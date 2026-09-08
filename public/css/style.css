@@ -694,6 +694,43 @@ input[type='date'] { cursor: text; }
 .map-toggle:hover { color: var(--text); }
 .map-toggle input { accent-color: var(--saffron); margin: 0; }
 
+/*
+ * Marking that a narrative reached you. Deliberately quiet: it sits after the
+ * telling, in the reading colours rather than an accent, because it is an
+ * acknowledgement and not a score.
+ */
+.hearing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 34px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink-500);
+}
+.hearing__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--ink-400);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.hearing__button:hover { color: var(--text); border-color: var(--text-faint); }
+.hearing__button.is-heard {
+  color: var(--saffron);
+  border-color: var(--saffron-dim);
+  background: rgba(224, 145, 63, 0.08);
+}
+.hearing__mark { font-size: 12px; line-height: 1; }
+.hearing__count { color: var(--text-faint); font-size: 13px; }
+.card__heard { color: var(--text-faint); }
+
 /* -------------------------------- reader -------------------------------- */
 
 .reader {

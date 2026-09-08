@@ -334,6 +334,7 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `SUBMIT_LIMIT_PER_HOUR` | `10` | Submissions per visitor per hour (per Telegram user, for the bot) |
 | `BOT_API_TOKEN` | none | Shared secret letting the bot submit for many contributors |
 | `LOGIN_LIMIT_PER_15_MIN` | `10` | Sign-in attempts per IP per 15 minutes |
+| `HEARING_LIMIT_PER_HOUR` | `300` | How many narratives one visitor may mark as heard per hour |
 | `SMTP_URL` | none | Mail server for backup copies, e.g. `smtps://you%40gmail.com:app-password@smtp.gmail.com:465` |
 | `RESEND_API_KEY` | none | Sends the copies over HTTPS instead, for hosts that refuse outbound SMTP. Takes precedence over `SMTP_URL` |
 | `BACKUP_EMAIL_TO` | none | Address that receives a copy of every submission as it arrives |

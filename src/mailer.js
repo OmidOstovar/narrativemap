@@ -40,13 +40,31 @@ function senderAddress() {
   }
 }
 
+/**
+ * Google shows an app password as four groups of four, and it is copied that
+ * way; Gmail then refuses it, because the spaces are for reading and not part
+ * of the password. Only Gmail's own server gets this treatment — elsewhere a
+ * space in a password is a character like any other and must be left alone.
+ */
+function normaliseUrl(raw) {
+  try {
+    const url = new URL(raw);
+    if (url.hostname !== 'smtp.gmail.com') return raw;
+    const password = decodeURIComponent(url.password).replace(/\s+/g, '');
+    url.password = encodeURIComponent(password);
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
 let cached = null;
 function transport() {
   if (!cached) {
     // Required here rather than at the top so the module loads without the
     // dependency present, which keeps the server startable either way.
     const nodemailer = require('nodemailer');
-    cached = nodemailer.createTransport(setting('SMTP_URL'));
+    cached = nodemailer.createTransport(normaliseUrl(setting('SMTP_URL')));
   }
   return cached;
 }
@@ -140,4 +158,4 @@ async function backup(id, submission, options = {}) {
   return { sent: true, subject };
 }
 
-module.exports = { backup, compose, isConfigured, senderAddress };
+module.exports = { backup, compose, isConfigured, senderAddress, normaliseUrl };

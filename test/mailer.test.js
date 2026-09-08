@@ -97,3 +97,21 @@ test('the sender defaults to the account the server signs in as', () => {
     if (saved === undefined) delete process.env.SMTP_URL; else process.env.SMTP_URL = saved;
   }
 });
+
+test('a Gmail app password copied with its spaces still works', () => {
+  const spaced = 'smtps://you%40gmail.com:abcd efgh ijkl mnop@smtp.gmail.com:465';
+  assert.equal(
+    decodeURIComponent(new URL(mailer.normaliseUrl(spaced)).password),
+    'abcdefghijklmnop',
+    'Google prints it in fours; the spaces are not part of it',
+  );
+});
+
+test('a space in any other password is left alone', () => {
+  const elsewhere = 'smtp://user:one%20two@smtp.example.com:587';
+  assert.equal(
+    decodeURIComponent(new URL(mailer.normaliseUrl(elsewhere)).password),
+    'one two',
+    'only Gmail makes this promise',
+  );
+});

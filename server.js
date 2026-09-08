@@ -148,7 +148,11 @@ app.post('/api/submissions', (req, res) => {
 
   // A second copy, out of reach of anything that could go wrong here. Same
   // rule: a mail server having a bad day must not cost a narrative either.
-  mailer.backup(id, submission).catch((error) => console.error('backup email:', error));
+  // Both outcomes are logged: a silent success is indistinguishable from a
+  // send that never happened, which is no use to anyone reading the log.
+  mailer.backup(id, submission)
+    .then((result) => console.log(`backup email: ${id} ${result.sent ? 'sent' : result.reason}`))
+    .catch((error) => console.error(`backup email: ${id} failed —`, error.message));
 
   res.status(201).json({
     id,
@@ -239,6 +243,20 @@ app.put('/api/admin/submissions/:id', auth.requireAdmin, (req, res) => {
 
   db.updateNarrative(req.params.id, Object.assign({}, value, { translation }));
   res.json({ submission: db.getAny(req.params.id) });
+});
+
+app.post('/api/admin/test-email', auth.requireAdmin, async (req, res) => {
+  if (!mailer.isConfigured()) {
+    res.json({ sent: false, error: 'SMTP_URL and BACKUP_EMAIL_TO are not both set.' });
+    return;
+  }
+  try {
+    await mailer.sendTest();
+    res.json({ sent: true, to: process.env.BACKUP_EMAIL_TO });
+  } catch (error) {
+    console.error('backup email test failed:', error.message);
+    res.json({ sent: false, error: error.message });
+  }
 });
 
 app.post('/api/admin/submissions/:id/translate', auth.requireAdmin, async (req, res) => {

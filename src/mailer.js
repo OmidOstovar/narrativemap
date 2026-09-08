@@ -41,17 +41,48 @@ function senderAddress() {
 }
 
 /**
- * Google shows an app password as four groups of four, and it is copied that
- * way; Gmail then refuses it, because the spaces are for reading and not part
- * of the password. Only Gmail's own server gets this treatment — elsewhere a
- * space in a password is a character like any other and must be left alone.
+ * Turns SMTP_URL into explicit settings.
+ *
+ * Two things are worth doing by hand rather than leaving to the library.
+ *
+ * IPv4 is forced. A container is often given a DNS answer holding an IPv6
+ * address it cannot actually route, and the connection then hangs until it
+ * times out — which reads as "nothing happened" rather than as a fault, since
+ * the credentials are never even offered.
+ *
+ * The timeouts are short. The default is minutes; a mail server that has not
+ * answered in twenty seconds is not going to, and a moderator pressing a test
+ * button deserves an answer while they are still looking at it.
+ *
+ * Google also shows an app password as four groups of four, and it gets copied
+ * that way. Gmail then refuses it: the grouping is for reading. Those spaces
+ * are dropped for Gmail's own server and nowhere else, since elsewhere a space
+ * in a password is a character like any other.
  */
+function transportOptions(raw) {
+  const url = new URL(raw);
+  const port = Number(url.port) || (url.protocol === 'smtps:' ? 465 : 587);
+  let pass = decodeURIComponent(url.password);
+  if (url.hostname === 'smtp.gmail.com') pass = pass.replace(/\s+/g, '');
+
+  return {
+    host: url.hostname,
+    port,
+    secure: url.protocol === 'smtps:' || port === 465,
+    auth: { user: decodeURIComponent(url.username), pass },
+    family: Number(process.env.SMTP_FAMILY || 4),
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
+  };
+}
+
+/** Kept for the tests: the password as it will actually be presented. */
 function normaliseUrl(raw) {
   try {
+    const { auth } = transportOptions(raw);
     const url = new URL(raw);
-    if (url.hostname !== 'smtp.gmail.com') return raw;
-    const password = decodeURIComponent(url.password).replace(/\s+/g, '');
-    url.password = encodeURIComponent(password);
+    url.password = encodeURIComponent(auth.pass);
     return url.toString();
   } catch {
     return raw;
@@ -64,7 +95,7 @@ function transport() {
     // Required here rather than at the top so the module loads without the
     // dependency present, which keeps the server startable either way.
     const nodemailer = require('nodemailer');
-    cached = nodemailer.createTransport(normaliseUrl(setting('SMTP_URL')));
+    cached = nodemailer.createTransport(transportOptions(setting('SMTP_URL')));
   }
   return cached;
 }
@@ -158,4 +189,25 @@ async function backup(id, submission, options = {}) {
   return { sent: true, subject };
 }
 
-module.exports = { backup, compose, isConfigured, senderAddress, normaliseUrl };
+/**
+ * Proves the settings work, without needing a narrative to test with. Errors
+ * are thrown rather than swallowed: here, unlike a real submission, the whole
+ * point is to hear what went wrong.
+ */
+async function sendTest(options = {}) {
+  const send = options.transport || transport();
+  await send.sendMail({
+    from: options.from || senderAddress(),
+    to: options.to || setting('BACKUP_EMAIL_TO'),
+    subject: 'Backup is working',
+    text: [
+      'This is the archive checking that it can reach you.',
+      '',
+      'From here on, every narrative arrives in this mailbox as it is submitted,',
+      'whether or not the contributor left an address of their own.',
+    ].join('\n'),
+  });
+  return { sent: true };
+}
+
+module.exports = { backup, compose, isConfigured, senderAddress, normaliseUrl, transportOptions, sendTest };

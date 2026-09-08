@@ -484,6 +484,30 @@
     }
   }
 
+  /** Proves the mail settings without waiting for someone to submit. */
+  function wireEmailTest() {
+    const button = $('test-email');
+    if (!button) return;
+    button.addEventListener('click', async () => {
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = t('admin.testEmailSending');
+      try {
+        const result = await api('/api/admin/test-email', { method: 'POST' });
+        if (result.sent) {
+          toast(t('admin.testEmailSent', { address: result.to || '' }));
+        } else {
+          toast(t('admin.testEmailFailed', { message: result.error || '' }), 'error');
+        }
+      } catch (error) {
+        toast(t('admin.testEmailFailed', { message: error.message }), 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
+      }
+    });
+  }
+
   /* -------------------------------- actions ------------------------------ */
 
   async function setStatus(submission, status) {
@@ -614,6 +638,8 @@
       await api('/api/admin/logout', { method: 'POST' });
       location.reload();
     });
+
+    wireEmailTest();
   }
 
   /* --------------------------------- boot -------------------------------- */

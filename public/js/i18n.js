@@ -247,6 +247,13 @@
     'admin.retranslate': { en: 'Translate again', fa: 'ترجمهٔ دوباره' },
     'admin.translating': { en: 'Translating…', fa: 'در حال ترجمه…' },
     'admin.translated': { en: 'Translation updated.', fa: 'ترجمه به‌روز شد.' },
+    'admin.testEmail': { en: 'Test the backup email', fa: 'آزمودن ایمیل پشتیبان' },
+    'admin.testEmailSending': { en: 'Sending…', fa: 'در حال ارسال…' },
+    'admin.testEmailSent': {
+      en: 'Sent. Check {address} — look in Spam too, the first one often lands there.',
+      fa: 'فرستاده شد. صندوق {address} را ببینید — پوشهٔ اسپم را هم نگاه کنید؛ اولی معمولاً آنجا می‌افتد.',
+    },
+    'admin.testEmailFailed': { en: 'Could not send: {message}', fa: 'ارسال نشد: {message}' },
     'admin.translationOff': {
       en: 'Translation is switched off: the server has no ANTHROPIC_API_KEY. Set it in the service variables and try again.',
       fa: 'ترجمه خاموش است: کلید ANTHROPIC_API_KEY روی سرور تنظیم نشده. آن را در متغیرهای سرویس بگذارید و دوباره امتحان کنید.',

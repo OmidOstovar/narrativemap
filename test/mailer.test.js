@@ -115,3 +115,16 @@ test('a space in any other password is left alone', () => {
     'only Gmail makes this promise',
   );
 });
+
+test('the connection is pinned to IPv4 with short timeouts', () => {
+  const o = mailer.transportOptions('smtps://you%40gmail.com:secret@smtp.gmail.com:465');
+  assert.equal(o.family, 4, 'a container may be handed an IPv6 route it cannot use');
+  assert.equal(o.secure, true, 'port 465 is implicit TLS');
+  assert.ok(o.connectionTimeout <= 20000, 'a failure has to surface while someone is watching');
+});
+
+test('port 587 is understood as STARTTLS rather than implicit TLS', () => {
+  const o = mailer.transportOptions('smtp://you%40gmail.com:secret@smtp.gmail.com:587');
+  assert.equal(o.port, 587);
+  assert.equal(o.secure, false);
+});

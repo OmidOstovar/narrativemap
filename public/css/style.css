@@ -1172,6 +1172,9 @@ input[type='date'] { cursor: text; }
 
 /* -------------------------------- admin --------------------------------- */
 
+/* Sits under the queue, out of the way of the day's work. */
+.queue__foot { padding: 10px 14px; border-top: 1px solid var(--ink-500); }
+
 .admin-shell { display: grid; grid-template-columns: 400px 1fr; height: calc(100dvh - var(--header-height)); }
 .admin-queue { border-right: 1px solid var(--ink-500); background: var(--ink-800); display: flex; flex-direction: column; min-height: 0; }
 .admin-detail { overflow-y: auto; min-width: 0; background: var(--ink-900); }

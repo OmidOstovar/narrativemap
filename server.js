@@ -79,6 +79,10 @@ app.get('/api/version', (req, res) => {
     // Whether the database sits on storage that survives a deploy. The path
     // itself stays private; only the answer is public.
     submissionsSurviveDeploys: require('./src/state').ON_PERSISTENT_STORAGE,
+    // Whether the two side channels are switched on. Yes or no only: no
+    // address, no key, no server name.
+    backupEmail: mailer.isConfigured(),
+    translation: require('./src/translate').isConfigured(),
   });
 });
 

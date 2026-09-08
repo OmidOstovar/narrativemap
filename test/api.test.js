@@ -95,6 +95,8 @@ test('the version endpoint says which commit is running', async () => {
   assert.ok('commit' in body);
   assert.ok(!Number.isNaN(Date.parse(body.startedAt)), 'it says when it started');
   assert.equal(typeof body.submissionsSurviveDeploys, 'boolean', 'it answers the storage question');
+  assert.equal(typeof body.backupEmail, 'boolean', 'and whether copies are being posted out');
+  assert.equal(typeof body.translation, 'boolean', 'and whether narratives are being translated');
 });
 
 test('questions endpoint exposes the questionnaire and province list', async () => {

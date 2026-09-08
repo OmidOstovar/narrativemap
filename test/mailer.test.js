@@ -116,11 +116,26 @@ test('a space in any other password is left alone', () => {
   );
 });
 
-test('the connection is pinned to IPv4 with short timeouts', () => {
+test('the connection fails fast rather than hanging', () => {
   const o = mailer.transportOptions('smtps://you%40gmail.com:secret@smtp.gmail.com:465');
-  assert.equal(o.family, 4, 'a container may be handed an IPv6 route it cannot use');
   assert.equal(o.secure, true, 'port 465 is implicit TLS');
   assert.ok(o.connectionTimeout <= 20000, 'a failure has to surface while someone is watching');
+});
+
+test('an API key is route enough, with no SMTP server at all', () => {
+  const saved = { ...process.env };
+  process.env.RESEND_API_KEY = 'test-key';
+  process.env.BACKUP_EMAIL_TO = 'keeper@example.com';
+  delete process.env.SMTP_URL;
+  delete process.env.BACKUP_EMAIL_FROM;
+  try {
+    assert.equal(mailer.isConfigured(), true);
+    assert.equal(mailer.senderAddress(), 'onboarding@resend.dev',
+      'a new account may send as this without owning a domain');
+  } finally {
+    for (const key of Object.keys(process.env)) delete process.env[key];
+    Object.assign(process.env, saved);
+  }
 });
 
 test('port 587 is understood as STARTTLS rather than implicit TLS', () => {

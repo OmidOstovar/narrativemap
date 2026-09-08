@@ -15,9 +15,14 @@ const { QUESTIONS, SELECT_TYPES, toArray } = require('./questions');
  * log. With nothing configured this does nothing at all, which is what a
  * laptop and the test suite want.
  *
+ *   BACKUP_EMAIL_TO   where the copies go — always needed
+ *
+ * and then one route out, either
+ *
+ *   RESEND_API_KEY    over HTTPS, for hosts that refuse outbound SMTP
  *   SMTP_URL          smtps://user%40gmail.com:app-password@smtp.gmail.com:465
- *   BACKUP_EMAIL_TO   where the copies go
- *   BACKUP_EMAIL_FROM optional; defaults to the account SMTP_URL signs in as
+ *
+ *   BACKUP_EMAIL_FROM optional; the SMTP account, or Resend's own sender
  */
 
 function setting(name) {
@@ -25,13 +30,16 @@ function setting(name) {
 }
 
 function isConfigured() {
-  return Boolean(setting('SMTP_URL') && setting('BACKUP_EMAIL_TO'));
+  return Boolean((setting('SMTP_URL') || setting('RESEND_API_KEY')) && setting('BACKUP_EMAIL_TO'));
 }
 
 /** Gmail and most others insist the sender be the account that signed in. */
 function senderAddress() {
   const explicit = setting('BACKUP_EMAIL_FROM');
   if (explicit) return explicit;
+  // Resend will not send as an address it has not verified; this one is theirs
+  // and works from a new account with no domain of its own.
+  if (setting('RESEND_API_KEY')) return 'onboarding@resend.dev';
   try {
     const user = decodeURIComponent(new URL(setting('SMTP_URL')).username);
     return user.includes('@') ? user : setting('BACKUP_EMAIL_TO');
@@ -42,13 +50,6 @@ function senderAddress() {
 
 /**
  * Turns SMTP_URL into explicit settings.
- *
- * Two things are worth doing by hand rather than leaving to the library.
- *
- * IPv4 is forced. A container is often given a DNS answer holding an IPv6
- * address it cannot actually route, and the connection then hangs until it
- * times out — which reads as "nothing happened" rather than as a fault, since
- * the credentials are never even offered.
  *
  * The timeouts are short. The default is minutes; a mail server that has not
  * answered in twenty seconds is not going to, and a moderator pressing a test
@@ -70,7 +71,6 @@ function transportOptions(raw) {
     port,
     secure: url.protocol === 'smtps:' || port === 465,
     auth: { user: decodeURIComponent(url.username), pass },
-    family: Number(process.env.SMTP_FAMILY || 4),
     connectionTimeout: 20000,
     greetingTimeout: 20000,
     socketTimeout: 30000,
@@ -89,13 +89,46 @@ function normaliseUrl(raw) {
   }
 }
 
+/**
+ * Sending over HTTPS instead of SMTP.
+ *
+ * Some hosts refuse outbound SMTP altogether — to stop their machines being
+ * used for spam — and the refusal looks like a connection that never opens.
+ * HTTPS is always allowed, so an API takes the same letter out through a door
+ * that is not bolted. Set RESEND_API_KEY and this is used in preference.
+ */
+function httpTransport() {
+  return {
+    async sendMail({ from, to, subject, text }) {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${setting('RESEND_API_KEY')}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ from, to: [to], subject, text }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        throw new Error(`the mail API refused it (${response.status}): ${detail.slice(0, 300)}`);
+      }
+      return response.json();
+    },
+  };
+}
+
 let cached = null;
 function transport() {
   if (!cached) {
-    // Required here rather than at the top so the module loads without the
-    // dependency present, which keeps the server startable either way.
-    const nodemailer = require('nodemailer');
-    cached = nodemailer.createTransport(transportOptions(setting('SMTP_URL')));
+    if (setting('RESEND_API_KEY')) {
+      cached = httpTransport();
+    } else {
+      // Required here rather than at the top so the module loads without the
+      // dependency present, which keeps the server startable either way.
+      const nodemailer = require('nodemailer');
+      cached = nodemailer.createTransport(transportOptions(setting('SMTP_URL')));
+    }
   }
   return cached;
 }

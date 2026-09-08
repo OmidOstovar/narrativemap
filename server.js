@@ -26,6 +26,12 @@ function ensureAdminPassword() {
 
 const generatedPassword = ensureAdminPassword();
 
+// A container is often handed an IPv6 address it has no route to, and the
+// connection then hangs rather than failing — which is how the backup mail
+// first went wrong. Preferring IPv4 everywhere avoids waiting on a road that
+// does not exist. nodemailer has no option for this; the resolver does.
+require('node:dns').setDefaultResultOrder('ipv4first');
+
 const db = require('./src/db');
 const auth = require('./src/auth');
 const mailer = require('./src/mailer');

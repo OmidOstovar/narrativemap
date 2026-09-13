@@ -390,7 +390,7 @@ input[type='date'] { cursor: text; }
   line-height: 1.65;
   margin: 0 0 36px;
 }
-.page__prose { max-width: 68ch; color: var(--text-muted); font-size: 16px; line-height: 1.75; }
+.page__prose { color: var(--text-muted); font-size: 16.5px; line-height: 1.75; }
 .page__prose h2 {
   font-family: var(--serif);
   color: var(--text);
@@ -399,9 +399,9 @@ input[type='date'] { cursor: text; }
 }
 .page__prose h3 {
   color: var(--text);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  margin: 24px 0 6px;
+  margin: 26px 0 6px;
 }
 /* The heading a contributor is sent to from the form, so it must not land
    underneath the site header. */
@@ -1136,7 +1136,7 @@ input[type='date'] { cursor: text; }
   cursor: pointer;
   padding: 15px 18px;
   color: var(--text);
-  font-size: 15.5px;
+  font-size: 16.5px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1165,15 +1165,15 @@ input[type='date'] { cursor: text; }
 .assurance__summary:hover { background: var(--ink-700); }
 .assurance__summary:focus-visible { outline: 2px solid var(--saffron); outline-offset: -2px; }
 
+/* No character cap: the column this sits in is already the measure. */
 .assurance__body {
-  padding: 4px 18px 18px;
+  padding: 4px 18px 20px;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: 16.5px;
   line-height: 1.8;
-  max-width: 62ch;
 }
-.assurance__body p { margin: 0 0 12px; }
-.assurance__lead { color: var(--text); font-family: var(--serif); font-size: 17px; }
+.assurance__body p { margin: 0 0 14px; }
+.assurance__lead { color: var(--text); font-family: var(--serif); font-size: 18.5px; }
 .assurance__more { margin-top: 14px; }
 .assurance__more a { color: var(--turquoise); }
 

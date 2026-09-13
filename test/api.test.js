@@ -647,6 +647,7 @@ test('a tile address is built from three integers and nothing else', () => {
   // The order is the provider's business — Esri asks for {z}/{y}/{x} — so what
   // matters is that the three numbers are there and nothing is left unfilled.
   assert.match(url, /\/5\/(20\/12|12\/20)/);
+  assert.ok(!url.includes('..'), 'and no path of its own');
   assert.ok(!url.includes('{'), 'every placeholder is filled');
 });
 
@@ -684,27 +685,40 @@ test('no basemap on offer asks for a key', () => {
   }
 });
 
-test('the default map is dark, and says where things are', () => {
+test('the default map is the one that has never refused', () => {
+  // Plain OpenStreetMap, shown as it draws itself. Pale under a dark page, but
+  // it needs no account, carries every name, and has answered throughout.
+  assert.equal(tiles.DEFAULT_STYLE, 'osm');
   const style = tiles.STYLES[tiles.DEFAULT_STYLE];
-  assert.ok(!/invert/.test(style.filter), 'it is drawn dark rather than made dark');
-  assert.ok(style.labels, 'a map you place a pin on has to carry place names');
-  assert.equal(tiles.config().labels, true, 'and the browser is told to fetch them');
+  assert.match(style.url, /tile\.openstreetmap\.org/);
+  assert.equal(style.filter, 'none', 'untouched, as it was before any of this');
 });
 
-test('the names layer is a second address, checked like the first', () => {
-  const labels = tiles.upstreamFor(5, 20, 12, false, 'labels');
-  assert.match(labels, /Reference/, 'the companion layer, not the ground');
-  assert.notEqual(labels, tiles.upstreamFor(5, 20, 12, false));
-  assert.equal(tiles.upstreamFor(99, 0, 0, false, 'labels'), null, 'bounds still apply');
-
+test('a provider that keeps its names apart is fetched whole', () => {
   const saved = process.env.TILE_STYLE;
-  process.env.TILE_STYLE = 'osm-dark';
+  process.env.TILE_STYLE = 'esri-dark';
   try {
-    assert.equal(tiles.upstreamFor(5, 20, 12, false, 'labels'), null,
-      'a provider with names already drawn in is not asked for a second layer');
+    assert.equal(tiles.config().labels, true, 'the browser is told to fetch them');
+    assert.match(tiles.upstreamFor(5, 20, 12, false, 'labels'), /Reference/);
   } finally {
     if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
   }
+});
+
+test('the names layer is a second address, checked like the first', () => {
+  const saved = process.env.TILE_STYLE;
+  process.env.TILE_STYLE = 'esri-dark';
+  try {
+    const labels = tiles.upstreamFor(5, 20, 12, false, 'labels');
+    assert.match(labels, /Reference/, 'the companion layer, not the ground');
+    assert.notEqual(labels, tiles.upstreamFor(5, 20, 12, false));
+    assert.equal(tiles.upstreamFor(99, 0, 0, false, 'labels'), null, 'bounds still apply');
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
+
+  assert.equal(tiles.upstreamFor(5, 20, 12, false, 'labels'), null,
+    'a provider with names already drawn in is not asked for a second layer');
 });
 
 test('every style carries what a map needs to show it', () => {
@@ -728,8 +742,13 @@ test('a style is chosen by name, without touching the code', () => {
     if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
   }
 
-  // Esri orders them {z}/{y}/{x}; the relay follows the address it is given.
-  assert.ok(tiles.upstreamFor(6, 40, 25, false).endsWith('/6/25/40'));
+  process.env.TILE_STYLE = 'esri-dark';
+  try {
+    // Esri orders them {z}/{y}/{x}; the relay follows the address it is given.
+    assert.ok(tiles.upstreamFor(6, 40, 25, false).endsWith('/6/25/40'));
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
 });
 
 test('the archive can say which providers it can actually reach', async () => {

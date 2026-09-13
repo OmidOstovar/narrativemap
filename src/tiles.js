@@ -9,8 +9,9 @@
  * a poor thing to hand out, so the archive asks on their behalf: the provider
  * sees this server, and the reader's browser speaks only to the archive.
  *
- * TILE_STYLE names one of the styles below. TILE_URL overrides it with any
- * {z}/{x}/{y} address, which is how a provider that wants an account is used:
+ * TILE_STYLE names one of the styles below — the default is plain
+ * OpenStreetMap, which is the one that has never refused. TILE_URL overrides it
+ * with any {z}/{x}/{y} address, which is how a provider with an account is used:
  *
  *   TILE_URL=https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=…
  *   TILE_ATTRIBUTION=&copy; Stadia Maps &copy; OpenStreetMap contributors
@@ -42,10 +43,9 @@ const ARCGIS = 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas';
  */
 const STYLES = {
   /*
-   * The default. Esri's dark canvas is drawn dark rather than made dark, and
-   * it asks for no account — which matters, because an account is a thing that
-   * can be withdrawn, and its withdrawal is what put "api key required" across
-   * the map's previous provider. Names come from the companion layer.
+   * Esri's dark canvas: drawn dark rather than made dark, and asking for no
+   * account. Names come from the companion layer. Whether it answers a given
+   * host at all is what /api/tiles/status is for.
    */
   'esri-dark': {
     url: `${ARCGIS}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
@@ -82,12 +82,18 @@ const STYLES = {
     filter: 'invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.95) contrast(1.05)',
   },
 
-  /** The same map left as it is drawn: pale, and closest to what most know. */
+  /*
+   * The default, and what this archive showed before any of the rest:
+   * OpenStreetMap exactly as it draws itself, untouched. Pale under a dark
+   * page, but it is the map everyone already knows how to read, it carries
+   * every name and street, and it is the one basemap that has never once
+   * refused or asked for an account.
+   */
   osm: {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: OSM_CREDIT,
     maxZoom: 19,
-    filter: 'saturate(0.8) brightness(0.96)',
+    filter: 'none',
   },
 
   /*
@@ -103,7 +109,7 @@ const STYLES = {
   },
 };
 
-const DEFAULT_STYLE = 'esri-dark';
+const DEFAULT_STYLE = 'osm';
 
 /** A provider given only as a URL is assumed to be already the look intended. */
 const CUSTOM = { attribution: OSM_CREDIT, maxZoom: 20, filter: 'saturate(0.8) brightness(0.92)' };

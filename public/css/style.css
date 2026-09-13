@@ -442,12 +442,12 @@ input[type='date'] { cursor: text; }
  * than competing with roads.
  */
 /*
- * How the basemap is treated. The value is the default provider's — a canvas
- * already drawn dark, so barely touched — and the server replaces it through
- * --basemap-filter when the provider in use needs something else, such as pale
- * tiles that have to be inverted to sit under this archive.
+ * How the basemap is treated. The default provider is OpenStreetMap shown as it
+ * draws itself, so: not at all. The server replaces this through
+ * --basemap-filter for a provider that needs something else — pale tiles to be
+ * inverted, or a dark canvas to be lifted.
  */
-.basemap-tiles { filter: var(--basemap-filter, saturate(0.9) brightness(1.05)); }
+.basemap-tiles { filter: var(--basemap-filter, none); }
 
 /* Place names are drawn for a dark map already; treating them only smudges. */
 .basemap-labels { filter: none; }

@@ -146,12 +146,14 @@ async function serveTile(req, res, layer) {
 }
 
 /*
- * Place names, where the provider keeps them apart from the ground they sit
- * on. Declared first: it is the longer path, and Express takes the first that
- * matches.
+ * The address carries the provider (see `token` in src/tiles.js) and the layer
+ * — the ground, or the place names some providers draw separately. The token
+ * is not read: it is there so that changing provider changes every tile
+ * address, and a reader holding a week of the old one's squares is handed the
+ * new one's instead of being shown last month's map until the cache expires.
  */
-app.get('/tiles/labels/:z/:x/:y.png', (req, res) => serveTile(req, res, 'labels'));
-app.get('/tiles/:z/:x/:y.png', (req, res) => serveTile(req, res, 'base'));
+app.get('/tiles/:token/base/:z/:x/:y.png', (req, res) => serveTile(req, res, 'base'));
+app.get('/tiles/:token/labels/:z/:x/:y.png', (req, res) => serveTile(req, res, 'labels'));
 
 /**
  * What the map must credit, how far the provider draws, and how its tiles have
@@ -159,6 +161,9 @@ app.get('/tiles/:z/:x/:y.png', (req, res) => serveTile(req, res, 'base'));
  * hardcoded, so changing provider stays a setting and never a deploy.
  */
 app.get('/api/tiles', (req, res) => {
+  // Never from a cache: this is what tells the map which provider it is on,
+  // and a stale answer would point a browser back at the one just left.
+  res.set('Cache-Control', 'no-store');
   res.json(tiles.config());
 });
 

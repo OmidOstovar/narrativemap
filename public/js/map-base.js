@@ -64,7 +64,8 @@
 
     const baseLayer = L.layerGroup().addTo(map);
     // Which base is in front, so hovering a province matches what is drawn.
-    let tilesShowing = true;
+    // The drawn map is what is there until imagery arrives, if it ever does.
+    let tilesShowing = false;
 
     const provinceLayer = L.geoJSON(
       { type: 'FeatureCollection', features: provinceFeatures },
@@ -98,87 +99,99 @@
 
     /*
      * The base imagery comes through the archive, never from the provider
-     * directly — see src/tiles.js. {r} asks for a doubled tile on a dense
-     * screen; the relay serves the ordinary one where the provider has none.
-     * maxNativeZoom is left to the server's answer below, since how far a
-     * provider actually draws is the provider's business, not this file's.
+     * directly — see src/tiles.js.
+     *
+     * Nothing is fetched until the server has said which provider it is on,
+     * because the provider is part of the address: tiles are cached for a week
+     * and a fixed address would go on showing the previous provider's squares
+     * long after the archive had left it.
      */
-    const tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      // Kept faint: the map is the ground a narrative stands on, not the
-      // subject. The pins and the border have to win.
-      className: 'basemap-tiles',
-      attribution: 'streets',
-    }).addTo(map);
-    tileLayer.bringToBack();
-
-    // Over streets the provinces are a hint rather than a shape, and the
-    // border is what tells a reader where they are.
-    provinceLayer.setStyle(STYLE.provinceOverTiles);
-    borderLayer.setStyle(STYLE.borderOverTiles);
+    let tileLayer = null;
+    let labelLayer = null;
+    let wanted = true; // What the streets toggle says, whether or not it can be obeyed.
 
     /*
-     * Place names, where the provider draws them apart from the ground they
-     * sit on. Added empty and only pointed at the relay once the server says
-     * there is a second layer to fetch, so a provider without one is never
-     * asked for squares that do not exist.
+     * Over streets the provinces are a hint rather than a shape, and the
+     * border is what tells a reader where they are. Without streets they are
+     * the map, and carry a fill. Until the imagery arrives, and if it never
+     * does, the drawn map is what stands — never an empty dark rectangle.
      */
-    let labelLayer = null;
-    function addLabels() {
-      if (labelLayer) return;
-      labelLayer = L.tileLayer('/tiles/labels/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        // Names are drawn for a dark map already; the ground's treatment
-        // would only smudge them.
-        className: 'basemap-labels',
-        pane: 'tilePane',
-      });
-      if (tilesShowing) labelLayer.addTo(map);
+    function paintFor(streets) {
+      tilesShowing = streets;
+      provinceLayer.setStyle(streets ? STYLE.provinceOverTiles : STYLE.province);
+      borderLayer.setStyle(streets ? STYLE.borderOverTiles : STYLE.border);
     }
 
-    /*
-     * What the provider requires and how its tiles must be treated. A basemap
-     * that is drawn pale has to be turned dark here, and one already dark must
-     * not be — so the treatment travels with the choice of provider instead of
-     * being fixed in the stylesheet. The stylesheet's own value covers the
-     * moment before this answers, and matches the default.
-     */
+    /** A provider that answers nothing is worse than no provider at all. */
+    function giveUpOnTiles() {
+      if (tileLayer) map.removeLayer(tileLayer);
+      if (labelLayer) map.removeLayer(labelLayer);
+      tileLayer = null;
+      labelLayer = null;
+      paintFor(false);
+    }
+
+    function layer(path, className, maxNativeZoom) {
+      return L.tileLayer(path, {
+        maxZoom: 19,
+        maxNativeZoom: maxNativeZoom || undefined,
+        // Kept faint: the map is the ground a narrative stands on, not the
+        // subject. The pins and the border have to win.
+        className: className,
+        pane: 'tilePane',
+      });
+    }
+
+    function build({ token, filter, maxZoom, labels }) {
+      if (!token) return;
+
+      tileLayer = layer(`/tiles/${token}/base/{z}/{x}/{y}{r}.png`, 'basemap-tiles', maxZoom);
+
+      // A refusal from the provider is silent otherwise: Leaflet leaves the
+      // squares blank and the reader sees a void where the country was.
+      let arrived = false;
+      let refused = 0;
+      tileLayer.on('tileload', () => { arrived = true; });
+      tileLayer.on('tileerror', () => {
+        refused += 1;
+        if (!arrived && refused >= 4) giveUpOnTiles();
+      });
+
+      // Names, where the provider draws them apart from the ground.
+      if (labels) labelLayer = layer(`/tiles/${token}/labels/{z}/{x}/{y}{r}.png`, 'basemap-labels', maxZoom);
+
+      if (typeof filter === 'string') {
+        document.documentElement.style.setProperty('--basemap-filter', filter);
+      }
+      if (wanted) showTiles();
+    }
+
+    function showTiles() {
+      if (!tileLayer) return;
+      tileLayer.addTo(map);
+      tileLayer.bringToBack();
+      if (labelLayer) labelLayer.addTo(map);
+      paintFor(true);
+    }
+
     fetch('/api/tiles')
       .then((r) => r.json())
-      .then(({ attribution, filter, maxZoom, labels }) => {
-        map.attributionControl.removeAttribution('streets');
-        if (attribution) map.attributionControl.addAttribution(attribution);
-        if (typeof filter === 'string') {
-          document.documentElement.style.setProperty('--basemap-filter', filter);
-        }
-        if (maxZoom) {
-          // Beyond what the provider draws, Leaflet stretches the last real
-          // square rather than asking for one that does not exist.
-          tileLayer.options.maxNativeZoom = maxZoom;
-          tileLayer.redraw();
-        }
-        if (labels) {
-          addLabels();
-          if (maxZoom) labelLayer.options.maxNativeZoom = maxZoom;
-        }
+      .then((imagery) => {
+        if (imagery.attribution) map.attributionControl.addAttribution(imagery.attribution);
+        build(imagery);
       })
-      .catch(() => { /* the map still works uncredited */ });
+      .catch(() => { /* No answer, no imagery: the drawn map is already on screen. */ });
 
     /** Kept for the callers that still offer the toggle. */
     function setTiles(enabled) {
-      tilesShowing = enabled;
+      wanted = enabled;
       if (enabled) {
-        tileLayer.addTo(map);
-        tileLayer.bringToBack();
-        if (labelLayer) labelLayer.addTo(map);
-        provinceLayer.setStyle(STYLE.provinceOverTiles);
-        borderLayer.setStyle(STYLE.borderOverTiles);
-      } else {
-        map.removeLayer(tileLayer);
-        if (labelLayer) map.removeLayer(labelLayer);
-        provinceLayer.setStyle(STYLE.province);
-        borderLayer.setStyle(STYLE.border);
+        showTiles();
+        return;
       }
+      if (tileLayer) map.removeLayer(tileLayer);
+      if (labelLayer) map.removeLayer(labelLayer);
+      paintFor(false);
     }
 
     function fitIran(options) {

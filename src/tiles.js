@@ -22,6 +22,8 @@
  * /api/tiles/status reports the answer.
  */
 
+const crypto = require('node:crypto');
+
 const OSM_CREDIT = '&copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">'
   + 'OpenStreetMap</a> contributors';
 const ESRI_CREDIT = 'Tiles &copy; <a href="https://www.esri.com" rel="noopener">Esri</a>';
@@ -131,10 +133,31 @@ function style() {
   };
 }
 
+/**
+ * A short name for exactly this imagery, which changes when the imagery does.
+ *
+ * Tiles are cached hard — a square of map is the same square forever, and
+ * saying so is what spares the provider and the reader the second fetch. But
+ * "forever" belongs to the square, not to the address: with a fixed address, a
+ * change of provider reaches nobody who has already looked at the map, and the
+ * old provider's tiles go on being shown for as long as the cache holds them.
+ * A provider that has begun writing "api key required" across its tiles goes on
+ * writing it. So the address carries this, and changing provider changes every
+ * address at once.
+ */
+function token() {
+  const current = style();
+  const digest = crypto.createHash('sha1')
+    .update(`${current.url}|${current.labels || ''}`)
+    .digest('hex')
+    .slice(0, 8);
+  return `${current.name}-${digest}`;
+}
+
 /** What the map needs to know about the imagery it is being handed. */
 function config() {
   const { name, attribution, maxZoom, filter, labels } = style();
-  return { style: name, attribution, maxZoom, filter, labels: Boolean(labels) };
+  return { style: name, token: token(), attribution, maxZoom, filter, labels: Boolean(labels) };
 }
 
 /**
@@ -290,6 +313,6 @@ async function probe({ cacheMs = 60000 } = {}) {
 }
 
 module.exports = {
-  fetchTile, upstreamFor, config, style, probe,
+  fetchTile, upstreamFor, config, style, token, probe,
   STYLES, DEFAULT_STYLE, MAX_TILES, cache, PROBE_TILE,
 };

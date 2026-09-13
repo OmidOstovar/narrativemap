@@ -758,10 +758,42 @@ test('the provider is a setting, not a hardcoded host', () => {
 });
 
 test('nonsense coordinates are refused by the route, not passed upstream', async () => {
-  for (const path of ['/tiles/99/0/0.png', '/tiles/2/9/0.png', '/tiles/abc/0/0.png']) {
+  const { token } = tiles.config();
+  for (const path of [
+    `/tiles/${token}/base/99/0/0.png`,
+    `/tiles/${token}/base/2/9/0.png`,
+    `/tiles/${token}/base/abc/0/0.png`,
+    `/tiles/${token}/labels/2/0/9.png`,
+  ]) {
     const response = await call(path);
     assert.equal(response.status, 404, `refused ${path}`);
   }
+});
+
+test('a change of provider changes every tile address', () => {
+  // Tiles are cached for a week and told they will never change, which is true
+  // of a square of map and false of the provider drawing it. Without this, a
+  // reader who has already looked at the map keeps the provider we just left —
+  // watermark and all — until the cache lets go.
+  const saved = process.env.TILE_STYLE;
+  try {
+    process.env.TILE_STYLE = 'esri-dark';
+    const before = tiles.token();
+    process.env.TILE_STYLE = 'osm-dark';
+    const after = tiles.token();
+    assert.notEqual(before, after);
+    assert.match(before, /^esri-dark-[0-9a-f]{8}$/, 'legible, so a log says which map it was');
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
+
+  // And it is stable, or every reload would refetch the whole map.
+  assert.equal(tiles.token(), tiles.token());
+});
+
+test('the answer naming the provider is never served from a cache', async () => {
+  const response = await call('/api/tiles');
+  assert.match(response.headers.get('cache-control') || '', /no-store/);
 });
 
 test('the map is told what to credit and how to show it', async () => {

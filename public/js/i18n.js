@@ -57,6 +57,10 @@
     'map.count.ofTotal': { en: 'of {total} narratives', fa: 'از {total} روایت' },
     'map.clearFilters': { en: 'Clear filters', fa: 'حذف فیلترها' },
     'map.streetDetail': { en: 'Street detail', fa: 'نمای خیابانی' },
+    'map.streetDetailNote': {
+      en: 'Streets are drawn by OpenStreetMap, so switching this on asks their servers for the map images. Everything else on this page comes from here alone.',
+      fa: 'نقشهٔ خیابان‌ها از OpenStreetMap می‌آید؛ با روشن‌کردن آن، تصویرهای نقشه از سرورهای آن‌ها گرفته می‌شود. بقیهٔ این صفحه فقط از همین‌جا می‌آید.',
+    },
     'map.empty.title': { en: 'No narratives yet.', fa: 'هنوز روایتی ثبت نشده.' },
     'map.empty.cta': { en: 'Be the first to add one →', fa: 'اولین روایت را شما ثبت کنید →' },
     'map.noMatch.title': { en: 'Nothing matches these filters.', fa: 'چیزی با این فیلترها پیدا نشد.' },

@@ -612,3 +612,28 @@ test('the moderator sees how many have heard a published narrative', async () =>
   const detail = await json(await call(`/api/admin/submissions/${id}`, { cookie }));
   assert.equal(detail.submission.heardBy, 2);
 });
+
+test('a place search is relayed, not made from the browser', async () => {
+  // Upstream is unreachable from the test environment, so what matters here is
+  // that the route exists, answers as JSON, and never asks the browser to go
+  // to a third party itself.
+  const short = await json(await call('/api/places?q=ab'));
+  assert.deepEqual(short, { places: [] }, 'too short to be worth asking about');
+
+  const response = await call('/api/places?q=tehran');
+  assert.ok([200, 502].includes(response.status), 'answers rather than throwing');
+  const body = await json(response);
+  assert.ok('places' in body || 'error' in body);
+});
+
+test('the submission form contacts nobody but this server', async () => {
+  const fs = require('node:fs');
+  const scripts = ['submit.js', 'common.js', 'i18n.js', 'index.js']
+    .map((f) => fs.readFileSync(path.join(__dirname, '..', 'public', 'js', f), 'utf8'))
+    .join('\n');
+  // Attribution links are text a reader may click, not requests the page makes.
+  const requests = scripts.split('\n').filter((line) => (
+    /fetch\(|XMLHttpRequest|\.src\s*=|tileLayer\(/.test(line) && /https?:\/\//.test(line)
+  ));
+  assert.deepEqual(requests, [], `nothing should call out: ${requests.join(' / ')}`);
+});

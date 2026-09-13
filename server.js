@@ -64,6 +64,12 @@ const hearingLimit = auth.createRateLimiter({
   windowMs: 60 * 60 * 1000,
   max: Number(process.env.HEARING_LIMIT_PER_HOUR || 300),
 });
+// Typing a place name makes a request every few keystrokes; the ceiling only
+// exists so the archive is not used to hammer a service it does not own.
+const searchLimit = auth.createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: Number(process.env.SEARCH_LIMIT_PER_HOUR || 400),
+});
 
 function clientKey(req) {
   return req.ip || req.socket.remoteAddress || 'unknown';
@@ -108,6 +114,61 @@ app.get('/api/questions', (req, res) => {
     provinces: PROVINCE_NAMES,
     yearRange: { min: MIN_YEAR, max: maxYear() },
   });
+});
+
+/**
+ * Looking up a place name, relayed rather than fetched by the browser.
+ *
+ * The submission form used to query OpenStreetMap directly, which meant a
+ * contributor's address and the name of the place they were about to write
+ * about went to a third party from their own machine, while they were still
+ * composing. The archive asks on their behalf instead: OpenStreetMap sees this
+ * server, never the contributor. Nothing about the query is stored here.
+ */
+app.get('/api/places', async (req, res) => {
+  const limit = searchLimit(clientKey(req));
+  if (!limit.ok) {
+    res.set('Retry-After', String(limit.retryAfter));
+    res.status(429).json({ error: 'Too many searches. Try again shortly.' });
+    return;
+  }
+
+  const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  if (query.length < 3) {
+    res.json({ places: [] });
+    return;
+  }
+
+  const url = new URL('https://nominatim.openstreetmap.org/search');
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('countrycodes', 'ir');
+  url.searchParams.set('limit', '6');
+  url.searchParams.set('accept-language', 'en');
+  url.searchParams.set('q', query.slice(0, 120));
+
+  try {
+    const upstream = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        // Nominatim asks callers to identify themselves; this names the
+        // archive, not the person searching.
+        'User-Agent': 'narrativemap (a public archive of first-hand narratives)',
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!upstream.ok) throw new Error(`search upstream said ${upstream.status}`);
+    const found = await upstream.json();
+    res.json({
+      places: (Array.isArray(found) ? found : []).map((place) => ({
+        name: place.display_name,
+        lat: Number(place.lat),
+        lng: Number(place.lon),
+      })),
+    });
+  } catch (error) {
+    // The form falls back to dropping a pin by hand, which needs nobody.
+    res.status(502).json({ error: 'The place search is unavailable.' });
+  }
 });
 
 app.get('/api/narratives', (req, res) => {

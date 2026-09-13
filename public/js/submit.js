@@ -100,7 +100,8 @@
         <div class="picker__readout">
           <span>${escapeHtml(t('submit.pin'))} <span class="coords unset" id="readout-coords" dir="ltr">${escapeHtml(t('submit.pinUnset'))}</span></span>
           <span>${escapeHtml(t('submit.province'))} <span class="province unset" id="readout-province">—</span></span>
-          <label class="map-toggle" style="margin-inline-start:auto;box-shadow:none;background:transparent;padding:0;border:none">
+          <label class="map-toggle" style="margin-inline-start:auto;box-shadow:none;background:transparent;padding:0;border:none"
+                 title="${escapeHtml(t('map.streetDetailNote'))}">
             <input type="checkbox" id="picker-tiles"> ${escapeHtml(t('map.streetDetail'))}
           </label>
         </div>
@@ -445,34 +446,32 @@
     updateProgress();
   }
 
+  /**
+   * Asks the archive to look the place up, rather than asking OpenStreetMap
+   * directly. A contributor's browser never speaks to anyone but this site, so
+   * what they are searching for — often the place they are about to describe —
+   * does not leave with their address attached.
+   */
   async function searchPlaces(query) {
     const results = $('place-results');
     if (query.trim().length < 3) { results.innerHTML = ''; return; }
 
-    const url = new URL('https://nominatim.openstreetmap.org/search');
-    url.searchParams.set('format', 'jsonv2');
-    url.searchParams.set('countrycodes', 'ir');
-    url.searchParams.set('limit', '6');
-    url.searchParams.set('accept-language', 'en');
-    url.searchParams.set('q', query);
+    const note = (key) => {
+      results.innerHTML = `<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">${escapeHtml(t(key))}</li>`;
+    };
 
     try {
-      const response = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!response.ok) throw new Error('search failed');
-      const places = await response.json();
+      const { places } = await api(`/api/places?q=${encodeURIComponent(query)}`);
+      if (!places.length) { note('submit.searchNone'); return; }
 
-      if (!places.length) {
-        results.innerHTML = `<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">${escapeHtml(t('submit.searchNone'))}</li>`;
-        return;
-      }
       results.innerHTML = places.map((place) => {
-        const [main, ...rest] = place.display_name.split(', ');
-        return `<li><button type="button" data-lat="${place.lat}" data-lon="${place.lon}">
+        const [main, ...rest] = place.name.split(', ');
+        return `<li><button type="button" data-lat="${place.lat}" data-lon="${place.lng}">
           ${escapeHtml(main)}<span class="muted">${escapeHtml(rest.join(', '))}</span>
         </button></li>`;
       }).join('');
     } catch {
-      results.innerHTML = `<li style="padding:8px 10px;color:var(--text-faint);font-size:13px">${escapeHtml(t('submit.searchDown'))}</li>`;
+      note('submit.searchDown');
     }
   }
 

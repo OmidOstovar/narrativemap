@@ -397,6 +397,15 @@ input[type='date'] { cursor: text; }
   font-size: 22px;
   margin: 40px 0 12px;
 }
+.page__prose h3 {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 24px 0 6px;
+}
+/* The heading a contributor is sent to from the form, so it must not land
+   underneath the site header. */
+.page__prose h2[id] { scroll-margin-top: 90px; }
 .page__prose p { margin: 0 0 16px; }
 .page__prose ul { margin: 0 0 16px; padding-left: 22px; }
 .page__prose li { margin-bottom: 8px; }
@@ -1109,6 +1118,64 @@ input[type='date'] { cursor: text; }
   font-family: var(--serif);
   font-size: 20.5px;
 }
+
+/*
+ * The anonymity bar: one line of reassurance under the introduction, with the
+ * rest of it folded away behind. A <details>, so it opens with no script at
+ * all — the one promise on this site that must survive a failed page load.
+ */
+.assurance {
+  border: 1px solid var(--ink-500);
+  border-radius: var(--radius);
+  background: var(--ink-800);
+  margin: 0 0 34px;
+  overflow: hidden;
+}
+.assurance__summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 15px 18px;
+  color: var(--text);
+  font-size: 15.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.assurance__summary::-webkit-details-marker { display: none; }
+/* A chevron of our own, so it points the same way in both directions of text. */
+.assurance__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-inline-start: auto;
+  border-right: 1.6px solid var(--text-faint);
+  border-bottom: 1.6px solid var(--text-faint);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+.assurance[open] .assurance__summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.assurance__summary::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--turquoise);
+  flex: none;
+}
+.assurance__summary:hover { background: var(--ink-700); }
+.assurance__summary:focus-visible { outline: 2px solid var(--saffron); outline-offset: -2px; }
+
+.assurance__body {
+  padding: 4px 18px 18px;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 62ch;
+}
+.assurance__body p { margin: 0 0 12px; }
+.assurance__lead { color: var(--text); font-family: var(--serif); font-size: 17px; }
+.assurance__more { margin-top: 14px; }
+.assurance__more a { color: var(--turquoise); }
 
 .step {
   background: var(--ink-800);

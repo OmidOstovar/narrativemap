@@ -206,6 +206,41 @@
     'submit.loadFailed': { en: 'Could not load the form.', fa: 'فرم بارگذاری نشد.' },
     'map.loadFailed': { en: 'Could not load the map.', fa: 'نقشه بارگذاری نشد.' },
 
+    /* --------------------------- staying unknown ------------------------- */
+    /*
+     * The promise a contributor is asked to trust, in two lengths: this, folded
+     * away under one line on the submission page, and the full account on the
+     * About page. Every sentence in both is checked against the code — the
+     * database has no column for an address, the rate limiter keeps its counts
+     * in memory, and nothing on any page is fetched from anyone but this
+     * server. Change any of that and these have to change with it.
+     */
+    'assure.summary': { en: 'Every narrative stays anonymous.', fa: 'تمام روایت‌ها ناشناس خواهد ماند.' },
+    'assure.lead': {
+      en: 'We do not know who you are, and we cannot find out.',
+      fa: 'شما را نمی‌شناسیم، و نمی‌توانیم بشناسیم.',
+    },
+    'assure.p1': {
+      en: 'No account, no email, no name. We keep no record of your address or your device, and there is no tracking on this page. Leave the pseudonym and the email blank and there is nothing in our database that points to you — not even for us.',
+      fa: 'نه حساب کاربری می‌خواهیم، نه ایمیل، نه نام. هیچ ردی از نشانی اینترنتی یا دستگاه شما نگه نمی‌داریم و هیچ ابزار ردیابی روی این صفحه نیست. اگر نام مستعار و ایمیل را خالی بگذارید، در پایگاه دادهٔ ما چیزی نیست که شما را نشان دهد — حتی برای خودِ ما.',
+    },
+    'assure.p2': {
+      en: 'Two things are outside our hands, and we would rather say so:',
+      fa: 'اما دو چیز از دست ما خارج است، و صادقانه می‌گوییم:',
+    },
+    'assure.first': {
+      en: 'First, the network you connect through can see that you visited this site — not what you wrote, but that you came. If that is a risk where you are, use a VPN.',
+      fa: 'اول، شبکه‌ای که با آن به اینترنت وصل می‌شوید می‌تواند ببیند که به این سایت سر زده‌اید — نه اینکه چه نوشته‌اید، اما همین که آمده‌اید. اگر این برایتان خطر دارد، از VPN استفاده کنید.',
+    },
+    'assure.second': {
+      en: 'Second, the narrative itself may identify you. A street, a date and a family relationship together will tell anyone who knows that family who wrote it. No technology fixes this; only you can. Leave out what does not need to be there.',
+      fa: 'دوم، خودِ روایت ممکن است شما را لو بدهد. اگر خیابان و تاریخ و نسبتِ خانوادگی را کنار هم بنویسید، هر کس که آن خانواده را بشناسد می‌فهمد چه کسی نوشته. این را هیچ فناوری‌ای درست نمی‌کند؛ فقط خودتان می‌توانید. آنچه را که لازم نیست، ننویسید.',
+    },
+    'assure.more': {
+      en: 'Why we cannot know you — the full account',
+      fa: 'چرا نمی‌توانیم شما را بشناسیم — شرحِ کامل',
+    },
+
     /* ------------------------------- admin ------------------------------ */
     'admin.brandSub': { en: 'Review queue', fa: 'صف بررسی' },
     'admin.signIn': { en: 'Sign in', fa: 'ورود' },
@@ -400,6 +435,38 @@
       en: 'A contributor who leaves the name field blank appears as “Anonymous”.',
       fa: 'اگر راوی نامی ننویسد، با عنوان «ناشناس» نمایش داده می‌شود.',
     },
+    'about.anon.title': { en: 'Why we cannot know you', fa: 'چرا نمی‌توانیم شما را بشناسیم' },
+    'about.anon.stored.title': { en: 'What is stored', fa: 'آنچه ذخیره می‌شود' },
+    'about.anon.stored.p': {
+      en: 'Only your answers, the point you placed on the map, the period, the language the narrative was told in, and the time it arrived. Our table has no column for an address, a browser or a device identifier — not an empty one: there is none.',
+      fa: 'فقط پاسخ‌های شما، نقطه‌ای که روی نقشه گذاشته‌اید، بازهٔ زمانی، زبانی که روایت به آن گفته شده، و زمان دریافت. جدولِ ما ستونی برای نشانی اینترنتی، مرورگر، یا شناسهٔ دستگاه ندارد — نه اینکه خالی باشد؛ اصلاً وجود ندارد.',
+    },
+    'about.anon.notStored.title': { en: 'What is not stored', fa: 'آنچه ذخیره نمی‌شود' },
+    'about.anon.notStored.p': {
+      en: 'To answer you at all, the server must see your address for an instant; that is how the web works. We hold it in memory only, and only to count, so that nobody can send hundreds of invented narratives. It is never written to disk and it is gone at every restart. No line of the server\u2019s log names a person — only a narrative\u2019s reference code.',
+      fa: 'سرور برای پاسخ‌دادن ناچار است نشانی شما را لحظه‌ای ببیند؛ این ذاتِ وب است. ما آن را فقط در حافظه و فقط برای شمردن نگه می‌داریم، تا کسی نتواند صدها روایتِ ساختگی بفرستد. روی دیسک نوشته نمی‌شود و با هر بار راه‌اندازی دوباره پاک می‌شود. هیچ سطری از گزارش‌های سرور به یک نفر اشاره نمی‌کند؛ فقط به کدِ پیگیریِ روایت.',
+    },
+    'about.anon.browser.title': { en: 'What your browser talks to', fa: 'آنچه مرورگر شما با آن حرف می‌زند' },
+    'about.anon.browser.p': {
+      en: 'Only this site. Fonts come from our own server rather than Google\u2019s; there is no analytics script and no third-party tracker. Place-name search and even the map\u2019s own tiles — both of which once came straight from OpenStreetMap — now pass through our server, so neither what you search for nor where you are looking on the map leaves with your address attached.',
+      fa: 'فقط همین سایت. فونت‌ها از سرور خودمان می‌آید، نه از گوگل؛ هیچ اسکریپت تحلیلی و هیچ ردیابِ سومی در کار نیست. جست‌وجوی نام مکان و حتی کاشی‌های نقشه — که هر دو زمانی مستقیم از OpenStreetMap گرفته می‌شدند — اکنون از سرورِ ما عبور می‌کنند؛ پس نه آنچه می‌جویید و نه آنجا که روی نقشه نگاه می‌کنید، همراه نشانیِ شما بیرون نمی‌رود.',
+    },
+    'about.anon.leaves.title': { en: 'What leaves the site', fa: 'آنچه از سایت بیرون می‌رود' },
+    'about.anon.leaves.p': {
+      en: 'The text of the narrative — with no identity attached to it — goes to the translation service, and to the archive keeper\u2019s mailbox as a backup copy.',
+      fa: 'متنِ روایت — بی‌آنکه هویتی همراهش باشد — برای ترجمه به سرویس ترجمه می‌رود، و به‌عنوان نسخهٔ پشتیبان به صندوق پستِ سرپرستِ آرشیو.',
+    },
+    'about.anon.beyond.title': { en: 'What is beyond us', fa: 'آنچه از دستِ ما خارج است' },
+    'about.anon.beyond.p': {
+      en: 'The company we rent the server from sees connection addresses at the edge of its network, as any host does. And your own network sees that you connected to this domain, though not what passed over it. Neither is something we can fix from here — a VPN answers both at once.',
+      fa: 'شرکتی که سرور را از آن اجاره کرده‌ایم، مثل هر میزبانی، نشانی‌های اتصال را در لبهٔ شبکهٔ خود می‌بیند. و شبکهٔ خودِ شما می‌بیند که به این دامنه وصل شده‌اید، هرچند محتوایش را نمی‌بیند. برای هیچ‌کدام از این دو کاری از سمت ما ساخته نیست — VPN هر دو را یکجا حل می‌کند.',
+    },
+    'about.anon.most.title': { en: 'And larger than all of it', fa: 'و مهم‌تر از همهٔ اینها' },
+    'about.anon.most.p': {
+      en: 'The real risk is not a technical one. A narrative that puts a street, a date and a family relationship side by side introduces its own author. We publish what you write as you wrote it; the decision about detail is yours.',
+      fa: 'خطرِ اصلی فنی نیست. روایتی که خیابان و تاریخ و نسبت را کنار هم بگذارد، خودش نویسنده‌اش را معرفی می‌کند. ما روایت را همان‌طور که نوشته‌اید منتشر می‌کنیم؛ تصمیم دربارهٔ جزئیات با شماست.',
+    },
+
     'about.lang.title': { en: 'Languages', fa: 'زبان‌ها' },
     'about.lang.p': {
       en: 'The interface is available in English and Persian — use the toggle in the header. Answers can be written in either language; Persian and Arabic text is detected and rendered right-to-left automatically.',
@@ -407,8 +474,8 @@
     },
     'about.map.title': { en: 'Where the map comes from', fa: 'نقشه از کجا آمده' },
     'about.map.p': {
-      en: 'The outline of Iran and its 31 provinces is drawn from geoBoundaries (CC BY 4.0), bundled with the site so the map loads without calling out to anyone. The optional “Street detail” layer is the only thing that fetches third-party tiles, from OpenStreetMap.',
-      fa: 'خطوط مرزی ایران و ۳۱ استان آن از geoBoundaries (CC BY 4.0) گرفته شده و همراه سایت عرضه می‌شود، تا نقشه بدون درخواست از جای دیگری بارگذاری شود. تنها لایهٔ «نمای خیابانی» است که کاشی‌های نقشه را از OpenStreetMap می‌گیرد.',
+      en: 'The outline of Iran and its 31 provinces is drawn from geoBoundaries (CC BY 4.0) and bundled with the site. The “Street detail” tiles come from OpenStreetMap, but by way of this server rather than from your browser: the map is fetched on your behalf, so OpenStreetMap sees the archive and never you.',
+      fa: 'خطوط مرزی ایران و ۳۱ استان آن از geoBoundaries (CC BY 4.0) گرفته شده و همراه سایت عرضه می‌شود. کاشی‌های «نمای خیابانی» از OpenStreetMap می‌آید، اما از راهِ سرورِ ما و نه از مرورگرِ شما: نقشه به نیابت از شما گرفته می‌شود، پس OpenStreetMap آرشیو را می‌بیند و هرگز شما را.',
     },
     'about.cta': { en: 'Add your narrative', fa: 'ثبت روایت' },
 

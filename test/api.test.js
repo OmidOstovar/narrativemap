@@ -448,10 +448,54 @@ test('the public pages are served', async () => {
   }
 });
 
-test('the About page is hidden until it is switched on', async () => {
+test('the About page is served, and carries the promise it is linked for', async () => {
   for (const pathname of ['/about', '/about.html', '/about/']) {
     const response = await call(pathname);
-    assert.equal(response.status, 404, `${pathname} should not be served yet`);
+    assert.equal(response.status, 200, `${pathname} should be served`);
+  }
+
+  // The submission form sends a contributor here mid-thought, to one heading.
+  // A link into a page that has lost its anchor lands them at the top with no
+  // idea what they were promised, so the anchor is part of the contract.
+  const page = await (await call('/about')).text();
+  assert.match(page, /id="anonymity"/);
+  for (const key of ['about.anon.stored.p', 'about.anon.notStored.p', 'about.anon.browser.p',
+    'about.anon.leaves.p', 'about.anon.beyond.p', 'about.anon.most.p']) {
+    assert.ok(page.includes(key), `${key} is on the page`);
+  }
+
+  const form = await (await call('/submit')).text();
+  assert.match(form, /href="\/about#anonymity"/, 'and the form points at it');
+  assert.match(form, /data-i18n="assure\.summary"/, 'under the one line that is always visible');
+});
+
+test('the promise the site makes is the one the code keeps', async () => {
+  const fs = require('node:fs');
+  const read = (...parts) => fs.readFileSync(path.join(__dirname, '..', ...parts), 'utf8');
+
+  // Each of these is asserted to a contributor in about.anon.*. If one stops
+  // being true, this fails before anyone is told something false.
+  const schema = read('src', 'db.js');
+  assert.ok(!/\b(ip_address|ip|user_agent|device_id|fingerprint)\s+(TEXT|INTEGER)/i.test(schema),
+    'no column could hold an address, a browser or a device');
+
+  const auth = read('src', 'auth.js');
+  assert.match(auth, /const hits = new Map\(\)/,
+    'the rate limiter counts in memory, and writes nothing down');
+
+  // "Only this site": no page may fetch anything from anywhere else. Links a
+  // reader may click are text, not requests.
+  const pages = ['index.html', 'submit.html', 'about.html', '404.html'].map((f) => read('public', f)).join('\n');
+  const scripts = ['index.js', 'submit.js', 'common.js', 'i18n.js', 'map-base.js', 'jalali.js']
+    .map((f) => read('public', 'js', f)).join('\n');
+  const styles = read('public', 'css', 'style.css');
+
+  for (const [what, text] of [['markup', pages], ['scripts', scripts], ['styles', styles]]) {
+    const calls = text.split('\n').filter((line) => (
+      /(src|href)\s*=\s*["']https?:|fetch\(\s*["']https?:|url\(\s*["']?https?:/.test(line)
+      && !/rel="noopener"|<a /.test(line)
+    ));
+    assert.deepEqual(calls, [], `${what} should call out to nobody: ${calls.join(' / ')}`);
   }
 });
 

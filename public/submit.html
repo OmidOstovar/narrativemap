@@ -42,9 +42,7 @@
   <nav class="site-nav">
     <a href="/"><span class="nav-full" data-i18n="nav.map">نقشۀ روایات</span><span class="nav-short" data-i18n="nav.mapShort">نقشه</span></a>
     <a href="/submit"><span data-i18n="nav.submitShort">ثبت</span> <span class="nav-long" data-i18n="nav.submitRest">روایت</span></a>
-    <!-- About is hidden until the page is written. Uncomment the line below and
-         set SHOW_ABOUT=true to bring it back.
-    <a href="/about" data-i18n="nav.about">درباره</a> -->
+    <a href="/about" data-i18n="nav.about">درباره</a>
   </nav>
 </header>
 
@@ -56,6 +54,24 @@
     <p data-i18n="manifesto.p2">آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «نقشۀ روایاتِ نامه‌های ایرانی» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.</p>
     <p data-i18n="manifesto.p3">فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.</p>
   </div>
+
+  <!-- The promise, folded away: one line to read, the rest for whoever wants
+       it. Kept as <details> so it works before any script runs. -->
+  <details class="assurance">
+    <summary class="assurance__summary">
+      <span data-i18n="assure.summary">تمام روایت‌ها ناشناس خواهد ماند.</span>
+    </summary>
+    <div class="assurance__body">
+      <p class="assurance__lead" data-i18n="assure.lead">شما را نمی‌شناسیم، و نمی‌توانیم بشناسیم.</p>
+      <p data-i18n="assure.p1">نه حساب کاربری می‌خواهیم، نه ایمیل، نه نام. هیچ ردی از نشانی اینترنتی یا دستگاه شما نگه نمی‌داریم و هیچ ابزار ردیابی روی این صفحه نیست. اگر نام مستعار و ایمیل را خالی بگذارید، در پایگاه دادهٔ ما چیزی نیست که شما را نشان دهد — حتی برای خودِ ما.</p>
+      <p data-i18n="assure.p2">اما دو چیز از دست ما خارج است، و صادقانه می‌گوییم:</p>
+      <p data-i18n="assure.first">اول، شبکه‌ای که با آن به اینترنت وصل می‌شوید می‌تواند ببیند که به این سایت سر زده‌اید — نه اینکه چه نوشته‌اید، اما همین که آمده‌اید. اگر این برایتان خطر دارد، از VPN استفاده کنید.</p>
+      <p data-i18n="assure.second">دوم، خودِ روایت ممکن است شما را لو بدهد. اگر خیابان و تاریخ و نسبتِ خانوادگی را کنار هم بنویسید، هر کس که آن خانواده را بشناسد می‌فهمد چه کسی نوشته. این را هیچ فناوری‌ای درست نمی‌کند؛ فقط خودتان می‌توانید. آنچه را که لازم نیست، ننویسید.</p>
+      <p class="assurance__more">
+        <a href="/about#anonymity" data-i18n="assure.more">چرا نمی‌توانیم شما را بشناسیم — شرحِ کامل</a>
+      </p>
+    </div>
+  </details>
 
   <div class="progress" id="progress" hidden>
     <div class="progress__bar"><div class="progress__fill" id="progress-fill"></div></div>

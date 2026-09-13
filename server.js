@@ -486,19 +486,17 @@ function sanitiseTranslation(raw) {
 /* --------------------------------- pages --------------------------------- */
 
 /**
- * The About page is written but not finished, so it is not served and its link
- * is out of the header. Set SHOW_ABOUT=true to put both back — the page itself
- * is still in public/about.html, and its nav link is a commented-out line in
- * each page's header.
+ * One address per page, whether or not a trailing slash was typed.
+ *
+ * A path written with a slash on the end is the same page, but the static
+ * handler will not find it and the reader gets the not-found page instead —
+ * which for someone following a link to a promise about their safety is a
+ * worse answer than it looks. The API is left alone: there a wrong path should
+ * say so rather than quietly become a different one.
  */
-const SHOW_ABOUT = process.env.SHOW_ABOUT === 'true';
-
-app.use((req, res, next) => {
-  if (!SHOW_ABOUT && /^\/about(\.html)?\/?$/.test(req.path)) {
-    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
-    return;
-  }
-  next();
+app.get(/^\/(?!api\/).+\/$/, (req, res) => {
+  const query = req.originalUrl.slice(req.path.length);
+  res.redirect(301, req.path.replace(/\/+$/, '') + query);
 });
 
 /**

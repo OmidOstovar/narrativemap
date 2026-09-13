@@ -644,7 +644,9 @@ const tiles = require('../src/tiles');
 
 test('a tile address is built from three integers and nothing else', () => {
   const url = tiles.upstreamFor(5, 20, 12, false);
-  assert.match(url, /\/5\/20\/12/);
+  // The order is the provider's business — Esri asks for {z}/{y}/{x} — so what
+  // matters is that the three numbers are there and nothing is left unfilled.
+  assert.match(url, /\/5\/(20\/12|12\/20)/);
   assert.ok(!url.includes('{'), 'every placeholder is filled');
 });
 
@@ -674,11 +676,35 @@ test('a doubled tile is asked for only where the provider has one', () => {
   assert.equal(tiles.upstreamFor(5, 20, 12, true), tiles.upstreamFor(5, 20, 12, false));
 });
 
-test('the default basemap needs nobody\u2019s permission to be fetched', () => {
-  const { url, filter } = tiles.STYLES[tiles.DEFAULT_STYLE];
-  assert.ok(!/api[_-]?key|access[_-]?token|\{key\}/i.test(url),
-    'a key can be withdrawn, and its absence written across the map');
-  assert.match(filter, /invert/, 'pale tiles are turned dark for this archive');
+test('no basemap on offer asks for a key', () => {
+  // A key is a thing that can be withdrawn, and its withdrawal is what wrote
+  // "api key required" across this map once already.
+  for (const [name, style] of Object.entries(tiles.STYLES)) {
+    assert.ok(!/api[_-]?key|access[_-]?token|\{key\}/i.test(style.url), `${name} is open`);
+  }
+});
+
+test('the default map is dark, and says where things are', () => {
+  const style = tiles.STYLES[tiles.DEFAULT_STYLE];
+  assert.ok(!/invert/.test(style.filter), 'it is drawn dark rather than made dark');
+  assert.ok(style.labels, 'a map you place a pin on has to carry place names');
+  assert.equal(tiles.config().labels, true, 'and the browser is told to fetch them');
+});
+
+test('the names layer is a second address, checked like the first', () => {
+  const labels = tiles.upstreamFor(5, 20, 12, false, 'labels');
+  assert.match(labels, /Reference/, 'the companion layer, not the ground');
+  assert.notEqual(labels, tiles.upstreamFor(5, 20, 12, false));
+  assert.equal(tiles.upstreamFor(99, 0, 0, false, 'labels'), null, 'bounds still apply');
+
+  const saved = process.env.TILE_STYLE;
+  process.env.TILE_STYLE = 'osm-dark';
+  try {
+    assert.equal(tiles.upstreamFor(5, 20, 12, false, 'labels'), null,
+      'a provider with names already drawn in is not asked for a second layer');
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
 });
 
 test('every style carries what a map needs to show it', () => {
@@ -693,15 +719,31 @@ test('every style carries what a map needs to show it', () => {
 
 test('a style is chosen by name, without touching the code', () => {
   const saved = process.env.TILE_STYLE;
-  process.env.TILE_STYLE = 'esri-dark';
+  process.env.TILE_STYLE = 'osm-dark';
   try {
-    assert.match(tiles.upstreamFor(6, 40, 25, false), /arcgisonline/);
-    // Esri orders them {z}/{y}/{x}; the relay follows the address it is given.
-    assert.ok(tiles.upstreamFor(6, 40, 25, false).endsWith('/6/25/40'));
-    assert.match(tiles.config().attribution, /Esri/);
-    assert.ok(!/invert/.test(tiles.config().filter), 'a map drawn dark is not inverted again');
+    assert.match(tiles.upstreamFor(6, 40, 25, false), /tile\.openstreetmap\.org\/6\/40\/25/);
+    assert.match(tiles.config().filter, /invert/, 'pale tiles are turned dark here');
+    assert.equal(tiles.config().labels, false);
   } finally {
     if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
+
+  // Esri orders them {z}/{y}/{x}; the relay follows the address it is given.
+  assert.ok(tiles.upstreamFor(6, 40, 25, false).endsWith('/6/25/40'));
+});
+
+test('the archive can say which providers it can actually reach', async () => {
+  const body = await json(await call('/api/tiles/status'));
+  assert.equal(typeof body.inUse.style, 'string');
+  assert.ok(Array.isArray(body.providers) && body.providers.length >= 4);
+
+  const inUse = body.providers.filter((p) => p.inUse);
+  assert.equal(inUse.length, 1, 'exactly one is the one being served');
+
+  for (const provider of body.providers) {
+    assert.equal(typeof provider.style, 'string');
+    assert.equal(typeof provider.ok, 'boolean', 'answered or did not, plainly');
+    assert.ok(!provider.url.includes('?'), 'a key in the query is never reported');
   }
 });
 

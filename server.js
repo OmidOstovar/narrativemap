@@ -124,14 +124,14 @@ app.get('/api/questions', (req, res) => {
  * everyone forever, so it is cached hard: a reader panning the map fetches
  * each square once, and the archive fetches it once for all of them.
  */
-app.get('/tiles/:z/:x/:y.png', async (req, res) => {
+async function serveTile(req, res, layer) {
   const retina = req.params.y.endsWith('@2x');
   const y = Number(retina ? req.params.y.slice(0, -3) : req.params.y);
   const z = Number(req.params.z);
   const x = Number(req.params.x);
 
   try {
-    const tile = await tiles.fetchTile(z, x, y, { retina });
+    const tile = await tiles.fetchTile(z, x, y, { retina, layer });
     if (!tile) {
       res.status(404).end();
       return;
@@ -143,7 +143,15 @@ app.get('/tiles/:z/:x/:y.png', async (req, res) => {
     // A missing square leaves a gap in the map; the narratives are unaffected.
     res.status(502).end();
   }
-});
+}
+
+/*
+ * Place names, where the provider keeps them apart from the ground they sit
+ * on. Declared first: it is the longer path, and Express takes the first that
+ * matches.
+ */
+app.get('/tiles/labels/:z/:x/:y.png', (req, res) => serveTile(req, res, 'labels'));
+app.get('/tiles/:z/:x/:y.png', (req, res) => serveTile(req, res, 'base'));
 
 /**
  * What the map must credit, how far the provider draws, and how its tiles have
@@ -152,6 +160,35 @@ app.get('/tiles/:z/:x/:y.png', async (req, res) => {
  */
 app.get('/api/tiles', (req, res) => {
   res.json(tiles.config());
+});
+
+/**
+ * Which providers this machine can actually reach.
+ *
+ * Whether a tile server answers is a fact about the network between it and
+ * wherever the archive is deployed, and it cannot be settled from anywhere
+ * else — a provider open from a laptop may be refused from a data centre. So
+ * the archive asks them all and says plainly what came back, which turns
+ * "the map is not working" into a sentence with a cause in it.
+ *
+ * Public, because it discloses nothing: no key (the query is stripped), no
+ * reader, no narrative. The answer is held for a minute and the rate is capped,
+ * so it cannot be used to make the archive hammer anyone.
+ */
+app.get('/api/tiles/status', async (req, res) => {
+  const limit = searchLimit(clientKey(req));
+  if (!limit.ok) {
+    res.set('Retry-After', String(limit.retryAfter));
+    res.status(429).json({ error: 'Too many requests.' });
+    return;
+  }
+
+  const sha = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.SOURCE_COMMIT || null;
+  res.json({
+    commit: sha ? sha.slice(0, 7) : null,
+    inUse: tiles.config(),
+    providers: await tiles.probe(),
+  });
 });
 
 /**

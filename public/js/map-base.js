@@ -118,6 +118,25 @@
     borderLayer.setStyle(STYLE.borderOverTiles);
 
     /*
+     * Place names, where the provider draws them apart from the ground they
+     * sit on. Added empty and only pointed at the relay once the server says
+     * there is a second layer to fetch, so a provider without one is never
+     * asked for squares that do not exist.
+     */
+    let labelLayer = null;
+    function addLabels() {
+      if (labelLayer) return;
+      labelLayer = L.tileLayer('/tiles/labels/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        // Names are drawn for a dark map already; the ground's treatment
+        // would only smudge them.
+        className: 'basemap-labels',
+        pane: 'tilePane',
+      });
+      if (tilesShowing) labelLayer.addTo(map);
+    }
+
+    /*
      * What the provider requires and how its tiles must be treated. A basemap
      * that is drawn pale has to be turned dark here, and one already dark must
      * not be — so the treatment travels with the choice of provider instead of
@@ -126,7 +145,7 @@
      */
     fetch('/api/tiles')
       .then((r) => r.json())
-      .then(({ attribution, filter, maxZoom }) => {
+      .then(({ attribution, filter, maxZoom, labels }) => {
         map.attributionControl.removeAttribution('streets');
         if (attribution) map.attributionControl.addAttribution(attribution);
         if (typeof filter === 'string') {
@@ -138,6 +157,10 @@
           tileLayer.options.maxNativeZoom = maxZoom;
           tileLayer.redraw();
         }
+        if (labels) {
+          addLabels();
+          if (maxZoom) labelLayer.options.maxNativeZoom = maxZoom;
+        }
       })
       .catch(() => { /* the map still works uncredited */ });
 
@@ -147,10 +170,12 @@
       if (enabled) {
         tileLayer.addTo(map);
         tileLayer.bringToBack();
+        if (labelLayer) labelLayer.addTo(map);
         provinceLayer.setStyle(STYLE.provinceOverTiles);
         borderLayer.setStyle(STYLE.borderOverTiles);
       } else {
         map.removeLayer(tileLayer);
+        if (labelLayer) map.removeLayer(labelLayer);
         provinceLayer.setStyle(STYLE.province);
         borderLayer.setStyle(STYLE.border);
       }

@@ -637,3 +637,52 @@ test('the submission form contacts nobody but this server', async () => {
   ));
   assert.deepEqual(requests, [], `nothing should call out: ${requests.join(' / ')}`);
 });
+
+/* --------------------------------- tiles ---------------------------------- */
+
+const tiles = require('../src/tiles');
+
+test('a tile address is built from three integers and nothing else', () => {
+  const url = tiles.upstreamFor(5, 20, 12, false);
+  assert.match(url, /\/5\/20\/12/);
+  assert.ok(!url.includes('{'), 'every placeholder is filled');
+});
+
+test('the relay cannot be talked into fetching anything else', () => {
+  const rejected = [
+    [5, 20, 'x'], [5, NaN, 12], [-1, 0, 0], [99, 0, 0],
+    // Out of range for the zoom level: at z=2 the grid is only 4 wide.
+    [2, 4, 0], [2, 0, 4], [2, -1, 0],
+  ];
+  for (const [z, x, y] of rejected) {
+    assert.equal(tiles.upstreamFor(z, x, y, false), null, `refused ${z}/${x}/${y}`);
+  }
+});
+
+test('a high-resolution screen asks for the same tile, doubled', () => {
+  assert.ok(tiles.upstreamFor(5, 20, 12, true).includes('@2x'));
+  assert.ok(!tiles.upstreamFor(5, 20, 12, false).includes('@2x'));
+});
+
+test('the provider is a setting, not a hardcoded host', () => {
+  const saved = process.env.TILE_URL;
+  process.env.TILE_URL = 'https://example.test/{z}/{x}/{y}.png';
+  try {
+    assert.equal(tiles.upstreamFor(3, 4, 5, false), 'https://example.test/3/4/5.png');
+  } finally {
+    if (saved === undefined) delete process.env.TILE_URL; else process.env.TILE_URL = saved;
+  }
+});
+
+test('nonsense coordinates are refused by the route, not passed upstream', async () => {
+  for (const path of ['/tiles/99/0/0.png', '/tiles/2/9/0.png', '/tiles/abc/0/0.png']) {
+    const response = await call(path);
+    assert.equal(response.status, 404, `refused ${path}`);
+  }
+});
+
+test('the map is told what to credit', async () => {
+  const body = await json(await call('/api/tiles'));
+  assert.ok(body.attribution.includes('OpenStreetMap'));
+  assert.equal(typeof body.maxZoom, 'number');
+});

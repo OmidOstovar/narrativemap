@@ -437,6 +437,13 @@ input[type='date'] { cursor: text; }
 }
 
 /*
+ * The base imagery sits behind everything and must stay behind it. Held back
+ * a little so the saffron pins and the border read as the foreground rather
+ * than competing with roads.
+ */
+.basemap-tiles { filter: saturate(0.75) brightness(0.82); }
+
+/*
  * The reading panel waits just outside this pane, pushed off by a translate.
  * Without clipping, that off-canvas copy counts towards the page's scrollable
  * area — and under rtl a phone then opens the page scrolled onto the empty

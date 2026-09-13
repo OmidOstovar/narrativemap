@@ -58,8 +58,8 @@
     'map.clearFilters': { en: 'Clear filters', fa: 'حذف فیلترها' },
     'map.streetDetail': { en: 'Street detail', fa: 'نمای خیابانی' },
     'map.streetDetailNote': {
-      en: 'Streets are drawn by OpenStreetMap, so switching this on asks their servers for the map images. Everything else on this page comes from here alone.',
-      fa: 'نقشهٔ خیابان‌ها از OpenStreetMap می‌آید؛ با روشن‌کردن آن، تصویرهای نقشه از سرورهای آن‌ها گرفته می‌شود. بقیهٔ این صفحه فقط از همین‌جا می‌آید.',
+      en: 'Streets, towns and place names. The images are fetched by this site on your behalf, so the map provider never sees you. Switch it off for a plain outline of Iran.',
+      fa: 'خیابان‌ها، شهرها و نام مکان‌ها. تصویرهای نقشه را همین سایت به‌جای شما می‌گیرد، پس ارائه‌دهندهٔ نقشه شما را نمی‌بیند. برای دیدن طرح سادهٔ ایران، خاموشش کنید.',
     },
     'map.empty.title': { en: 'No narratives yet.', fa: 'هنوز روایتی ثبت نشده.' },
     'map.empty.cta': { en: 'Be the first to add one →', fa: 'اولین روایت را شما ثبت کنید →' },

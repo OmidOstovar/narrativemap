@@ -335,6 +335,11 @@ Copy `.env.example` and set what you need. The interesting ones:
 | `BOT_API_TOKEN` | none | Shared secret letting the bot submit for many contributors |
 | `LOGIN_LIMIT_PER_15_MIN` | `10` | Sign-in attempts per IP per 15 minutes |
 | `HEARING_LIMIT_PER_HOUR` | `300` | How many narratives one visitor may mark as heard per hour |
+| `SEARCH_LIMIT_PER_HOUR` | `400` | Place-name lookups per visitor per hour |
+| `TILE_URL` | CARTO dark | Base map tiles, e.g. `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=…`. Fetched by the server, never by the reader's browser |
+| `TILE_ATTRIBUTION` | OpenStreetMap + CARTO | Credit shown on the map; change it with the provider |
+| `TILE_MAX_ZOOM` | `18` | Deepest zoom the relay will fetch |
+| `TILE_CACHE_TILES` | `600` | Tiles held in memory, shared between readers |
 | `SMTP_URL` | none | Mail server for backup copies, e.g. `smtps://you%40gmail.com:app-password@smtp.gmail.com:465` |
 | `RESEND_API_KEY` | none | Sends the copies over HTTPS instead, for hosts that refuse outbound SMTP. Takes precedence over `SMTP_URL` |
 | `BACKUP_EMAIL_TO` | none | Address that receives a copy of every submission as it arrives |

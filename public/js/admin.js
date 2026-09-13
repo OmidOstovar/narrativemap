@@ -257,7 +257,7 @@
     return `
       <div style="margin-bottom:32px">
         <label class="map-toggle" style="box-shadow:none;margin-bottom:8px">
-          <input type="checkbox" id="detail-tiles"> ${escapeHtml(t('admin.streetCheck'))}
+          <input type="checkbox" id="detail-tiles" checked> ${escapeHtml(t('admin.streetCheck'))}
         </label>
         <div id="detail-map" style="height:${height}px;border:1px solid var(--ink-500);border-radius:var(--radius-sm)"></div>
       </div>`;

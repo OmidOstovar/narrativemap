@@ -11,9 +11,17 @@
   const IRAN_BOUNDS = L.latLngBounds([24.0, 43.5], [40.2, 63.8]);
 
   const STYLE = {
+    // Without imagery beneath, the provinces are the map and carry a fill.
     province: { color: '#3a4454', weight: 0.8, fillColor: '#1b212b', fillOpacity: 1, opacity: 1 },
     provinceHover: { fillColor: '#232a36', color: '#4c586c', weight: 1.2 },
     border: { color: '#46536a', weight: 1.8, fill: false, opacity: 1 },
+    // Over streets they become lines only, or the map underneath is lost. The
+    // fill stays but at almost nothing, so a province is still hoverable.
+    provinceOverTiles: {
+      color: '#5d6b85', weight: 0.7, opacity: 0.55, fillColor: '#000', fillOpacity: 0.01,
+    },
+    provinceOverTilesHover: { fillColor: '#e0913f', fillOpacity: 0.07, color: '#8d9ab3', weight: 1.2 },
+    borderOverTiles: { color: '#e0913f', weight: 1.6, fill: false, opacity: 0.75 },
   };
 
   let geoPromise = null;
@@ -55,6 +63,8 @@
     const provinceFeatures = geo.features.filter((f) => f !== border);
 
     const baseLayer = L.layerGroup().addTo(map);
+    // Which base is in front, so hovering a province matches what is drawn.
+    let tilesShowing = true;
 
     const provinceLayer = L.geoJSON(
       { type: 'FeatureCollection', features: provinceFeatures },
@@ -70,8 +80,12 @@
           });
           // Province tooltips are built once, so refresh them on a switch.
           if (global.I18N) global.I18N.onChange(() => layer.setTooltipContent(label()));
-          layer.on('mouseover', () => layer.setStyle(STYLE.provinceHover));
-          layer.on('mouseout', () => layer.setStyle(STYLE.province));
+          layer.on('mouseover', () => layer.setStyle(
+            tilesShowing ? STYLE.provinceOverTilesHover : STYLE.provinceHover,
+          ));
+          layer.on('mouseout', () => layer.setStyle(
+            tilesShowing ? STYLE.provinceOverTiles : STYLE.province,
+          ));
         },
       },
     ).addTo(baseLayer);
@@ -82,23 +96,46 @@
       'Boundaries <a href="https://www.geoboundaries.org" rel="noopener">geoBoundaries</a> CC BY 4.0',
     );
 
-    let tileLayer = null;
+    /*
+     * The base imagery comes through the archive, never from the provider
+     * directly — see src/tiles.js. Leaflet fills {r} with "@2x" on a
+     * high-resolution screen, which the relay understands.
+     */
+    const tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      detectRetina: true,
+      // Kept faint: the map is the ground a narrative stands on, not the
+      // subject. The pins and the border have to win.
+      className: 'basemap-tiles',
+      attribution: 'streets',
+    }).addTo(map);
+    tileLayer.bringToBack();
 
-    /** Swaps between the drawn base and OpenStreetMap raster tiles. */
+    // Over streets the provinces are a hint rather than a shape, and the
+    // border is what tells a reader where they are.
+    provinceLayer.setStyle(STYLE.provinceOverTiles);
+    borderLayer.setStyle(STYLE.borderOverTiles);
+
+    // What the provider requires, asked for rather than hardcoded so changing
+    // provider stays a matter of one setting on the server.
+    fetch('/api/tiles')
+      .then((r) => r.json())
+      .then(({ attribution }) => {
+        map.attributionControl.removeAttribution('streets');
+        if (attribution) map.attributionControl.addAttribution(attribution);
+      })
+      .catch(() => { /* the map still works uncredited */ });
+
+    /** Kept for the callers that still offer the toggle. */
     function setTiles(enabled) {
-      if (enabled && !tileLayer) {
-        tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors',
-        });
-      }
+      tilesShowing = enabled;
       if (enabled) {
         tileLayer.addTo(map);
         tileLayer.bringToBack();
-        provinceLayer.setStyle({ fillOpacity: 0, opacity: 0.35, color: '#7d8ba3' });
-        borderLayer.setStyle({ color: '#e0913f', weight: 2 });
+        provinceLayer.setStyle(STYLE.provinceOverTiles);
+        borderLayer.setStyle(STYLE.borderOverTiles);
       } else {
-        if (tileLayer) map.removeLayer(tileLayer);
+        map.removeLayer(tileLayer);
         provinceLayer.setStyle(STYLE.province);
         borderLayer.setStyle(STYLE.border);
       }

@@ -102,7 +102,7 @@
           <span>${escapeHtml(t('submit.province'))} <span class="province unset" id="readout-province">—</span></span>
           <label class="map-toggle" style="margin-inline-start:auto;box-shadow:none;background:transparent;padding:0;border:none"
                  title="${escapeHtml(t('map.streetDetailNote'))}">
-            <input type="checkbox" id="picker-tiles"> ${escapeHtml(t('map.streetDetail'))}
+            <input type="checkbox" id="picker-tiles" checked> ${escapeHtml(t('map.streetDetail'))}
           </label>
         </div>
 

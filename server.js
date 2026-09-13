@@ -35,6 +35,7 @@ require('node:dns').setDefaultResultOrder('ipv4first');
 const db = require('./src/db');
 const auth = require('./src/auth');
 const mailer = require('./src/mailer');
+const tiles = require('./src/tiles');
 const { QUESTIONS, FORM_SEQUENCE, TITLE_QUESTION_ID } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
@@ -114,6 +115,39 @@ app.get('/api/questions', (req, res) => {
     provinces: PROVINCE_NAMES,
     yearRange: { min: MIN_YEAR, max: maxYear() },
   });
+});
+
+/**
+ * The map's base imagery, relayed. See src/tiles.js for why.
+ *
+ * The path carries three integers and nothing else. A tile is the same for
+ * everyone forever, so it is cached hard: a reader panning the map fetches
+ * each square once, and the archive fetches it once for all of them.
+ */
+app.get('/tiles/:z/:x/:y.png', async (req, res) => {
+  const retina = req.params.y.endsWith('@2x');
+  const y = Number(retina ? req.params.y.slice(0, -3) : req.params.y);
+  const z = Number(req.params.z);
+  const x = Number(req.params.x);
+
+  try {
+    const tile = await tiles.fetchTile(z, x, y, { retina });
+    if (!tile) {
+      res.status(404).end();
+      return;
+    }
+    res.set('Content-Type', tile.type);
+    res.set('Cache-Control', 'public, max-age=604800, immutable');
+    res.send(tile.body);
+  } catch (error) {
+    // A missing square leaves a gap in the map; the narratives are unaffected.
+    res.status(502).end();
+  }
+});
+
+/** What the map must credit, so the client need not hardcode a provider. */
+app.get('/api/tiles', (req, res) => {
+  res.json({ attribution: tiles.ATTRIBUTION, maxZoom: tiles.MAX_ZOOM });
 });
 
 /**

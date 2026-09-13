@@ -441,7 +441,14 @@ input[type='date'] { cursor: text; }
  * a little so the saffron pins and the border read as the foreground rather
  * than competing with roads.
  */
-.basemap-tiles { filter: saturate(0.75) brightness(0.82); }
+/*
+ * How the basemap is treated. The value is the default provider's — pale
+ * OpenStreetMap tiles, turned dark here — and the server replaces it through
+ * --basemap-filter when the provider in use needs something else.
+ */
+.basemap-tiles {
+  filter: var(--basemap-filter, invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.95) contrast(1.05));
+}
 
 /*
  * The reading panel waits just outside this pane, pushed off by a translate.

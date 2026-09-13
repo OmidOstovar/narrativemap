@@ -145,9 +145,13 @@ app.get('/tiles/:z/:x/:y.png', async (req, res) => {
   }
 });
 
-/** What the map must credit, so the client need not hardcode a provider. */
+/**
+ * What the map must credit, how far the provider draws, and how its tiles have
+ * to be treated to sit under this archive — all asked for rather than
+ * hardcoded, so changing provider stays a setting and never a deploy.
+ */
 app.get('/api/tiles', (req, res) => {
-  res.json({ attribution: tiles.ATTRIBUTION, maxZoom: tiles.MAX_ZOOM });
+  res.json(tiles.config());
 });
 
 /**

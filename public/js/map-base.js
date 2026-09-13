@@ -98,12 +98,13 @@
 
     /*
      * The base imagery comes through the archive, never from the provider
-     * directly — see src/tiles.js. Leaflet fills {r} with "@2x" on a
-     * high-resolution screen, which the relay understands.
+     * directly — see src/tiles.js. {r} asks for a doubled tile on a dense
+     * screen; the relay serves the ordinary one where the provider has none.
+     * maxNativeZoom is left to the server's answer below, since how far a
+     * provider actually draws is the provider's business, not this file's.
      */
     const tileLayer = L.tileLayer('/tiles/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      detectRetina: true,
+      maxZoom: 19,
       // Kept faint: the map is the ground a narrative stands on, not the
       // subject. The pins and the border have to win.
       className: 'basemap-tiles',
@@ -116,13 +117,27 @@
     provinceLayer.setStyle(STYLE.provinceOverTiles);
     borderLayer.setStyle(STYLE.borderOverTiles);
 
-    // What the provider requires, asked for rather than hardcoded so changing
-    // provider stays a matter of one setting on the server.
+    /*
+     * What the provider requires and how its tiles must be treated. A basemap
+     * that is drawn pale has to be turned dark here, and one already dark must
+     * not be — so the treatment travels with the choice of provider instead of
+     * being fixed in the stylesheet. The stylesheet's own value covers the
+     * moment before this answers, and matches the default.
+     */
     fetch('/api/tiles')
       .then((r) => r.json())
-      .then(({ attribution }) => {
+      .then(({ attribution, filter, maxZoom }) => {
         map.attributionControl.removeAttribution('streets');
         if (attribution) map.attributionControl.addAttribution(attribution);
+        if (typeof filter === 'string') {
+          document.documentElement.style.setProperty('--basemap-filter', filter);
+        }
+        if (maxZoom) {
+          // Beyond what the provider draws, Leaflet stretches the last real
+          // square rather than asking for one that does not exist.
+          tileLayer.options.maxNativeZoom = maxZoom;
+          tileLayer.redraw();
+        }
       })
       .catch(() => { /* the map still works uncredited */ });
 

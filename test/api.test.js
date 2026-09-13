@@ -659,9 +659,50 @@ test('the relay cannot be talked into fetching anything else', () => {
   }
 });
 
-test('a high-resolution screen asks for the same tile, doubled', () => {
-  assert.ok(tiles.upstreamFor(5, 20, 12, true).includes('@2x'));
-  assert.ok(!tiles.upstreamFor(5, 20, 12, false).includes('@2x'));
+test('a doubled tile is asked for only where the provider has one', () => {
+  const saved = process.env.TILE_URL;
+  process.env.TILE_URL = 'https://example.test/{z}/{x}/{y}{r}.png';
+  try {
+    assert.ok(tiles.upstreamFor(5, 20, 12, true).includes('@2x'));
+    assert.ok(!tiles.upstreamFor(5, 20, 12, false).includes('@2x'));
+  } finally {
+    if (saved === undefined) delete process.env.TILE_URL; else process.env.TILE_URL = saved;
+  }
+
+  // The default provider serves one size. A dense screen must still get a
+  // square rather than a hole, so it is handed the ordinary one.
+  assert.equal(tiles.upstreamFor(5, 20, 12, true), tiles.upstreamFor(5, 20, 12, false));
+});
+
+test('the default basemap needs nobody\u2019s permission to be fetched', () => {
+  const { url, filter } = tiles.STYLES[tiles.DEFAULT_STYLE];
+  assert.ok(!/api[_-]?key|access[_-]?token|\{key\}/i.test(url),
+    'a key can be withdrawn, and its absence written across the map');
+  assert.match(filter, /invert/, 'pale tiles are turned dark for this archive');
+});
+
+test('every style carries what a map needs to show it', () => {
+  for (const [name, style] of Object.entries(tiles.STYLES)) {
+    assert.match(style.url, /\{z\}/, `${name} has a zoom placeholder`);
+    assert.match(style.url, /\{x\}/, `${name} has an x placeholder`);
+    assert.match(style.url, /\{y\}/, `${name} has a y placeholder`);
+    assert.ok(style.attribution, `${name} credits its provider`);
+    assert.equal(typeof style.maxZoom, 'number', `${name} says how far it draws`);
+  }
+});
+
+test('a style is chosen by name, without touching the code', () => {
+  const saved = process.env.TILE_STYLE;
+  process.env.TILE_STYLE = 'esri-dark';
+  try {
+    assert.match(tiles.upstreamFor(6, 40, 25, false), /arcgisonline/);
+    // Esri orders them {z}/{y}/{x}; the relay follows the address it is given.
+    assert.ok(tiles.upstreamFor(6, 40, 25, false).endsWith('/6/25/40'));
+    assert.match(tiles.config().attribution, /Esri/);
+    assert.ok(!/invert/.test(tiles.config().filter), 'a map drawn dark is not inverted again');
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE; else process.env.TILE_STYLE = saved;
+  }
 });
 
 test('the provider is a setting, not a hardcoded host', () => {
@@ -681,8 +722,9 @@ test('nonsense coordinates are refused by the route, not passed upstream', async
   }
 });
 
-test('the map is told what to credit', async () => {
+test('the map is told what to credit and how to show it', async () => {
   const body = await json(await call('/api/tiles'));
   assert.ok(body.attribution.includes('OpenStreetMap'));
   assert.equal(typeof body.maxZoom, 'number');
+  assert.equal(typeof body.filter, 'string', 'the treatment travels with the provider');
 });

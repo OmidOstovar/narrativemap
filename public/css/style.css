@@ -1091,11 +1091,24 @@ details.qa > .chips { padding-bottom: 20px; }
 
 /* ------------------------------ leaflet skin ---------------------------- */
 
+/*
+ * Outside the country, on paper: the illuminated margin of a manuscript page —
+ * flowers, grasses and birds — cropped clear of the panel it framed and
+ * mirrored into a tile that repeats without a seam. Mirrored, so the birds come
+ * in facing pairs: a painting has no edge that meets itself, and this is the
+ * price of tiling one.
+ *
+ * It goes on the map rather than on the pane around it, because Leaflet paints
+ * its own ground over that. The provinces are drawn on top, so this is only
+ * ever what lies beyond the border, and the dark theme replaces it with a flat
+ * colour below.
+ */
 .leaflet-container {
-  background: var(--ink-900);
+  background: #e9ddc3 url('/img/map-ground.jpg') repeat;
   font-family: var(--sans);
   outline: none;
 }
+[data-theme='dark'] .leaflet-container { background: var(--ink-900); }
 .leaflet-control-zoom { border: none !important; box-shadow: var(--shadow-md) !important; }
 .leaflet-control-zoom a {
   background: var(--veil) !important;

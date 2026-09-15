@@ -44,12 +44,19 @@ function which() {
  * flow, so a margin does not scroll away from the text it is margin to, and so
  * it costs the reading column no width at all.
  */
-function frame(width, minPage, narrow, sides) {
+function frame(width, minPage, narrow, sides, narrowSides) {
   return `.page::before,
 .page::after {
   content: '';
   position: fixed;
-  top: var(--header-height);
+  /*
+   * The full height of the window, not from under the header down. The header
+   * scrolls away and is drawn above these, so while it is on screen it covers
+   * their top; once it has gone, the margin runs the whole height and the page
+   * passes behind it — rather than leaving a strip at the top where text slid
+   * past the edge of the page it is printed on.
+   */
+  top: 0;
   bottom: 0;
   width: ${width};
   pointer-events: none;
@@ -60,15 +67,16 @@ ${sides}
 
 /*
  * On a narrow window there is no room for the drawing, but there is room for
- * the edge of the page. The band shrinks to its ruled frame — anchored to the
- * inner side, so that is exactly what survives — and the column is given side
- * room to clear it rather than running underneath.
+ * the edge of the page — and the column is given side room to clear it rather
+ * than running underneath.
  */
 @media (max-width: ${minPage}) {
   .page::before,
   .page::after { width: ${narrow}; }
 
-  .page { padding-inline: calc(${narrow} + 18px); }
+  .page { padding-inline: calc(${narrow} + 16px); }
+
+${narrowSides}
 }
 `;
 }
@@ -131,6 +139,19 @@ const DRAWN = `.page::before,
   background-position: left center, right 2px top, center;
 }`;
 
+/*
+ * A woven border for a phone. The manuscript margin is a page's worth of
+ * drawing and there is no room for it at this width; a carpet border is made
+ * of a repeat, so it reads at any height and at the width of a thumb.
+ */
+const NARROW_PHOTO = `  .page::before,
+  .page::after {
+    background-image: url('/img/mobile-border.jpg');
+    background-position: center top;
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+  }`;
+
 function css() {
   const chosen = which();
   const head = `/* Illuminated margins: MARGINS=${chosen}. See src/margins.js. */\n`;
@@ -139,8 +160,9 @@ function css() {
   return head + frame(
     length('MARGIN_WIDTH', chosen === 'photo' ? '124px' : '38px'),
     length('MARGIN_MIN_PAGE', chosen === 'photo' ? '1120px' : '980px'),
-    length('MARGIN_NARROW', '16px'),
+    length('MARGIN_NARROW', chosen === 'photo' ? '22px' : '16px'),
     chosen === 'photo' ? PHOTO : DRAWN,
+    chosen === 'photo' ? NARROW_PHOTO : '',
   );
 }
 

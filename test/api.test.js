@@ -517,8 +517,13 @@ test('the margins are a setting, not an edit', async () => {
 
     // A phone keeps the ruled edge rather than losing the page altogether.
     process.env.MARGINS = 'photo';
-    assert.match(margins.css(), /@media \(max-width: 1120px\)[\s\S]*width: 16px/);
+    assert.match(margins.css(), /@media \(max-width: 1120px\)[\s\S]*width: 22px/);
     assert.match(margins.css(), /padding-inline/, 'and the column is given room to clear it');
+    assert.match(margins.css(), /mobile-border\.jpg/, 'a woven border, where the drawing cannot be read');
+
+    // The margin runs the whole height; the header is drawn over its top.
+    assert.match(margins.css(), /top: 0;/);
+    assert.ok(!margins.css().includes('top: var(--header-height)'));
 
     // A setting nobody recognises leaves the archive looking as it should.
     process.env.MARGINS = 'sideways';

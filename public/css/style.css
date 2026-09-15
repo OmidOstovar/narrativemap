@@ -126,7 +126,13 @@ html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--ink-900);
+  /*
+   * Paper rather than a colour. Each of these is a photograph of the stock the
+   * magazine is set on, cropped where it is clean and mirrored into a tile that
+   * repeats without a seam; the flat colour stays underneath as what shows if
+   * the image never arrives.
+   */
+  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
   color: var(--text);
   font-family: var(--sans);
   font-size: 17px;
@@ -158,9 +164,14 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   align-items: center;
   gap: 20px;
   padding: 0 20px;
-  background: var(--ink-800);
+  background: var(--ink-800) url('/img/paper-bar.jpg') repeat;
+  /* The bar's paper is darker than the page's, so its ink is darker too. */
+  --text-muted: #3b342a;
+  --text-faint: #5a5244;
   border-bottom: 1px solid var(--ink-500);
   position: relative;
+  /* Above the illuminated margins, so it covers their top while it is on
+     screen and lets them run the full height once it has scrolled away. */
   z-index: 500;
 }
 
@@ -397,7 +408,19 @@ input[type='date'] { cursor: text; }
 }
 
 .sidebar {
-  background: var(--ink-800);
+  /*
+   * The list paper is the darkest of the three, and no ink is legible on it at
+   * full strength — a narrative's opening lines came out at under 2:1. A wash
+   * lifts it while leaving most of the paper showing, and the ink is darkened
+   * to meet it, which is what a scribe would have done with a darker stock.
+   */
+  background-color: var(--ink-800);
+  background-image:
+    linear-gradient(rgba(255, 250, 240, 0.4), rgba(255, 250, 240, 0.4)),
+    url('/img/paper-list.jpg');
+  background-repeat: repeat, repeat;
+  --text-muted: #4a4235;
+  --text-faint: #6b6152;
   border-right: 1px solid var(--ink-500);
   display: flex;
   flex-direction: column;
@@ -426,7 +449,13 @@ input[type='date'] { cursor: text; }
  * area — and under rtl a phone then opens the page scrolled onto the empty
  * side of it, leaving the reader to scroll back to find the map.
  */
-.map-pane { position: relative; min-width: 0; background: var(--ink-900); overflow: hidden; }
+/* The map is drawn on the same paper as the narratives, not on a flat field. */
+.map-pane {
+  position: relative;
+  min-width: 0;
+  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
+  overflow: hidden;
+}
 #map { position: absolute; inset: 0; }
 
 /* --------------------------- sidebar: filters --------------------------- */
@@ -765,7 +794,7 @@ input[type='date'] { cursor: text; }
   position: absolute;
   top: 0; right: 0; bottom: 0;
   width: min(640px, 100%);
-  background: var(--ink-800);
+  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
   border-left: 1px solid var(--ink-500);
   box-shadow: var(--shadow-lg);
   z-index: 460;

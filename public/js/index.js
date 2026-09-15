@@ -431,8 +431,9 @@
 
     const version = shown(n);
     const answers = state.questions
-      // The title is already the heading of this panel.
-      .filter((q) => q.id !== state.titleQuestionId)
+      // The title is already the heading of this panel, and a question marked
+      // `inReader: false` in the questionnaire is not for a reader at all.
+      .filter((q) => q.id !== state.titleQuestionId && q.inReader !== false)
       .map((q) => {
         const isChoice = q.type === 'select' || q.type === 'multiselect';
         // Choice answers are stored as codes and render in either language, so
@@ -464,7 +465,8 @@
       }).join('');
 
     readerBody.innerHTML = `
-      <h1 class="reader__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}<span
+      <h1 class="reader__title" dir="${dirFor(title(n))}"><span
+        class="reader__name">${escapeHtml(title(n))}</span> <span
         class="reader__by">${escapeHtml(t('reader.by'))} ${
   escapeHtml(n.contributor || t('reader.anonymous'))}</span></h1>
       ${version.note ? `

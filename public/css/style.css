@@ -525,7 +525,9 @@ input[type='date'] { cursor: text; }
   padding: 18px 18px 16px;
   border-bottom: 1px solid var(--ink-500);
   font-family: var(--serif);
-  color: var(--text);
+  /* The archive's own line, in the archive's own colour: it is asking for
+     something, and should not read as one more piece of the furniture. */
+  color: var(--saffron);
   font-size: 19px;
   line-height: 1.5;
 }
@@ -885,14 +887,22 @@ input[type='date'] { cursor: text; }
   letter-spacing: -0.015em;
   margin-bottom: 16px;
 }
-/* Who told it, on the same line as what they called it and a good deal quieter:
-   the title is the narrative's, the name is only the hand it came from. */
+/*
+ * Who told it, on the same line as what they called it and a good deal quieter:
+ * the title is the narrative's, the name is only the hand it came from.
+ *
+ * The two are separate spans with a space between them, and the byline is an
+ * inline-block: run together as bare text, an Arabic-script title ended flush
+ * against «نوشتۀ» and the last letter's tail ran into it.
+ */
+.reader__name { white-space: normal; }
 .reader__by {
+  display: inline-block;
   font-size: 0.52em;
   font-weight: 400;
   color: var(--text-muted);
   letter-spacing: 0;
-  margin-inline-start: 0.7em;
+  margin-inline-start: 0.5em;
   white-space: nowrap;
 }
 

@@ -21,6 +21,12 @@ const QUESTIONS = [
   {
     id: 'narrative_kind',
     type: 'multiselect',
+    /*
+     * Asked of the contributor, but not shown to a reader: what kind of thing
+     * a narrative is belongs to the writing of it, and a reader has the
+     * narrative itself in front of them. A moderator still sees it.
+     */
+    inReader: false,
     label: {
       fa: 'روایتتان از چه جنس است؟',
       en: 'What kind of narrative is this?',

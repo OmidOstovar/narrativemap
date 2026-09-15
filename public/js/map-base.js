@@ -10,18 +10,49 @@
   const IRAN_CENTER = [32.55, 53.9];
   const IRAN_BOUNDS = L.latLngBounds([24.0, 43.5], [40.2, 63.8]);
 
+  /**
+   * The drawn map's colours, taken from the stylesheet rather than repeated
+   * here — the palette is one thing, and a map that disagreed with the page it
+   * sits on is how a theme quietly comes apart.
+   */
+  function paint(name, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
   const STYLE = {
     // Without imagery beneath, the provinces are the map and carry a fill.
-    province: { color: '#3a4454', weight: 0.8, fillColor: '#1b212b', fillOpacity: 1, opacity: 1 },
-    provinceHover: { fillColor: '#232a36', color: '#4c586c', weight: 1.2 },
-    border: { color: '#46536a', weight: 1.8, fill: false, opacity: 1 },
+    province: {
+      color: paint('--border-line', '#c0b193'),
+      weight: 0.8,
+      fillColor: paint('--land', '#e9dfc9'),
+      fillOpacity: 1,
+      opacity: 1,
+    },
+    provinceHover: {
+      fillColor: paint('--land-hover', '#ded1b5'),
+      color: paint('--coast', '#8b7c5e'),
+      weight: 1.2,
+    },
+    border: { color: paint('--coast', '#8b7c5e'), weight: 1.8, fill: false, opacity: 1 },
     // Over streets they become lines only, or the map underneath is lost. The
     // fill stays but at almost nothing, so a province is still hoverable.
     provinceOverTiles: {
-      color: '#5d6b85', weight: 0.7, opacity: 0.55, fillColor: '#000', fillOpacity: 0.01,
+      color: paint('--coast', '#8b7c5e'),
+      weight: 0.7,
+      opacity: 0.6,
+      fillColor: paint('--text', '#241f17'),
+      fillOpacity: 0.01,
     },
-    provinceOverTilesHover: { fillColor: '#e0913f', fillOpacity: 0.07, color: '#8d9ab3', weight: 1.2 },
-    borderOverTiles: { color: '#e0913f', weight: 1.6, fill: false, opacity: 0.75 },
+    provinceOverTilesHover: {
+      fillColor: paint('--saffron', '#b4701e'),
+      fillOpacity: 0.09,
+      color: paint('--text-faint', '#918876'),
+      weight: 1.2,
+    },
+    borderOverTiles: {
+      color: paint('--saffron', '#b4701e'), weight: 1.6, fill: false, opacity: 0.85,
+    },
   };
 
   let geoPromise = null;
@@ -108,7 +139,10 @@
      */
     let tileLayer = null;
     let labelLayer = null;
-    let wanted = true; // What the streets toggle says, whether or not it can be obeyed.
+    // What the streets toggle says, whether or not it can be obeyed. The
+    // archive opens on its own drawn map: the streets are there for placing a
+    // pin, not for reading, and a reader should meet the country first.
+    let wanted = false;
 
     /*
      * Over streets the provinces are a hint rather than a shape, and the

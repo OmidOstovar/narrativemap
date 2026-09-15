@@ -14,9 +14,11 @@
  *   MARGINS=drawn   a vine drawn for this archive, in the same manner
  *   MARGINS=off     no margins at all
  *
- *   MARGIN_WIDTH=124px    how much of the margin shows
- *   MARGIN_MIN_PAGE=1120px  narrower than this, the margins go: below it they
- *                           would crowd the column the text is read in
+ *   MARGIN_WIDTH=124px     how much of the margin shows
+ *   MARGIN_MIN_PAGE=1120px  the width below which the narrow margins take over
+ *   MARGIN_NARROW=16px      how much shows on a phone — enough for the ruled
+ *                           edge, which is what a page has even when there is
+ *                           no room for what is drawn beside it
  */
 
 const SETTINGS = ['photo', 'drawn', 'off'];
@@ -42,7 +44,7 @@ function which() {
  * flow, so a margin does not scroll away from the text it is margin to, and so
  * it costs the reading column no width at all.
  */
-function frame(width, minPage, sides) {
+function frame(width, minPage, narrow, sides) {
   return `.page::before,
 .page::after {
   content: '';
@@ -56,9 +58,17 @@ function frame(width, minPage, sides) {
 
 ${sides}
 
+/*
+ * On a narrow window there is no room for the drawing, but there is room for
+ * the edge of the page. The band shrinks to its ruled frame — anchored to the
+ * inner side, so that is exactly what survives — and the column is given side
+ * room to clear it rather than running underneath.
+ */
 @media (max-width: ${minPage}) {
   .page::before,
-  .page::after { display: none; }
+  .page::after { width: ${narrow}; }
+
+  .page { padding-inline: calc(${narrow} + 18px); }
 }
 `;
 }
@@ -129,6 +139,7 @@ function css() {
   return head + frame(
     length('MARGIN_WIDTH', chosen === 'photo' ? '124px' : '38px'),
     length('MARGIN_MIN_PAGE', chosen === 'photo' ? '1120px' : '980px'),
+    length('MARGIN_NARROW', '16px'),
     chosen === 'photo' ? PHOTO : DRAWN,
   );
 }

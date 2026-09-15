@@ -515,6 +515,11 @@ test('the margins are a setting, not an edit', async () => {
     process.env.MARGINS = 'off';
     assert.ok(!/\.page::before\s*,/.test(margins.css()), 'nothing is drawn at all');
 
+    // A phone keeps the ruled edge rather than losing the page altogether.
+    process.env.MARGINS = 'photo';
+    assert.match(margins.css(), /@media \(max-width: 1120px\)[\s\S]*width: 16px/);
+    assert.match(margins.css(), /padding-inline/, 'and the column is given room to clear it');
+
     // A setting nobody recognises leaves the archive looking as it should.
     process.env.MARGINS = 'sideways';
     assert.equal(margins.which(), 'photo');

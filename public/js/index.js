@@ -439,20 +439,26 @@
         // they come from the original whichever version is being read.
         const raw = isChoice ? n.answers[q.id] : version.answers[q.id];
         if (!raw || (Array.isArray(raw) && !raw.length)) return '';
+        /*
+         * Each question is a door. Every narrative answers the same set, so a
+         * panel that laid them all out at once made a reader walk past the
+         * ones they had not come for; asked, each gives up its answer. A
+         * <details>, so it opens whether or not any script is running.
+         */
         if (isChoice) {
           const chips = choiceLabels(q, raw)
             .map((label) => `<span class="chip">${escapeHtml(label)}</span>`).join('');
           return `
-            <section class="qa">
-              <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
+            <details class="qa">
+              <summary class="qa__q">${escapeHtml(questionLabel(q.id))}</summary>
               <div class="chips">${chips}</div>
-            </section>`;
+            </details>`;
         }
         return `
-          <section class="qa">
-            <h3 class="qa__q">${escapeHtml(questionLabel(q.id))}</h3>
+          <details class="qa">
+            <summary class="qa__q">${escapeHtml(questionLabel(q.id))}</summary>
             <div class="qa__a" dir="${dirFor(raw)}">${paragraphs(raw)}</div>
-          </section>`;
+          </details>`;
       }).join('');
 
     readerBody.innerHTML = `

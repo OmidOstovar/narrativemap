@@ -930,6 +930,46 @@ input[type='date'] { cursor: text; }
 .reader__facts .secondary { color: var(--text-faint); font-size: 13px; }
 
 .qa { margin-bottom: 34px; }
+
+/*
+ * In the reading panel each question is a disclosure: the narrative opens as
+ * the questions alone and each answers when it is asked. Written against the
+ * elements rather than a modifier, because the review queue uses these same
+ * classes on plain sections — a moderator reads the whole of a submission at
+ * once and must not have to open it a question at a time.
+ */
+details.qa {
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--ink-500);
+}
+details.qa:first-of-type { border-top: 1px solid var(--ink-500); }
+summary.qa__q {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 2px;
+  margin-bottom: 0;
+}
+summary.qa__q::-webkit-details-marker { display: none; }
+summary.qa__q::after {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-inline-start: auto;
+  border-right: 1.7px solid var(--text-faint);
+  border-bottom: 1.7px solid var(--text-faint);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+details.qa[open] summary.qa__q::after { transform: rotate(-135deg) translate(-2px, -2px); }
+summary.qa__q:hover::after { border-color: var(--saffron); }
+summary.qa__q:focus-visible { outline: 2px solid var(--saffron); outline-offset: -2px; }
+details.qa > .qa__a,
+details.qa > .chips { padding-bottom: 20px; }
+
 .qa__q {
   font-size: 15.5px;
   font-weight: 600;

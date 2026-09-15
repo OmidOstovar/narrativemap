@@ -424,13 +424,32 @@ input[type='date'] { cursor: text; }
  * archive, not a heading for it, so it sits in the serif at reading size and
  * lets the narratives below carry the weight.
  */
-.epigraph {
+/*
+ * The archive's own line, over the list of narratives: what is being asked for,
+ * above what has come in.
+ */
+.sidebar__banner {
   margin: 0;
-  padding: 20px 18px 16px;
+  padding: 18px 18px 16px;
   border-bottom: 1px solid var(--ink-500);
   font-family: var(--serif);
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+/*
+ * Agamben, over the argument for writing. Set as an epigraph rather than a
+ * panel: a rule on the leading edge, the text held in from it, and no border
+ * across the column — it belongs to the paragraphs under it.
+ */
+.epigraph {
+  margin: 26px 0 32px;
+  padding-inline-start: 16px;
+  border-inline-start: 2px solid var(--saffron-dim);
+  font-family: var(--serif);
   color: var(--text-muted);
-  font-size: 16.5px;
+  font-size: 17px;
   line-height: 1.6;
 }
 .epigraph p { margin: 0; }

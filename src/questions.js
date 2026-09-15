@@ -117,7 +117,7 @@ const QUESTIONS = [
       fa: 'در میان جمعیت، آیا احساسِ اینکه چیزی ورای فردفردِ شما در حال خلق شدن و جوشیدن و قدرت دادن به شماست و شما به آن تعلق دارید داشتید — چیزی که در تنهایی غایب است؟ چه چیزی؟ آیا هنوز الهام‌بخش است؟',
       en: 'In the middle of the crowd, did you feel that something beyond any one of you was being made — rising, giving you strength, something you belonged to, and absent when you are alone? What was it? Does it still give you heart?',
     },
-    required: true,
+    required: false,
     maxLength: 4000,
     rows: 6,
   },

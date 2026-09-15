@@ -37,7 +37,9 @@ const auth = require('./src/auth');
 const mailer = require('./src/mailer');
 const tiles = require('./src/tiles');
 const margins = require('./src/margins');
-const { QUESTIONS, FORM_SEQUENCE, TITLE_QUESTION_ID } = require('./src/questions');
+const {
+  QUESTIONS, FORM_SEQUENCE, TITLE_QUESTION_ID, SUMMARY_QUESTION_ID,
+} = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
 const { detectSubmissionLanguage } = require('./src/translate');
@@ -113,6 +115,8 @@ app.get('/api/questions', (req, res) => {
     sequence: FORM_SEQUENCE,
     // The answer a pin, a card and the reading panel are labelled with.
     titleQuestionId: TITLE_QUESTION_ID,
+    // The telling itself, which the reading panel opens on rather than folding.
+    summaryQuestionId: SUMMARY_QUESTION_ID,
     provinces: PROVINCE_NAMES,
     yearRange: { min: MIN_YEAR, max: maxYear() },
   });

@@ -10,6 +10,7 @@
     narratives: [],
     questions: [],
     titleQuestionId: 'narrative_title',
+    summaryQuestionId: 'what_happened',
     // Which narratives this reader has already marked as having reached them.
     heard: new Set(),
     filtered: [],
@@ -427,7 +428,6 @@
 
   function renderReader(n) {
     const when = formatPeriodPair(n.period);
-    const coords = `${n.place.lat.toFixed(4)}, ${n.place.lng.toFixed(4)}`;
 
     const version = shown(n);
     const answers = state.questions
@@ -445,43 +445,45 @@
          * ones they had not come for; asked, each gives up its answer. A
          * <details>, so it opens whether or not any script is running.
          */
+        // The telling itself is what a reader came for, so it is already open.
+        const open = q.id === state.summaryQuestionId ? ' open' : '';
         if (isChoice) {
           const chips = choiceLabels(q, raw)
             .map((label) => `<span class="chip">${escapeHtml(label)}</span>`).join('');
           return `
-            <details class="qa">
+            <details class="qa"${open}>
               <summary class="qa__q">${escapeHtml(questionLabel(q.id))}</summary>
               <div class="chips">${chips}</div>
             </details>`;
         }
         return `
-          <details class="qa">
+          <details class="qa"${open}>
             <summary class="qa__q">${escapeHtml(questionLabel(q.id))}</summary>
             <div class="qa__a" dir="${dirFor(raw)}">${paragraphs(raw)}</div>
           </details>`;
       }).join('');
 
     readerBody.innerHTML = `
-      <h1 class="reader__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}</h1>
+      <h1 class="reader__title" dir="${dirFor(title(n))}">${escapeHtml(title(n))}<span
+        class="reader__by">${escapeHtml(t('reader.by'))} ${
+  escapeHtml(n.contributor || t('reader.anonymous'))}</span></h1>
       ${version.note ? `
         <p class="provenance${version.untranslated ? ' provenance--untranslated' : ''}"
            title="${escapeHtml(version.noteDetail || '')}">
           ${escapeHtml(version.note)}
         </p>` : ''}
-      <dl class="reader__facts">
-        <dt>${escapeHtml(t('reader.place'))}</dt>
-        <dd>
-          ${escapeHtml(province(n.place.province) || version.placeName || '')}
-          <div class="secondary" dir="ltr">${escapeHtml(digits(coords))}</div>
-        </dd>
-        <dt>${escapeHtml(t('reader.when'))}</dt>
-        <dd>
-          ${escapeHtml(when.primary)}
-          ${when.secondary ? `<div class="secondary">${escapeHtml(when.secondary)} ${escapeHtml(when.secondaryLabel)}</div>` : ''}
-        </dd>
-        <dt>${escapeHtml(t('reader.toldBy'))}</dt>
-        <dd>${escapeHtml(n.contributor || t('reader.anonymous'))}</dd>
-      </dl>
+      <details class="qa">
+        <summary class="qa__q">${escapeHtml(t('reader.timeAndPlace'))}</summary>
+        <dl class="reader__facts">
+          <dt>${escapeHtml(t('reader.place'))}</dt>
+          <dd>${escapeHtml(province(n.place.province) || version.placeName || '')}</dd>
+          <dt>${escapeHtml(t('reader.when'))}</dt>
+          <dd>
+            ${escapeHtml(when.primary)}
+            ${when.secondary ? `<div class="secondary">${escapeHtml(when.secondary)} ${escapeHtml(when.secondaryLabel)}</div>` : ''}
+          </dd>
+        </dl>
+      </details>
       ${answers}
       <div class="hearing">
         <button type="button" class="hearing__button${state.heard.has(n.id) ? ' is-heard' : ''}"
@@ -641,6 +643,7 @@
 
     state.questions = meta.questions;
     state.titleQuestionId = meta.titleQuestionId || state.titleQuestionId;
+    state.summaryQuestionId = meta.summaryQuestionId || state.summaryQuestionId;
     state.narratives = data.narratives;
 
     // What this reader marked on an earlier visit, so the buttons come back

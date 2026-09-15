@@ -106,6 +106,8 @@
     'reader.heardBy': { en: '{count} found this worth reading', fa: '{count} نفر خواندنی دانسته‌اند' },
     'reader.toldBy': { en: 'Told by', fa: 'راوی' },
     'reader.anonymous': { en: 'Anonymous', fa: 'ناشناس' },
+    'reader.by': { en: 'by', fa: 'نوشتۀ' },
+    'reader.timeAndPlace': { en: 'Time and place', fa: 'زمان و مکان' },
     'reader.solarHijri': { en: '(Solar Hijri)', fa: '(هجری شمسی)' },
     'reader.gregorian': { en: '(Gregorian)', fa: '(میلادی)' },
     'reader.untitled': { en: 'Untitled narrative', fa: 'روایت بی‌عنوان' },

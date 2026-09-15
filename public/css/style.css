@@ -885,6 +885,16 @@ input[type='date'] { cursor: text; }
   letter-spacing: -0.015em;
   margin-bottom: 16px;
 }
+/* Who told it, on the same line as what they called it and a good deal quieter:
+   the title is the narrative's, the name is only the hand it came from. */
+.reader__by {
+  font-size: 0.52em;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  margin-inline-start: 0.7em;
+  white-space: nowrap;
+}
 
 /* Where a narrative's words came from — shown once, under the title. */
 .provenance {
@@ -907,6 +917,13 @@ input[type='date'] { cursor: text; }
   background: var(--turquoise-dim);
 }
 .provenance--untranslated::before { background: var(--saffron-dim); }
+
+/* Inside its own disclosure now, which supplies the rules above and below. */
+details.qa > .reader__facts {
+  border: 0;
+  margin: 0;
+  padding: 2px 0 20px;
+}
 
 .reader__facts {
   display: grid;
@@ -1560,7 +1577,7 @@ details.qa > .chips { padding-bottom: 20px; }
    * The narratives are what someone came for, so on a stacked screen they take
    * the screen: the map keeps enough to place them and no more.
    */
-  .app { grid-template-rows: 50vh 1fr; }
+  .app { grid-template-rows: 44vh 1fr; }
   .app .map-pane { grid-row: 1; }
   .app .sidebar { grid-row: 2; border-bottom: none; border-top: 1px solid var(--ink-500); }
   .reader { width: 100%; }

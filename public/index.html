@@ -118,6 +118,29 @@
       </div>
       <div class="reader__body" id="reader-body"></div>
     </article>
+
+    <!--
+      On a phone the reader covers the map, which leaves the zoom control
+      hovering over a narrative it can do nothing to. These take its place and
+      its position while one is open: back, and the link to it.
+    -->
+    <div class="reader-tools" id="reader-tools" hidden>
+      <button type="button" class="reader-tools__button" id="reader-back"
+              data-i18n-label="reader.close" aria-label="بستن روایت">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button type="button" class="reader-tools__button" id="reader-copy"
+              data-i18n-label="reader.copyLink" aria-label="کپی نشانی">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+          <rect x="9" y="9" width="11" height="11" rx="2.2" stroke="currentColor" stroke-width="1.9"/>
+          <path d="M5.5 15H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v.5"
+                stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </main>
 

@@ -489,6 +489,8 @@
       </div>`;
 
     readerEl.classList.add('is-open');
+    // The map's own controls are no use while a narrative covers it.
+    setReadingTools(true);
     readerEl.setAttribute('aria-hidden', 'false');
     const heardButton = readerBody.querySelector('[data-heard-for]');
     if (heardButton) {
@@ -534,9 +536,22 @@
     if (card) card.scrollIntoView({ block: 'nearest' });
   }
 
+  /**
+   * Shows the pair that stands in for the zoom control while reading, and
+   * marks the pane so the control itself can stand down. Both are governed by
+   * the stylesheet as to whether they apply at this width at all.
+   */
+  function setReadingTools(reading) {
+    const tools = document.getElementById('reader-tools');
+    if (tools) tools.hidden = !reading;
+    const pane = document.querySelector('.map-pane');
+    if (pane) pane.classList.toggle('is-reading', reading);
+  }
+
   function closeReader() {
     state.selectedId = null;
     readerEl.classList.remove('is-open');
+    setReadingTools(false);
     readerEl.setAttribute('aria-hidden', 'true');
     renderList();
     renderMarkers();
@@ -584,14 +599,17 @@
 
     $('reader-close').addEventListener('click', closeReader);
 
-    $('reader-link').addEventListener('click', async () => {
+    async function copyLink() {
       try {
         await navigator.clipboard.writeText(location.href);
         toast(t('reader.copied'));
       } catch {
         toast(t('reader.copyFailed'), 'error');
       }
-    });
+    }
+    $('reader-link').addEventListener('click', copyLink);
+    $('reader-copy').addEventListener('click', copyLink);
+    $('reader-back').addEventListener('click', closeReader);
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && state.selectedId) closeReader();

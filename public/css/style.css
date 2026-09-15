@@ -1037,6 +1037,46 @@ input[type='date'] { cursor: text; }
   backdrop-filter: blur(10px);
 }
 .leaflet-control-zoom a:hover { background: var(--ink-600) !important; color: var(--text) !important; }
+
+/*
+ * What stands where the zoom control does while a narrative is open: back, and
+ * the link to it. Only on a stacked screen, where the reader covers the map and
+ * the zoom is a control over something nobody can see. Cut to the same size and
+ * finish as the control it replaces, and on the same side — inset-inline-start
+ * follows the text, as that control is made to.
+ */
+.reader-tools {
+  position: absolute;
+  top: 10px;
+  inset-inline-start: 10px;
+  z-index: 500;
+  display: none;
+  /* Across rather than down, as the control it replaces is: stacked, the lower
+     of the two sits on the narrative's title, and a title is any length. */
+  flex-direction: row;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.reader-tools[hidden] { display: none; }
+.reader-tools__button {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--veil);
+  color: var(--text-muted);
+  border: 1px solid var(--ink-500);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  padding: 0;
+}
+.reader-tools__button + .reader-tools__button { border-inline-start: none; }
+.reader-tools__button:hover { background: var(--ink-600); color: var(--text); }
+.reader-tools__button:focus-visible { outline: 2px solid var(--saffron); outline-offset: -2px; }
+/* Back points the way the reader came, which depends on the direction of text. */
+[dir='rtl'] .reader-tools__button:first-child svg { transform: scaleX(-1); }
 .leaflet-control-attribution {
   background: var(--scrim) !important;
   color: var(--text-faint) !important;
@@ -1480,12 +1520,26 @@ input[type='date'] { cursor: text; }
    * The narratives are what someone came for, so on a stacked screen they take
    * the screen: the map keeps enough to place them and no more.
    */
-  .app { grid-template-rows: 34vh 1fr; }
+  .app { grid-template-rows: 50vh 1fr; }
   .app .map-pane { grid-row: 1; }
   .app .sidebar { grid-row: 2; border-bottom: none; border-top: 1px solid var(--ink-500); }
   .reader { width: 100%; }
-  .reader__body { padding: 24px 20px 60px; }
+  /* Room at the head of it for the two controls that float over the corner. */
+  .reader__body { padding: 52px 20px 60px; }
   .reader__title { font-size: 25px; }
+
+  /*
+   * The reader's own bar goes: it costs a strip of a screen that is already
+   * short, and both of the things on it are now over the map, where the zoom
+   * control used to be and is not needed.
+   */
+  .reader__bar { display: none; }
+  .reader-tools:not([hidden]) { display: flex; }
+  .map-pane.is-reading .leaflet-control-zoom { display: none; }
+
+  /* The list is a list of narratives, not of openings: on a screen this size
+     the first lines of each cost more room than they are worth. */
+  .card__excerpt { display: none; }
 
   /*
    * And the time range goes. It is a wide instrument laid over a map that is

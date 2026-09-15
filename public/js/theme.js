@@ -1,9 +1,8 @@
 /**
  * Dark or light, chosen by the reader and remembered.
  *
- * The archive is dark by default — it opened that way and that is what most
- * readers have seen. The light theme is paper, a stock per section, for anyone
- * who would rather read that way.
+ * The archive reads as paper by default, a stock per section. The dark theme is
+ * what it opened with, kept one click away for anyone who prefers it.
  *
  * The choice is applied before the first paint by a few lines in each page's
  * head, so nothing flashes; this file only builds the switch and handles the
@@ -27,7 +26,7 @@
   }
 
   function current() {
-    return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   }
 
   function apply(theme) {
@@ -41,7 +40,7 @@
     apply(theme);
   }
 
-  function toggle() { apply(current() === 'dark' ? 'light' : 'dark'); }
+  function toggle() { apply(current() === 'light' ? 'dark' : 'light'); }
 
   /** Called whenever the theme changes — the map repaints itself this way. */
   function onChange(fn) { listeners.add(fn); }
@@ -64,7 +63,7 @@
     const paint = () => {
       button.textContent = label();
       button.setAttribute('aria-label', global.I18N ? global.I18N.t('theme.label') : 'Theme');
-      button.setAttribute('aria-pressed', String(current() === 'light'));
+      button.setAttribute('aria-pressed', String(current() === 'dark'));
     };
     if (global.I18N && global.I18N.onChange) global.I18N.onChange(paint);
     onChange(paint);

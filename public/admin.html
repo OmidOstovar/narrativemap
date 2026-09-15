@@ -14,11 +14,11 @@
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
 
-  /* And the theme, for the same reason: chosen here or it flashes. Dark is
-     what the archive opens as; light is remembered only if it was asked for. */
+  /* And the theme, for the same reason: chosen here or it flashes. Paper is
+     what the archive opens as; dark is remembered only if it was asked for. */
   var theme = null;
   try { theme = localStorage.getItem('nm_theme'); } catch (e) { /* storage blocked */ }
-  document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
 }());
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">

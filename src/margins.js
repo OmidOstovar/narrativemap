@@ -19,8 +19,6 @@
  *   MARGIN_NARROW=22px      how much shows on a phone — enough for the ruled
  *                           edge, which is what a page has even when there is
  *                           no room for what is drawn beside it
- *   MARGIN_APP=28px         the band framing the map page, which has no column
- *                           to sit beside and so is framed rather than margined
  */
 
 const SETTINGS = ['photo', 'drawn', 'off'];
@@ -46,11 +44,9 @@ function which() {
  * flow, so a margin does not scroll away from the text it is margin to, and so
  * it costs the reading column no width at all.
  */
-function frame(width, minPage, narrow, sides, narrowSides, appWidth) {
+function frame(width, minPage, narrow, sides, narrowSides) {
   return `.page::before,
-.page::after,
-.app::before,
-.app::after {
+.page::after {
   content: '';
   position: fixed;
   /*
@@ -70,30 +66,15 @@ function frame(width, minPage, narrow, sides, narrowSides, appWidth) {
 ${sides}
 
 /*
- * The map page is framed rather than margined. It is a map and a list filling
- * the window, so there is no column to sit beside — but an archive that is a
- * page everywhere else should not stop being one here, and a narrow band at
- * each edge says so without taking the map. The layout is inset by the same
- * amount, so nothing of it runs underneath.
- */
-.app::before,
-.app::after { width: ${appWidth}; }
-
-.app { padding-inline: ${appWidth}; }
-
-/*
  * On a narrow window there is no room for the drawing, but there is room for
  * the edge of the page — and the column is given side room to clear it rather
  * than running underneath.
  */
 @media (max-width: ${minPage}) {
   .page::before,
-  .page::after,
-  .app::before,
-  .app::after { width: ${narrow}; }
+  .page::after { width: ${narrow}; }
 
   .page { padding-inline: calc(${narrow} + 16px); }
-  .app { padding-inline: ${narrow}; }
 
 ${narrowSides}
 }
@@ -109,20 +90,16 @@ ${narrowSides}
  * does anyway.
  */
 const PHOTO = `.page::before,
-.page::after,
-.app::before,
-.app::after {
+.page::after {
   background-repeat: no-repeat;
   background-size: cover;
 }
-.page::before,
-.app::before {
+.page::before {
   left: 0;
   background-image: url('/img/margin-left.jpg');
   background-position: right center;
 }
-.page::after,
-.app::after {
+.page::after {
   right: 0;
   background-image: url('/img/margin-right.jpg');
   background-position: left center;
@@ -141,14 +118,11 @@ const RULES = `var(--gold, #c8a04a) 0 1px,
       var(--rule-slate, #4d5a72) 4.3px 5px`;
 
 const DRAWN = `.page::before,
-.page::after,
-.app::before,
-.app::after {
+.page::after {
   background-repeat: no-repeat, repeat-y, no-repeat;
   background-size: 5px 100%, 34px 108px, 100% 100%;
 }
-.page::before,
-.app::before {
+.page::before {
   left: 0;
   background-image:
     linear-gradient(to left, ${RULES}),
@@ -156,8 +130,7 @@ const DRAWN = `.page::before,
     linear-gradient(to bottom, #3a251e, #2a1a16 55%, #35211b);
   background-position: right center, left 2px top, center;
 }
-.page::after,
-.app::after {
+.page::after {
   right: 0;
   background-image:
     linear-gradient(to right, ${RULES}),
@@ -172,9 +145,7 @@ const DRAWN = `.page::before,
  * of a repeat, so it reads at any height and at the width of a thumb.
  */
 const NARROW_PHOTO = `  .page::before,
-  .page::after,
-  .app::before,
-  .app::after {
+  .page::after {
     background-image: url('/img/mobile-border.jpg');
     background-position: center top;
     background-repeat: repeat-y;
@@ -192,7 +163,6 @@ function css() {
     length('MARGIN_NARROW', chosen === 'photo' ? '22px' : '16px'),
     chosen === 'photo' ? PHOTO : DRAWN,
     chosen === 'photo' ? NARROW_PHOTO : '',
-    length('MARGIN_APP', '28px'),
   );
 }
 

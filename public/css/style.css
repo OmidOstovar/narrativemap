@@ -77,66 +77,8 @@
  * rules need them at a fraction of their strength: rgb(var(--saffron-rgb) / .1).
  */
 :root {
-  /* Surfaces, deepest first */
-  --ink-900: #0c0e12;
-  --ink-800: #12151b;
-  --ink-700: #171b23;
-  --ink-600: #1e232d;
-  --ink-500: #262c38;
-  --ink-400: #333a48;
+  /* The archive reads as paper by default. */
 
-  /* Text */
-  --text: #e9e5dd;
-  --text-muted: #a3a09a;
-  --text-faint: #6f6d69;
-
-  /* Accents */
-  --saffron: #e0913f;
-  --saffron-dim: #a86a2c;
-  --saffron-rgb: 224 145 63;
-  --turquoise: #3fb0a8;
-  --turquoise-dim: #2a7c76;
-  --turquoise-rgb: 63 176 168;
-  --rose: #d4645e;
-  --rose-rgb: 212 100 94;
-  /* What is legible written on one of them. */
-  --on-accent: #1a1206;
-
-  /* Map */
-  --land: #1b212b;
-  --land-hover: #232a36;
-  --border-line: #3a4454;
-  --coast: #46536a;
-
-  /* What floats over the map, and what dims what is behind it */
-  --veil: rgba(18, 21, 27, 0.94);
-  --scrim: rgba(12, 14, 18, 0.8);
-  --shade-rgb: 0 0 0;
-
-  /* Street tiles are drawn for paper; on the dark theme they are turned over. */
-  --tiles-filter: invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.95) contrast(1.05);
-
-  --radius: 10px;
-  --radius-sm: 6px;
-  --radius-lg: 16px;
-
-  --shadow-md: 0 8px 24px rgb(var(--shade-rgb) / 0.4);
-  --shadow-lg: 0 24px 60px rgb(var(--shade-rgb) / 0.55);
-
-  --sans: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Tahoma, serif;
-  --serif: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Georgia, serif;
-  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-
-  --header-height: 60px;
-}
-
-/*
- * Paper. Rather than one tint everywhere, each part of the archive is on its
- * own stock — the bar tan, the list a warmer sand, a narrative on ivory — which
- * is how a magazine is made and what keeps a light page from reading flat. The
- * section colours are further down, each beside the thing it belongs to.
- */
-[data-theme='light'] {
   --ink-900: #f6f0e4;
   --ink-800: #fdfaf3;
   --ink-700: #fffefb;
@@ -171,29 +113,78 @@
 
   --shadow-md: 0 6px 18px rgb(var(--shade-rgb) / 0.16);
   --shadow-lg: 0 20px 48px rgb(var(--shade-rgb) / 0.22);
+
+  /* Not a matter of theme: type, corners, and the height of the bar. */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+  --sans: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Tahoma, serif;
+  --serif: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Georgia, serif;
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --header-height: 60px;
 }
+
+[data-theme='dark'] {
+  /* The dark palette the archive opened with, kept a switch away. */
+  /* Surfaces, deepest first */
+  --ink-900: #0c0e12;
+  --ink-800: #12151b;
+  --ink-700: #171b23;
+  --ink-600: #1e232d;
+  --ink-500: #262c38;
+  --ink-400: #333a48;
+  /* Text */
+  --text: #e9e5dd;
+  --text-muted: #a3a09a;
+  --text-faint: #6f6d69;
+  /* Accents */
+  --saffron: #e0913f;
+  --saffron-dim: #a86a2c;
+  --saffron-rgb: 224 145 63;
+  --turquoise: #3fb0a8;
+  --turquoise-dim: #2a7c76;
+  --turquoise-rgb: 63 176 168;
+  --rose: #d4645e;
+  --rose-rgb: 212 100 94;
+  /* What is legible written on one of them. */
+  --on-accent: #1a1206;
+  /* Map */
+  --land: #1b212b;
+  --land-hover: #232a36;
+  --border-line: #3a4454;
+  --coast: #46536a;
+  /* What floats over the map, and what dims what is behind it */
+  --veil: rgba(18, 21, 27, 0.94);
+  --scrim: rgba(12, 14, 18, 0.8);
+  --shade-rgb: 0 0 0;
+  /* Street tiles are drawn for paper; on the dark theme they are turned over. */
+  --tiles-filter: invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.95) contrast(1.05);
+  --shadow-md: 0 8px 24px rgb(var(--shade-rgb) / 0.4);
+  --shadow-lg: 0 24px 60px rgb(var(--shade-rgb) / 0.55);
+}
+
 
 /*
  * Each surface its own ground, on both themes — the bar, the list, a narrative
  * and the map are four different places and a single flat colour says they are
- * one. On the dark theme the difference is a few points of warmth and depth
- * rather than of hue; on the light one it is stock: the bar a proper tan, the
- * list sand, a narrative ivory, the map the colour of an old chart. Every one
- * of them carries the body ink at better than 4.5:1.
+ * one. On paper it is a change of stock — the bar a proper tan, the list sand,
+ * a narrative ivory, the map the colour of an old chart — and on the dark theme
+ * a few points of warmth and depth rather than of hue. Every one of them
+ * carries the body ink at better than 4.5:1.
  */
-.site-header { background: #15181f; }
-.sidebar { background: #10141b; }
-.reader { background: #171a21; }
-.map-pane { background: #0a0c10; }
-.admin-queue { background: #10141b; }
-.admin-detail { background: #0e1117; }
+.site-header { background: #e3cfa9; }
+.sidebar { background: #f2e1c6; }
+.reader { background: #fdfaf3; }
+.map-pane { background: #e9ddc3; }
+.admin-queue { background: #f2e1c6; }
+.admin-detail { background: #f8f2e6; }
 
-[data-theme='light'] .site-header { background: #e3cfa9; }
-[data-theme='light'] .sidebar { background: #f2e1c6; }
-[data-theme='light'] .reader { background: #fdfaf3; }
-[data-theme='light'] .map-pane { background: #e9ddc3; }
-[data-theme='light'] .admin-queue { background: #f2e1c6; }
-[data-theme='light'] .admin-detail { background: #f8f2e6; }
+[data-theme='dark'] .site-header { background: #15181f; }
+[data-theme='dark'] .sidebar { background: #10141b; }
+[data-theme='dark'] .reader { background: #171a21; }
+[data-theme='dark'] .map-pane { background: #0a0c10; }
+[data-theme='dark'] .admin-queue { background: #10141b; }
+[data-theme='dark'] .admin-detail { background: #0e1117; }
 
 
 
@@ -258,7 +249,14 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   white-space: nowrap;
   min-width: 0;
 }
-.brand__text { display: flex; flex-direction: column; justify-content: center; line-height: 1.25; }
+/*
+ * Side by side, which is how the two read best; stacked only below the width
+ * where the pair stops fitting and the first of them would be trimmed.
+ */
+.brand__text { display: flex; align-items: baseline; gap: 9px; line-height: 1.25; }
+@media (max-width: 760px) {
+  .brand__text { flex-direction: column; align-items: flex-start; gap: 0; }
+}
 .brand__line { min-width: 0; }
 .brand:hover { text-decoration: none; }
 .brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }

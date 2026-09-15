@@ -75,7 +75,13 @@
    * @param {{interactiveProvinces?: boolean, zoomControl?: boolean, minZoom?: number}} options
    */
   async function create(elementId, options) {
-    const config = Object.assign({ interactiveProvinces: true, zoomControl: true, minZoom: 3.8 }, options);
+    /*
+     * The floor is low enough that the whole country still fits a short,
+     * wide pane — on a phone the map is a quarter of the screen, and a floor
+     * set for a desktop would clamp before Iran was all on it. Panning is
+     * held by maxBounds rather than by how far out one may zoom.
+     */
+    const config = Object.assign({ interactiveProvinces: true, zoomControl: true, minZoom: 2.6 }, options);
 
     const map = L.map(elementId, {
       center: IRAN_CENTER,
@@ -237,7 +243,10 @@
     }
 
     function fitIran(options) {
-      map.fitBounds(IRAN_BOUNDS, Object.assign({ padding: [20, 20], animate: false }, options));
+      // A short pane is mostly margin once the country is in it, so the frame
+      // around it narrows as the room does.
+      const pad = map.getSize().y < 320 ? 6 : 20;
+      map.fitBounds(IRAN_BOUNDS, Object.assign({ padding: [pad, pad], animate: false }, options));
     }
 
     /*

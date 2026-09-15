@@ -27,7 +27,7 @@
     'title.404': { en: 'Not found — Iranian Letter', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.tagline': { en: 'Of them, speak', fa: 'از او بگو به دنیا' },
+    'brand.tagline': { en: 'Of them, let the world know', fa: 'از او بگو به دنیا' },
     'brand.name': { en: 'Iranian Letter', fa: 'نامه‌های ایرانی' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },

@@ -174,15 +174,26 @@
 }
 
 /*
- * Each surface its own stock, on the light theme only — the bar a proper tan,
- * the list sand, a narrative on ivory, the map the colour of an old chart.
- * Every one of them carries the body ink at better than 4.5:1.
+ * Each surface its own ground, on both themes — the bar, the list, a narrative
+ * and the map are four different places and a single flat colour says they are
+ * one. On the dark theme the difference is a few points of warmth and depth
+ * rather than of hue; on the light one it is stock: the bar a proper tan, the
+ * list sand, a narrative ivory, the map the colour of an old chart. Every one
+ * of them carries the body ink at better than 4.5:1.
  */
+.site-header { background: #15181f; }
+.sidebar { background: #10141b; }
+.reader { background: #171a21; }
+.map-pane { background: #0a0c10; }
+.admin-queue { background: #10141b; }
+.admin-detail { background: #0e1117; }
+
 [data-theme='light'] .site-header { background: #e3cfa9; }
 [data-theme='light'] .sidebar { background: #f2e1c6; }
 [data-theme='light'] .reader { background: #fdfaf3; }
 [data-theme='light'] .map-pane { background: #e9ddc3; }
-[data-theme='light'] .admin-shell > :first-child { background: #f2e1c6; }
+[data-theme='light'] .admin-queue { background: #f2e1c6; }
+[data-theme='light'] .admin-detail { background: #f8f2e6; }
 
 
 
@@ -224,7 +235,6 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   align-items: center;
   gap: 20px;
   padding: 0 20px;
-  background: var(--ink-800);
   border-bottom: 1px solid var(--ink-500);
   position: relative;
   /* Above the illuminated margins, so it covers their top while it is on
@@ -465,7 +475,6 @@ input[type='date'] { cursor: text; }
 }
 
 .sidebar {
-  background: var(--ink-800);
   border-right: 1px solid var(--ink-500);
   display: flex;
   flex-direction: column;
@@ -494,7 +503,7 @@ input[type='date'] { cursor: text; }
  * area — and under rtl a phone then opens the page scrolled onto the empty
  * side of it, leaving the reader to scroll back to find the map.
  */
-.map-pane { position: relative; min-width: 0; background: var(--ink-900); overflow: hidden; }
+.map-pane { position: relative; min-width: 0; overflow: hidden; }
 #map { position: absolute; inset: 0; }
 
 /* --------------------------- sidebar: filters --------------------------- */
@@ -833,7 +842,6 @@ input[type='date'] { cursor: text; }
   position: absolute;
   top: 0; right: 0; bottom: 0;
   width: min(640px, 100%);
-  background: var(--ink-800);
   border-left: 1px solid var(--ink-500);
   box-shadow: var(--shadow-lg);
   z-index: 460;
@@ -1367,8 +1375,8 @@ input[type='date'] { cursor: text; }
 .queue__foot { padding: 10px 14px; border-top: 1px solid var(--ink-500); }
 
 .admin-shell { display: grid; grid-template-columns: 400px 1fr; height: calc(100dvh - var(--header-height)); }
-.admin-queue { border-right: 1px solid var(--ink-500); background: var(--ink-800); display: flex; flex-direction: column; min-height: 0; }
-.admin-detail { overflow-y: auto; min-width: 0; background: var(--ink-900); }
+.admin-queue { border-right: 1px solid var(--ink-500); display: flex; flex-direction: column; min-height: 0; }
+.admin-detail { overflow-y: auto; min-width: 0; }
 
 .tabs { display: flex; gap: 4px; padding: 12px 12px 0; border-bottom: 1px solid var(--ink-500); }
 .tab {
@@ -1465,13 +1473,32 @@ input[type='date'] { cursor: text; }
 @media (max-width: 900px) {
   .app, .admin-shell { grid-template-columns: 1fr; grid-template-rows: 46vh 1fr; }
   .sidebar, .admin-queue { border-right: none; border-bottom: 1px solid var(--ink-500); }
-  .app { grid-template-rows: 1fr 46vh; }
+  /*
+   * The narratives are what someone came for, so on a stacked screen they take
+   * the screen: the map keeps enough to place them and no more.
+   */
+  .app { grid-template-rows: 26vh 1fr; }
   .app .map-pane { grid-row: 1; }
   .app .sidebar { grid-row: 2; border-bottom: none; border-top: 1px solid var(--ink-500); }
   .reader { width: 100%; }
   .reader__body { padding: 24px 20px 60px; }
   .reader__title { font-size: 25px; }
-  .timeline { left: 10px; right: 10px; bottom: 10px; padding: 10px 14px 12px; }
+
+  /*
+   * And the time range goes. It is a wide instrument laid over a map that is
+   * now a third of the screen, and it was covering the country it filters. The
+   * search finds a year as well, and the map keeps its full range.
+   */
+  .timeline { display: none; }
+
+  /* The bar over the list, and the search under it, at a size that leaves the
+     list its room. */
+  .sidebar__banner { padding: 10px 14px 9px; font-size: 15px; line-height: 1.4; }
+  .filters { padding: 9px 12px 10px; gap: 7px; }
+  .filters input[type='search'], .filters select { padding: 5px 9px; font-size: 14.5px; }
+  .filters__row { gap: 7px; }
+  .result-count { font-size: 12px; line-height: 1.2; }
+  .narrative-list { padding: 6px 10px 14px; }
   .review-actions { padding: 12px 20px; }
   .brand__sub { display: none; }
   .page { padding: 32px 18px 72px; }
@@ -1498,7 +1525,7 @@ input[type='date'] { cursor: text; }
      gets the short label so the mark keeps both of its halves. */
   .site-nav .nav-full { display: none; }
   .site-nav .nav-short { display: inline; }
-  .lang-toggle { padding: 6px 8px; margin-inline-start: 2px; }
+  .lang-toggle, .theme-toggle { padding: 6px 8px; margin-inline-start: 2px; }
   .brand { gap: 6px; }
   .picker__map { height: 300px; }
 }

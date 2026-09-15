@@ -13,6 +13,12 @@
   var lang = langs.indexOf(asked) >= 0 ? asked : (langs.indexOf(chosen) >= 0 ? chosen : 'fa');
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+
+  /* And the theme, for the same reason: chosen here or it flashes. Dark is
+     what the archive opens as; light is remembered only if it was asked for. */
+  var theme = null;
+  try { theme = localStorage.getItem('nm_theme'); } catch (e) { /* storage blocked */ }
+  document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
 }());
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -63,7 +69,7 @@
           <option value="reverse" data-i18n="map.sort.reverse">تازه‌ترین اول</option>
           <option value="recent" data-i18n="map.sort.recent">به‌تازگی منتشرشده</option>
           <option value="title" data-i18n="map.sort.title">بر اساس عنوان</option>
-          <option value="heard" data-i18n="map.sort.heard">بیشتر شنیده‌شده</option>
+          <option value="heard" data-i18n="map.sort.heard">خواندنی‌ترین</option>
         </select>
       </div>
       <p class="result-count">
@@ -116,6 +122,7 @@
 <script src="/vendor/leaflet/leaflet.js"></script>
 <script src="/js/jalali.js"></script>
 <script src="/js/i18n.js"></script>
+<script src="/js/theme.js"></script>
 <script src="/js/common.js"></script>
 <script src="/js/map-base.js"></script>
 <script src="/js/index.js"></script>

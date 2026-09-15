@@ -67,50 +67,61 @@
    Dark, archival chrome; warm accents drawn from Persian tilework.
    ========================================================================= */
 
+/*
+ * Two palettes. The archive is dark by default — it opened that way and that is
+ * what most readers have seen — and carries a light one for anyone who would
+ * rather read on paper. Every colour on the site comes from here, so the switch
+ * is a change of these values and nothing else.
+ *
+ * The accents are kept as bare triplets alongside their hex, because several
+ * rules need them at a fraction of their strength: rgb(var(--saffron-rgb) / .1).
+ */
 :root {
-  /*
-   * The archive is a page, not a screen: the ground is the paper the
-   * photographed margins were cropped from, and the text is ink on it.
-   * Everything below is named for depth — 900 is the page itself, and the
-   * numbers climb towards what is raised off it.
-   */
-  --ink-900: #efe8da;
-  --ink-800: #f9f5ec;
-  --ink-700: #fffdf7;
-  --ink-600: #e6dccb;
-  --ink-500: #d5cab4;
-  --ink-400: #bcae93;
+  /* Surfaces, deepest first */
+  --ink-900: #0c0e12;
+  --ink-800: #12151b;
+  --ink-700: #171b23;
+  --ink-600: #1e232d;
+  --ink-500: #262c38;
+  --ink-400: #333a48;
 
-  /* Ink */
-  --text: #241f17;
-  --text-muted: #5d5547;
-  --text-faint: #918876;
+  /* Text */
+  --text: #e9e5dd;
+  --text-muted: #a3a09a;
+  --text-faint: #6f6d69;
 
-  /* Accents, pitched to be read on paper rather than against the dark */
-  --saffron: #b4701e;
-  --saffron-dim: #8a5415;
-  --turquoise: #1e7a71;
-  --turquoise-dim: #14564f;
-  --rose: #a8382e;
+  /* Accents */
+  --saffron: #e0913f;
+  --saffron-dim: #a86a2c;
+  --saffron-rgb: 224 145 63;
+  --turquoise: #3fb0a8;
+  --turquoise-dim: #2a7c76;
+  --turquoise-rgb: 63 176 168;
+  --rose: #d4645e;
+  --rose-rgb: 212 100 94;
   /* What is legible written on one of them. */
-  --on-accent: #fffaf0;
+  --on-accent: #1a1206;
 
   /* Map */
-  --land: #e9dfc9;
-  --land-hover: #ded1b5;
-  --border-line: #c0b193;
-  --coast: #8b7c5e;
+  --land: #1b212b;
+  --land-hover: #232a36;
+  --border-line: #3a4454;
+  --coast: #46536a;
 
   /* What floats over the map, and what dims what is behind it */
-  --veil: rgba(249, 245, 236, 0.94);
-  --scrim: rgba(239, 232, 218, 0.9);
+  --veil: rgba(18, 21, 27, 0.94);
+  --scrim: rgba(12, 14, 18, 0.8);
+  --shade-rgb: 0 0 0;
+
+  /* Street tiles are drawn for paper; on the dark theme they are turned over. */
+  --tiles-filter: invert(1) hue-rotate(180deg) saturate(0.6) brightness(0.95) contrast(1.05);
 
   --radius: 10px;
   --radius-sm: 6px;
   --radius-lg: 16px;
 
-  --shadow-md: 0 6px 18px rgba(74, 60, 36, 0.16);
-  --shadow-lg: 0 20px 48px rgba(74, 60, 36, 0.22);
+  --shadow-md: 0 8px 24px rgb(var(--shade-rgb) / 0.4);
+  --shadow-lg: 0 24px 60px rgb(var(--shade-rgb) / 0.55);
 
   --sans: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Tahoma, serif;
   --serif: 'EB Garamond', 'XB Niloofar', 'Noto Naskh Arabic', Georgia, serif;
@@ -119,6 +130,61 @@
   --header-height: 60px;
 }
 
+/*
+ * Paper. Rather than one tint everywhere, each part of the archive is on its
+ * own stock — the bar tan, the list a warmer sand, a narrative on ivory — which
+ * is how a magazine is made and what keeps a light page from reading flat. The
+ * section colours are further down, each beside the thing it belongs to.
+ */
+[data-theme='light'] {
+  --ink-900: #f6f0e4;
+  --ink-800: #fdfaf3;
+  --ink-700: #fffefb;
+  --ink-600: #e9e0cd;
+  --ink-500: #d6cab2;
+  --ink-400: #bbab8c;
+
+  --text: #241f17;
+  --text-muted: #5d5547;
+  --text-faint: #8b8271;
+
+  --saffron: #b4701e;
+  --saffron-dim: #8a5415;
+  --saffron-rgb: 180 112 30;
+  --turquoise: #1e7a71;
+  --turquoise-dim: #14564f;
+  --turquoise-rgb: 30 122 113;
+  --rose: #a8382e;
+  --rose-rgb: 168 56 46;
+  --on-accent: #fffaf0;
+
+  --land: #e6dcc6;
+  --land-hover: #dbcdb1;
+  --border-line: #bfb090;
+  --coast: #8b7c5e;
+
+  --veil: rgba(253, 248, 238, 0.94);
+  --scrim: rgba(244, 237, 225, 0.9);
+  --shade-rgb: 74 60 36;
+
+  --tiles-filter: none;
+
+  --shadow-md: 0 6px 18px rgb(var(--shade-rgb) / 0.16);
+  --shadow-lg: 0 20px 48px rgb(var(--shade-rgb) / 0.22);
+}
+
+/*
+ * Each surface its own stock, on the light theme only — the bar a proper tan,
+ * the list sand, a narrative on ivory, the map the colour of an old chart.
+ * Every one of them carries the body ink at better than 4.5:1.
+ */
+[data-theme='light'] .site-header { background: #e3cfa9; }
+[data-theme='light'] .sidebar { background: #f2e1c6; }
+[data-theme='light'] .reader { background: #fdfaf3; }
+[data-theme='light'] .map-pane { background: #e9ddc3; }
+[data-theme='light'] .admin-shell > :first-child { background: #f2e1c6; }
+
+
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -126,13 +192,7 @@ html, body { height: 100%; }
 
 body {
   margin: 0;
-  /*
-   * Paper rather than a colour. Each of these is a photograph of the stock the
-   * magazine is set on, cropped where it is clean and mirrored into a tile that
-   * repeats without a seam; the flat colour stays underneath as what shows if
-   * the image never arrives.
-   */
-  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
+  background: var(--ink-900);
   color: var(--text);
   font-family: var(--sans);
   font-size: 17px;
@@ -164,10 +224,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   align-items: center;
   gap: 20px;
   padding: 0 20px;
-  background: var(--ink-800) url('/img/paper-bar.jpg') repeat;
-  /* The bar's paper is darker than the page's, so its ink is darker too. */
-  --text-muted: #3b342a;
-  --text-faint: #5a5244;
+  background: var(--ink-800);
   border-bottom: 1px solid var(--ink-500);
   position: relative;
   /* Above the illuminated margins, so it covers their top while it is on
@@ -265,8 +322,8 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
 }
 .btn--approve:hover:not(:disabled) { background: var(--turquoise); border-color: var(--turquoise); }
 
-.btn--danger { color: var(--rose); border-color: rgba(168, 56, 46, 0.4); }
-.btn--danger:hover:not(:disabled) { background: rgba(168, 56, 46, 0.12); }
+.btn--danger { color: var(--rose); border-color: rgb(var(--rose-rgb) / 0.4); }
+.btn--danger:hover:not(:disabled) { background: rgb(var(--rose-rgb) / 0.12); }
 
 .btn--ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
 .btn--ghost:hover:not(:disabled) { background: var(--ink-600); color: var(--text); }
@@ -343,7 +400,7 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--turquoise);
-  box-shadow: 0 0 0 3px rgba(30, 122, 113, 0.14);
+  box-shadow: 0 0 0 3px rgb(var(--turquoise-rgb) / 0.14);
 }
 select {
   appearance: none;
@@ -408,19 +465,7 @@ input[type='date'] { cursor: text; }
 }
 
 .sidebar {
-  /*
-   * The list paper is the darkest of the three, and no ink is legible on it at
-   * full strength — a narrative's opening lines came out at under 2:1. A wash
-   * lifts it while leaving most of the paper showing, and the ink is darkened
-   * to meet it, which is what a scribe would have done with a darker stock.
-   */
-  background-color: var(--ink-800);
-  background-image:
-    linear-gradient(rgba(255, 250, 240, 0.4), rgba(255, 250, 240, 0.4)),
-    url('/img/paper-list.jpg');
-  background-repeat: repeat, repeat;
-  --text-muted: #4a4235;
-  --text-faint: #6b6152;
+  background: var(--ink-800);
   border-right: 1px solid var(--ink-500);
   display: flex;
   flex-direction: column;
@@ -438,7 +483,7 @@ input[type='date'] { cursor: text; }
  * --basemap-filter for a provider that needs something else — pale tiles to be
  * inverted, or a dark canvas to be lifted.
  */
-.basemap-tiles { filter: var(--basemap-filter, none); }
+.basemap-tiles { filter: var(--basemap-filter, var(--tiles-filter)); }
 
 /* Place names are drawn for a dark map already; treating them only smudges. */
 .basemap-labels { filter: none; }
@@ -449,13 +494,7 @@ input[type='date'] { cursor: text; }
  * area — and under rtl a phone then opens the page scrolled onto the empty
  * side of it, leaving the reader to scroll back to find the map.
  */
-/* The map is drawn on the same paper as the narratives, not on a flat field. */
-.map-pane {
-  position: relative;
-  min-width: 0;
-  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
-  overflow: hidden;
-}
+.map-pane { position: relative; min-width: 0; background: var(--ink-900); overflow: hidden; }
 #map { position: absolute; inset: 0; }
 
 /* --------------------------- sidebar: filters --------------------------- */
@@ -700,7 +739,7 @@ input[type='date'] { cursor: text; }
   border-radius: 50%;
   background: var(--text);
   border: 3px solid var(--ink-800);
-  box-shadow: 0 1px 4px rgba(74, 60, 36, 0.22);
+  box-shadow: 0 1px 4px rgb(var(--shade-rgb) / 0.22);
   cursor: grab;
 }
 .range input[type='range']::-moz-range-thumb {
@@ -709,7 +748,7 @@ input[type='date'] { cursor: text; }
   border-radius: 50%;
   background: var(--text);
   border: 3px solid var(--ink-800);
-  box-shadow: 0 1px 4px rgba(74, 60, 36, 0.22);
+  box-shadow: 0 1px 4px rgb(var(--shade-rgb) / 0.22);
   cursor: grab;
 }
 .range__scale {
@@ -782,7 +821,7 @@ input[type='date'] { cursor: text; }
 .hearing__button.is-heard {
   color: var(--saffron);
   border-color: var(--saffron-dim);
-  background: rgba(180, 112, 30, 0.08);
+  background: rgb(var(--saffron-rgb) / 0.08);
 }
 .hearing__mark { font-size: 12px; line-height: 1; }
 .hearing__count { color: var(--text-faint); font-size: 13px; }
@@ -794,7 +833,7 @@ input[type='date'] { cursor: text; }
   position: absolute;
   top: 0; right: 0; bottom: 0;
   width: min(640px, 100%);
-  background: var(--ink-900) url('/img/paper-page.jpg') repeat;
+  background: var(--ink-800);
   border-left: 1px solid var(--ink-500);
   box-shadow: var(--shadow-lg);
   z-index: 460;
@@ -933,9 +972,9 @@ input[type='date'] { cursor: text; }
   text-transform: uppercase;
   border: 1px solid;
 }
-.badge--pending { color: var(--saffron); border-color: rgba(180, 112, 30, 0.35); background: rgba(180, 112, 30, 0.1); }
-.badge--approved { color: var(--turquoise); border-color: rgba(30, 122, 113, 0.35); background: rgba(30, 122, 113, 0.1); }
-.badge--rejected { color: var(--rose); border-color: rgba(168, 56, 46, 0.35); background: rgba(168, 56, 46, 0.1); }
+.badge--pending { color: var(--saffron); border-color: rgb(var(--saffron-rgb) / 0.35); background: rgb(var(--saffron-rgb) / 0.1); }
+.badge--approved { color: var(--turquoise); border-color: rgb(var(--turquoise-rgb) / 0.35); background: rgb(var(--turquoise-rgb) / 0.1); }
+.badge--rejected { color: var(--rose); border-color: rgb(var(--rose-rgb) / 0.35); background: rgb(var(--rose-rgb) / 0.1); }
 .badge--source { color: var(--text-muted); border-color: var(--ink-400); background: var(--ink-600); }
 
 .callout--warn { border-left-color: var(--saffron); color: var(--saffron-dim); }
@@ -1010,7 +1049,7 @@ input[type='date'] { cursor: text; }
   border-radius: 50%;
   background: var(--saffron);
   border: 2.5px solid var(--ink-900);
-  box-shadow: 0 0 0 1px rgba(180, 112, 30, 0.55), 0 2px 5px rgba(74, 60, 36, 0.3);
+  box-shadow: 0 0 0 1px rgb(var(--saffron-rgb) / 0.55), 0 2px 5px rgb(var(--shade-rgb) / 0.3);
   transition: transform 130ms ease, background 130ms ease;
   cursor: pointer;
 }
@@ -1018,7 +1057,7 @@ input[type='date'] { cursor: text; }
 .pin.is-active {
   background: var(--text);
   transform: scale(1.45);
-  box-shadow: 0 0 0 4px rgba(180, 112, 30, 0.35), 0 2px 8px rgba(74, 60, 36, 0.3);
+  box-shadow: 0 0 0 4px rgb(var(--saffron-rgb) / 0.35), 0 2px 8px rgb(var(--shade-rgb) / 0.3);
 }
 .pin--cluster {
   width: auto; height: auto;
@@ -1030,7 +1069,7 @@ input[type='date'] { cursor: text; }
   color: var(--on-accent);
   font-variant-numeric: tabular-nums;
 }
-.pin--picker { background: var(--turquoise); box-shadow: 0 0 0 1px rgba(63,176,168,0.5), 0 2px 6px rgba(74, 60, 36, 0.3); }
+.pin--picker { background: var(--turquoise); box-shadow: 0 0 0 1px rgb(var(--turquoise-rgb) / 0.5), 0 2px 6px rgb(var(--shade-rgb) / 0.3); }
 
 .leaflet-tooltip.map-tip {
   background: var(--ink-600);
@@ -1269,7 +1308,7 @@ input[type='date'] { cursor: text; }
 }
 .choice:has(input:checked) {
   border-color: var(--saffron-dim);
-  background: rgba(180, 112, 30, 0.08);
+  background: rgb(var(--saffron-rgb) / 0.08);
 }
 .choice__body { display: block; }
 .choice__label { display: block; color: var(--text); font-size: 17px; }
@@ -1303,7 +1342,7 @@ input[type='date'] { cursor: text; }
   width: 56px; height: 56px;
   margin: 0 auto 22px;
   border-radius: 50%;
-  background: rgba(30, 122, 113, 0.12);
+  background: rgb(var(--turquoise-rgb) / 0.12);
   border: 1px solid var(--turquoise-dim);
   display: grid; place-items: center;
   color: var(--turquoise);
@@ -1490,6 +1529,22 @@ input[type='date'] { cursor: text; }
   transition: background 120ms ease, color 120ms ease;
 }
 .lang-toggle:hover { background: var(--ink-600); color: var(--text); }
+
+/* The theme switch, cut to the same pattern as the one beside it. */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--ink-400);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  margin-inline-start: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+.theme-toggle:hover { background: var(--ink-600); color: var(--text); }
 .lang-toggle__short { display: none; }
 
 /* On a phone the full word does not fit beside the brand and the nav links. */

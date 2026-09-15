@@ -13,6 +13,12 @@
   var lang = langs.indexOf(asked) >= 0 ? asked : (langs.indexOf(chosen) >= 0 ? chosen : 'fa');
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+
+  /* And the theme, for the same reason: chosen here or it flashes. Dark is
+     what the archive opens as; light is remembered only if it was asked for. */
+  var theme = null;
+  try { theme = localStorage.getItem('nm_theme'); } catch (e) { /* storage blocked */ }
+  document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
 }());
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,5 +55,6 @@
   <a class="btn btn--primary" href="/" data-i18n="404.back">بازگشت به نقشه</a>
 </main>
 <script src="/js/i18n.js"></script>
+<script src="/js/theme.js"></script>
 </body>
 </html>

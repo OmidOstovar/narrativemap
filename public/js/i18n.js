@@ -20,15 +20,15 @@
 
   const STRINGS = {
     /* ---------------------------- page titles --------------------------- */
-    'title.map': { en: 'Irani Letters — narratives on the map of Iran', fa: 'نامه‌های ایرانی — روایت‌ها روی نقشهٔ ایران' },
-    'title.submit': { en: 'Add a narrative — Irani Letters', fa: 'ثبت روایت — نامه‌های ایرانی' },
-    'title.about': { en: 'About — Irani Letters', fa: 'دربارهٔ نامه‌های ایرانی' },
-    'title.admin': { en: 'Review queue — Irani Letters', fa: 'صف بررسی — نامه‌های ایرانی' },
-    'title.404': { en: 'Not found — Irani Letters', fa: 'پیدا نشد — نامه‌های ایرانی' },
+    'title.map': { en: 'Iranian Letter — narratives on the map of Iran', fa: 'نامه‌های ایرانی — روایت‌ها روی نقشهٔ ایران' },
+    'title.submit': { en: 'Add a narrative — Iranian Letter', fa: 'ثبت روایت — نامه‌های ایرانی' },
+    'title.about': { en: 'About — Iranian Letter', fa: 'دربارهٔ نامه‌های ایرانی' },
+    'title.admin': { en: 'Review queue — Iranian Letter', fa: 'صف بررسی — نامه‌های ایرانی' },
+    'title.404': { en: 'Not found — Iranian Letter', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
-    'brand.tagline': { en: 'Tell the world of them', fa: 'از او بگو به دنیا' },
-    'brand.name': { en: 'New Irani Letters', fa: 'نامه‌های ایرانی' },
+    'brand.tagline': { en: 'Of them, speak', fa: 'از او بگو به دنیا' },
+    'brand.name': { en: 'Iranian Letter', fa: 'نامه‌های ایرانی' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
     'nav.mapShort': { en: 'Map', fa: 'نقشه' },
@@ -40,6 +40,9 @@
     'lang.toggle': { en: 'فارسی', fa: 'English' },
     'lang.toggleShort': { en: 'فا', fa: 'EN' },
     'lang.toggleLabel': { en: 'Switch to Persian', fa: 'Switch to English' },
+    'theme.toLight': { en: 'Light', fa: 'روشن' },
+    'theme.toDark': { en: 'Dark', fa: 'تاریک' },
+    'theme.label': { en: 'Switch between the dark and light themes', fa: 'تغییر میان نمای تاریک و روشن' },
 
     /* ------------------------------- map -------------------------------- */
     /* Agamben, Remnants of Auschwitz. It stands over the list of narratives. */
@@ -60,7 +63,7 @@
     'map.sort.chronological': { en: 'Oldest first', fa: 'قدیمی‌ترین اول' },
     'map.sort.reverse': { en: 'Newest first', fa: 'تازه‌ترین اول' },
     'map.sort.recent': { en: 'Recently published', fa: 'به‌تازگی منتشرشده' },
-    'map.sort.heard': { en: 'Most heard', fa: 'بیشتر شنیده‌شده' },
+    'map.sort.heard': { en: 'Most recommended', fa: 'خواندنی‌ترین' },
     'map.sort.title': { en: 'By title', fa: 'بر اساس عنوان' },
     'map.count.one': { en: 'narrative', fa: 'روایت' },
     'map.count.many': { en: 'narratives', fa: 'روایت' },
@@ -98,9 +101,9 @@
     },
     'reader.place': { en: 'Place', fa: 'مکان' },
     'reader.when': { en: 'When', fa: 'زمان' },
-    'reader.heard': { en: 'I heard this', fa: 'شنیدم' },
-    'reader.heardDone': { en: 'You heard this', fa: 'شنیده‌اید' },
-    'reader.heardBy': { en: 'heard by {count}', fa: '{count} نفر شنیده‌اند' },
+    'reader.heard': { en: 'Worth reading', fa: 'خواندنی' },
+    'reader.heardDone': { en: 'Marked worth reading', fa: 'خواندنی دانستید' },
+    'reader.heardBy': { en: '{count} found this worth reading', fa: '{count} نفر خواندنی دانسته‌اند' },
     'reader.toldBy': { en: 'Told by', fa: 'راوی' },
     'reader.anonymous': { en: 'Anonymous', fa: 'ناشناس' },
     'reader.solarHijri': { en: '(Solar Hijri)', fa: '(هجری شمسی)' },
@@ -110,7 +113,7 @@
     /* ------------------------------ submit ------------------------------ */
     'submit.eyebrow': { en: 'Add a narrative', fa: 'ثبت روایت' },
     'submit.title': {
-      en: 'Yaad Aar: 2026, 2022, 2019, 2017, and before and after',
+      en: 'Remember: 2026, 2022, 2019, 2017, and before and after',
       fa: 'یاد آر: ۴۰۴، ۴۰۱، ۹۸، ۹۶، و پیش و پس از آن',
     },
     'manifesto.p1': {
@@ -119,7 +122,7 @@
     },
     'manifesto.p2': {
       fa: 'آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «نقشۀ روایاتِ نامه‌های ایرانی» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.',
-      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets the narrative map of Irani Letters apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
+      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets the narrative map of Iranian Letter apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
     },
     'manifesto.p3': {
       fa: 'فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.',
@@ -300,7 +303,7 @@
     'admin.retranslate': { en: 'Translate again', fa: 'ترجمهٔ دوباره' },
     'admin.translating': { en: 'Translating…', fa: 'در حال ترجمه…' },
     'admin.translated': { en: 'Translation updated.', fa: 'ترجمه به‌روز شد.' },
-    'admin.heard': { en: 'Heard by', fa: 'شنیده‌اند' },
+    'admin.heard': { en: 'Recommended by', fa: 'خواندنی دانسته‌اند' },
     'admin.testEmail': { en: 'Test the backup email', fa: 'آزمودن ایمیل پشتیبان' },
     'admin.testEmailSending': { en: 'Sending…', fa: 'در حال ارسال…' },
     'admin.testEmailSent': {

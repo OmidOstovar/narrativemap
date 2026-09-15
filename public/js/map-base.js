@@ -20,40 +20,44 @@
     return value || fallback;
   }
 
-  const STYLE = {
-    // Without imagery beneath, the provinces are the map and carry a fill.
-    province: {
-      color: paint('--border-line', '#c0b193'),
-      weight: 0.8,
-      fillColor: paint('--land', '#e9dfc9'),
-      fillOpacity: 1,
-      opacity: 1,
-    },
-    provinceHover: {
-      fillColor: paint('--land-hover', '#ded1b5'),
-      color: paint('--coast', '#8b7c5e'),
-      weight: 1.2,
-    },
-    border: { color: paint('--coast', '#8b7c5e'), weight: 1.8, fill: false, opacity: 1 },
-    // Over streets they become lines only, or the map underneath is lost. The
-    // fill stays but at almost nothing, so a province is still hoverable.
-    provinceOverTiles: {
-      color: paint('--coast', '#8b7c5e'),
-      weight: 0.7,
-      opacity: 0.6,
-      fillColor: paint('--text', '#241f17'),
-      fillOpacity: 0.01,
-    },
-    provinceOverTilesHover: {
-      fillColor: paint('--saffron', '#b4701e'),
-      fillOpacity: 0.09,
-      color: paint('--text-faint', '#918876'),
-      weight: 1.2,
-    },
-    borderOverTiles: {
-      color: paint('--saffron', '#b4701e'), weight: 1.6, fill: false, opacity: 0.85,
-    },
-  };
+  function styles() {
+    return {
+      // Without imagery beneath, the provinces are the map and carry a fill.
+      province: {
+        color: paint('--border-line', '#3a4454'),
+        weight: 0.8,
+        fillColor: paint('--land', '#1b212b'),
+        fillOpacity: 1,
+        opacity: 1,
+      },
+      provinceHover: {
+        fillColor: paint('--land-hover', '#232a36'),
+        color: paint('--coast', '#46536a'),
+        weight: 1.2,
+      },
+      border: { color: paint('--coast', '#46536a'), weight: 1.8, fill: false, opacity: 1 },
+      // Over streets they become lines only, or the map underneath is lost. The
+      // fill stays but at almost nothing, so a province is still hoverable.
+      provinceOverTiles: {
+        color: paint('--coast', '#46536a'),
+        weight: 0.7,
+        opacity: 0.6,
+        fillColor: paint('--text', '#e9e5dd'),
+        fillOpacity: 0.01,
+      },
+      provinceOverTilesHover: {
+        fillColor: paint('--saffron', '#e0913f'),
+        fillOpacity: 0.09,
+        color: paint('--text-faint', '#6f6d69'),
+        weight: 1.2,
+      },
+      borderOverTiles: {
+        color: paint('--saffron', '#e0913f'), weight: 1.6, fill: false, opacity: 0.85,
+      },
+    };
+  }
+
+  const STYLE = styles();
 
   let geoPromise = null;
   function loadGeo() {
@@ -194,8 +198,12 @@
       // Names, where the provider draws them apart from the ground.
       if (labels) labelLayer = layer(`/tiles/${token}/labels/{z}/{x}/{y}{r}.png`, 'basemap-labels', maxZoom);
 
-      if (typeof filter === 'string') {
+      // A provider with no treatment of its own leaves it to the theme: a
+      // street map drawn for paper has to be turned over on the dark one.
+      if (typeof filter === 'string' && filter && filter !== 'none') {
         document.documentElement.style.setProperty('--basemap-filter', filter);
+      } else {
+        document.documentElement.style.removeProperty('--basemap-filter');
       }
       if (wanted) showTiles();
     }
@@ -231,6 +239,17 @@
     function fitIran(options) {
       map.fitBounds(IRAN_BOUNDS, Object.assign({ padding: [20, 20], animate: false }, options));
     }
+
+    /*
+     * The drawn map takes its colours from the stylesheet, which means they are
+     * read once — so when the theme changes, they have to be read again or the
+     * country stays in the palette it was drawn in.
+     */
+    function repaint() {
+      Object.assign(STYLE, styles());
+      paintFor(tilesShowing);
+    }
+    if (global.THEME && global.THEME.onChange) global.THEME.onChange(repaint);
 
     fitIran();
 

@@ -1277,7 +1277,7 @@ input[type='date'] { cursor: text; }
   color: var(--turquoise);
 }
 .success h2 { font-family: var(--serif); font-size: 26px; margin-bottom: 12px; }
-.success p { color: var(--text-muted); max-width: 52ch; margin: 0 auto 10px; }
+.success p { color: var(--text-muted); font-size: 16.5px; margin: 0 auto 10px; }
 .success .ref {
   font-family: var(--mono);
   font-size: 13px;

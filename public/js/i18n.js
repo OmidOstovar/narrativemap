@@ -170,7 +170,7 @@
     },
     'submit.about.title': { fa: 'نام مستعارتان', en: 'Your chosen name' },
     'submit.about.note': {
-      fa: 'روایت‌ها ناشناس خواهند بود؛ هر نامی که مایلید نمایش داده شود بنویسید.',
+      fa: 'روایت‌ها ناشناس خواهد بود، هر نامی که مایلید نمایش داده شود بنویسید.',
       en: 'Narratives are anonymous. Write whatever name you would like shown.',
     },
     'submit.yourName': { fa: 'نام مستعارتان', en: 'Your chosen name' },

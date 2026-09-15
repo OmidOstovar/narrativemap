@@ -63,6 +63,7 @@ function submissionBody(overrides = {}) {
       how_you_know: ['lived'],
       narrative_title: 'روایتی از سرپل ذهاب',
       what_happened: PERSIAN,
+      above_the_crowd: 'آن شب چیزی بالای سرِ همه‌مان بود که وقتی تنهایم نیست.',
       ...(overrides.answers || {}),
     },
     place: { name: 'کوچه‌ای در سرپل ذهاب', lat: 34.4614, lng: 45.8631, ...(overrides.place || {}) },
@@ -167,9 +168,13 @@ test('an English submission is translated into Persian instead', async () => {
   calls.length = 0;
   stubTranslator();
 
+  // Every answer in English, not just the longest: the language of a
+  // submission is judged from the whole of it.
   const { body } = await post(submissionBody({
     answers: {
       what_happened: 'That night the whole neighbourhood lost power and people carried their chairs into the lane instead of staying indoors, and nobody was in any hurry to go back inside again.',
+      above_the_crowd: 'Something was over all of us in that lane that is not there when I am alone.',
+      narrative_title: 'The night the power went',
     },
     place: { name: 'A lane in Sarpol-e Zahab' },
   }));

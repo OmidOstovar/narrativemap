@@ -73,6 +73,7 @@ function validSubmission(overrides = {}) {
       how_you_know: ['lived'],
       narrative_title: 'A corner in Tehran',
       what_happened: 'Something happened at this corner, and this sentence is deliberately long enough to clear the minimum length the questionnaire asks for on the main narrative answer.',
+      above_the_crowd: 'Something was rising over all of us that evening, and it is not there when I am on my own.',
       ...(overrides.answers || {}),
     },
     place: { name: 'A corner in Tehran', lat: 35.6892, lng: 51.3890, ...(overrides.place || {}) },

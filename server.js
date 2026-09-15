@@ -36,6 +36,7 @@ const db = require('./src/db');
 const auth = require('./src/auth');
 const mailer = require('./src/mailer');
 const tiles = require('./src/tiles');
+const margins = require('./src/margins');
 const { QUESTIONS, FORM_SEQUENCE, TITLE_QUESTION_ID } = require('./src/questions');
 const { PROVINCE_NAMES } = require('./src/geo');
 const { validateSubmission, applyTrustedFields, MIN_YEAR, maxYear } = require('./src/validate');
@@ -484,6 +485,18 @@ function sanitiseTranslation(raw) {
 }
 
 /* --------------------------------- pages --------------------------------- */
+
+/**
+ * The illuminated margins, built from the MARGINS setting rather than written
+ * into the stylesheet — so turning them off, or changing to the drawn ones, is
+ * a variable and a redeploy rather than an edit. Never held in a cache: the
+ * point of a setting is that changing it takes effect.
+ */
+app.get('/css/margins.css', (req, res) => {
+  res.set('Content-Type', 'text/css; charset=utf-8');
+  res.set('Cache-Control', 'no-store');
+  res.send(margins.css());
+});
 
 /**
  * One address per page, whether or not a trailing slash was typed.

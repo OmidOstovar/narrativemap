@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="132" viewBox="0 0 30 132" fill="none">
+  <!--
+    One tile of the illuminated margin band, in the manner of a Persian
+    manuscript's decorated border: a vine turning on itself, a palmette at each
+    turn, leaves in the crooks. Drawn rather than scanned, so it is ours, it
+    weighs a few hundred bytes, and it is fetched from this server like
+    everything else.
+
+    The tile repeats vertically: the stem meets both edges at x=15 travelling
+    straight, so one tile joins the next without a seam.
+  -->
+  <g stroke="#c8a04a" fill="none" stroke-linecap="round">
+    <path d="M15 0 C 15 8, 5 14, 5 25 C 5 38, 15 44, 15 56
+             C 15 68, 25 74, 25 85 C 25 96, 15 102, 15 110 L15 132"
+          stroke-width="1.3" opacity="0.95"/>
+
+    <!-- Palmettes at the two turns. -->
+    <g opacity="0.92" stroke-width="1.05">
+      <path d="M5 25 c -3 -4, -3 -8, 0 -10 c 3 2, 3 6, 0 10Z"/>
+      <path d="M5 25 c -4 -2, -7 0, -7 3 c 3 2, 6 1, 7 -3Z"/>
+      <path d="M5 25 c 1 4, 4 6, 7 4 c -1 -3, -4 -5, -7 -4Z"/>
+      <path d="M25 85 c 3 -4, 3 -8, 0 -10 c -3 2, -3 6, 0 10Z"/>
+      <path d="M25 85 c 4 -2, 7 0, 7 3 c -3 2, -6 1, -7 -3Z"/>
+      <path d="M25 85 c -1 4, -4 6, -7 4 c 1 -3, 4 -5, 7 -4Z"/>
+    </g>
+
+    <!-- Leaves in the crooks of the stem. -->
+    <g opacity="0.75" stroke-width="0.95">
+      <path d="M12 8 c 5 -1, 8 2, 8 5 c -4 1, -7 -1, -8 -5Z"/>
+      <path d="M15 56 c -5 -1, -8 2, -8 5 c 4 1, 7 -1, 8 -5Z"/>
+      <path d="M17 118 c 5 -1, 8 2, 8 5 c -4 1, -7 -1, -8 -5Z"/>
+    </g>
+
+    <!-- Buds: the small round notes that keep a Persian border from reading
+         as a single repeating shape. -->
+    <g opacity="0.85" fill="#c8a04a" stroke="none">
+      <circle cx="9" cy="40" r="1.3"/>
+      <circle cx="21" cy="100" r="1.3"/>
+      <circle cx="15" cy="70" r="1"/>
+    </g>
+  </g>
+</svg>

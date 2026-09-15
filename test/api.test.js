@@ -500,6 +500,65 @@ test('the promise the site makes is the one the code keeps', async () => {
   }
 });
 
+test('the margins are a setting, not an edit', async () => {
+  const margins = require('../src/margins');
+  const saved = process.env.MARGINS;
+  try {
+    process.env.MARGINS = 'photo';
+    assert.match(margins.css(), /margin-left\.jpg/);
+    assert.match(margins.css(), /margin-right\.jpg/);
+
+    process.env.MARGINS = 'drawn';
+    assert.match(margins.css(), /jadval-band\.svg/);
+    assert.ok(!margins.css().includes('margin-left.jpg'));
+
+    process.env.MARGINS = 'off';
+    assert.ok(!/\.page::before\s*,/.test(margins.css()), 'nothing is drawn at all');
+
+    // A setting nobody recognises leaves the archive looking as it should.
+    process.env.MARGINS = 'sideways';
+    assert.equal(margins.which(), 'photo');
+  } finally {
+    if (saved === undefined) delete process.env.MARGINS; else process.env.MARGINS = saved;
+  }
+});
+
+test('a width from the environment has to be a width', () => {
+  const margins = require('../src/margins');
+  const saved = process.env.MARGIN_WIDTH;
+  try {
+    process.env.MARGIN_WIDTH = '60px';
+    assert.match(margins.css(), /width: 60px;/);
+
+    // Anything else is ignored rather than written into a stylesheet: a
+    // setting is read by a browser as code, so it is refused unless it plainly
+    // is a length. (The stylesheet has a `display: none` of its own, in the
+    // rule that hides the margins on a narrow window — hence the specific
+    // check here rather than a search for those two words.)
+    process.env.MARGIN_WIDTH = '60px; } body { display: none';
+    assert.match(margins.css(), /width: 124px;/);
+    assert.ok(!margins.css().includes('body {'), 'no rule of its own got in');
+    assert.ok(!margins.css().includes('60px'), 'and nothing of it survived');
+  } finally {
+    if (saved === undefined) delete process.env.MARGIN_WIDTH; else process.env.MARGIN_WIDTH = saved;
+  }
+});
+
+test('the margins stylesheet is served, and never from a cache', async () => {
+  const response = await call('/css/margins.css');
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') || '', /text\/css/);
+  assert.match(response.headers.get('cache-control') || '', /no-store/);
+  assert.match(await response.text(), /MARGINS=/);
+
+  // And every page that has margins asks for it.
+  const fs = require('node:fs');
+  for (const file of ['about.html', 'submit.html', '404.html']) {
+    const page = fs.readFileSync(path.join(__dirname, '..', 'public', file), 'utf8');
+    assert.match(page, /href="\/css\/margins\.css"/, `${file} links it`);
+  }
+});
+
 test('static assets revalidate so a deploy is never half-applied', async () => {
   // A cached script paired with a newer API renders as broken text rather than
   // as a visible error, so nothing may be held without checking back.

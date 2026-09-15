@@ -368,65 +368,12 @@ input[type='date'] { cursor: text; }
   margin: 0 auto;
   padding: 48px 24px 96px;
 }
-.page--wide { max-width: 1180px; }
 
-.page__eyebrow {
-  color: var(--saffron);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.page__title {
-  font-family: var(--serif);
-  font-size: clamp(28px, 4.5vw, 40px);
-  letter-spacing: -0.015em;
-  margin-bottom: 12px;
-}
-.page__lede {
-  color: var(--text-muted);
-  font-size: 19px;
-  line-height: 1.65;
-  margin: 0 0 36px;
-}
-.page__prose { color: var(--text-muted); font-size: 16.5px; line-height: 1.75; }
-.page__prose h2 {
-  font-family: var(--serif);
-  color: var(--text);
-  font-size: 22px;
-  margin: 40px 0 12px;
-}
-.page__prose h3 {
-  color: var(--text);
-  font-size: 17px;
-  font-weight: 600;
-  margin: 26px 0 6px;
-}
-/* The heading a contributor is sent to from the form, so it must not land
-   underneath the site header. */
-.page__prose h2[id] { scroll-margin-top: 90px; }
-.page__prose p { margin: 0 0 16px; }
-.page__prose ul { margin: 0 0 16px; padding-left: 22px; }
-.page__prose li { margin-bottom: 8px; }
-
-.section {
-  background: var(--ink-800);
-  border: 1px solid var(--ink-500);
-  border-radius: var(--radius);
-  padding: 28px;
-  margin-bottom: 22px;
-}
-.section__title {
-  font-family: var(--serif);
-  font-size: 21px;
-  margin-bottom: 6px;
-}
-.section__note {
-  color: var(--text-muted);
-  font-size: 16px;
-  margin: 0 0 24px;
-}
+/*
+ * The illuminated margins down the sides of these pages are not here: they are
+ * a setting rather than a style, and the server builds them from it. See
+ * src/margins.js, and MARGINS in the environment.
+ */
 
 /* ------------------------------ app layout ------------------------------ */
 

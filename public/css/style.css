@@ -472,6 +472,31 @@ input[type='date'] { cursor: text; }
 
 /* --------------------------- sidebar: filters --------------------------- */
 
+/*
+ * The epigraph over the list. Quiet by design: it is the reason for the
+ * archive, not a heading for it, so it sits in the serif at reading size and
+ * lets the narratives below carry the weight.
+ */
+.epigraph {
+  margin: 0;
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--ink-500);
+  font-family: var(--serif);
+  color: var(--text-muted);
+  font-size: 16.5px;
+  line-height: 1.6;
+}
+.epigraph p { margin: 0; }
+.epigraph cite {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 14.5px;
+  color: var(--text-faint);
+}
+/* The dash belongs to the layout, not to the name, so it is not translated. */
+.epigraph cite::before { content: '—\00a0'; }
+
 .filters {
   padding: 16px;
   border-bottom: 1px solid var(--ink-500);

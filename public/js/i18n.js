@@ -42,6 +42,16 @@
     'lang.toggleLabel': { en: 'Switch to Persian', fa: 'Switch to English' },
 
     /* ------------------------------- map -------------------------------- */
+    /* Agamben, Remnants of Auschwitz. It stands over the list of narratives. */
+    'epigraph.line1': {
+      fa: 'رسالت بازمانده به یادآوردن است؛',
+      en: 'The survivor\u2019s vocation is to remember;',
+    },
+    'epigraph.line2': {
+      fa: 'او نمی‌تواند به یاد نیاورد.',
+      en: 'they cannot not remember.',
+    },
+    'epigraph.author': { fa: 'جورجو آگامبن', en: 'Giorgio Agamben' },
     'map.search': { en: 'Search titles, places, and text…', fa: 'جست‌وجو در عنوان‌ها، مکان‌ها و متن…' },
     'map.searchLabel': { en: 'Search narratives', fa: 'جست‌وجوی روایت‌ها' },
     'map.allProvinces': { en: 'All provinces', fa: 'همهٔ استان‌ها' },

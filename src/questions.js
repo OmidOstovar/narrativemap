@@ -110,8 +110,8 @@ const QUESTIONS = [
     id: 'above_the_crowd',
     type: 'textarea',
     label: {
-      fa: 'آیا چیزی بر فرازِ جمعیت متولد می‌شد؟',
-      en: 'Was something being born above the crowd?',
+      fa: 'جزئی از یک کل بودن چگونه است؟',
+      en: 'What is it like to be part of a whole?',
     },
     help: {
       fa: 'در میان جمعیت، آیا احساسِ اینکه چیزی ورای فردفردِ شما در حال خلق شدن و جوشیدن و قدرت دادن به شماست و شما به آن تعلق دارید داشتید — چیزی که در تنهایی غایب است؟ چه چیزی؟ آیا هنوز الهام‌بخش است؟',

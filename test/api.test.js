@@ -468,6 +468,12 @@ test('the About page is served, and carries the promise it is linked for', async
   const form = await (await call('/submit')).text();
   assert.match(form, /href="\/about#anonymity"/, 'and the form points at it');
   assert.match(form, /data-i18n="assure\.summary"/, 'under the one line that is always visible');
+
+  // It is out of the navigation for now, and reached only from that promise.
+  for (const file of ['index.html', 'submit.html', '404.html']) {
+    const page = require('node:fs').readFileSync(path.join(__dirname, '..', 'public', file), 'utf8');
+    assert.ok(!page.includes('data-i18n="nav.about"'), `${file} does not advertise it`);
+  }
 });
 
 test('the promise the site makes is the one the code keeps', async () => {

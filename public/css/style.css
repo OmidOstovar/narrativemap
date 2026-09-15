@@ -242,6 +242,12 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   z-index: 500;
 }
 
+/*
+ * The mark, and beside it two lines: what the archive is for, and under it what
+ * it is called. Stacked rather than run together, because side by side the pair
+ * is wider than a phone and the first of them was being trimmed mid-word —
+ * which is a poor thing to do to the sentence the archive is named for.
+ */
 .brand {
   display: flex;
   align-items: center;
@@ -250,11 +256,10 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
   font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  /* The line gives way before the bar does: on the narrowest phones it is
-     trimmed rather than pushing the page wider than the screen. */
   min-width: 0;
 }
-.brand__line { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.brand__text { display: flex; flex-direction: column; justify-content: center; line-height: 1.25; }
+.brand__line { min-width: 0; }
 .brand:hover { text-decoration: none; }
 .brand__mark { color: var(--saffron); display: inline-flex; align-items: center; flex: none; }
 /*
@@ -270,7 +275,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
  * The bar says what the archive is for, and then, quieter behind it, what it
  * is called. The name carries the emphasis on its own once the line is gone.
  */
-.brand__name { color: var(--text-muted); font-weight: 500; }
+.brand__name { color: var(--text-muted); font-weight: 500; font-size: 0.92em; }
 
 .brand__sub {
   color: var(--text-faint);
@@ -1477,7 +1482,7 @@ input[type='date'] { cursor: text; }
    * The narratives are what someone came for, so on a stacked screen they take
    * the screen: the map keeps enough to place them and no more.
    */
-  .app { grid-template-rows: 26vh 1fr; }
+  .app { grid-template-rows: 34vh 1fr; }
   .app .map-pane { grid-row: 1; }
   .app .sidebar { grid-row: 2; border-bottom: none; border-top: 1px solid var(--ink-500); }
   .reader { width: 100%; }
@@ -1493,11 +1498,11 @@ input[type='date'] { cursor: text; }
 
   /* The bar over the list, and the search under it, at a size that leaves the
      list its room. */
-  .sidebar__banner { padding: 10px 14px 9px; font-size: 15px; line-height: 1.4; }
-  .filters { padding: 9px 12px 10px; gap: 7px; }
-  .filters input[type='search'], .filters select { padding: 5px 9px; font-size: 14.5px; }
-  .filters__row { gap: 7px; }
-  .result-count { font-size: 12px; line-height: 1.2; }
+  .sidebar__banner { padding: 9px 14px 8px; font-size: 14.5px; line-height: 1.35; }
+  .filters { padding: 7px 12px 8px; gap: 6px; }
+  .filters input[type='search'], .filters select { padding: 4px 8px; font-size: 13.5px; }
+  .filters__row { gap: 6px; }
+  .result-count { font-size: 11.5px; line-height: 1.1; }
   .narrative-list { padding: 6px 10px 14px; }
   .review-actions { padding: 12px 20px; }
   .brand__sub { display: none; }
@@ -1509,11 +1514,11 @@ input[type='date'] { cursor: text; }
    one of them going: closer spacing and a slightly smaller logo buy the width
    the English line needs, which is longer than the Persian. */
 @media (max-width: 560px) {
-  /* The English line is half again as long as the Persian, so the mark loses a
-     point of type and some spacing here rather than trailing off mid-word on
-     an ordinary phone. */
-  .brand { gap: 7px; font-size: 13px; }
-  .brand__logo { height: 44px; }
+  /* Both lines whole on an ordinary phone, which is what decides the size of
+     the type and the mark beside it. */
+  .brand { gap: 7px; font-size: 12.5px; }
+  .brand__logo { height: 42px; }
+  .brand__text { line-height: 1.2; }
 }
 
 @media (max-width: 560px) {
@@ -1525,7 +1530,10 @@ input[type='date'] { cursor: text; }
      gets the short label so the mark keeps both of its halves. */
   .site-nav .nav-full { display: none; }
   .site-nav .nav-short { display: inline; }
-  .lang-toggle, .theme-toggle { padding: 6px 8px; margin-inline-start: 2px; }
+  .lang-toggle { padding: 6px 8px; margin-inline-start: 2px; }
+  /* The theme switch is the least of the things in the bar, so it gives up the
+     most room: the two names take the space it saves. */
+  .theme-toggle { padding: 4px 6px; font-size: 11.5px; margin-inline-start: 2px; }
   .brand { gap: 6px; }
   .picker__map { height: 300px; }
 }

@@ -558,10 +558,27 @@
     if (pane) pane.classList.toggle('is-reading', reading);
   }
 
+  /**
+   * Gives the narrative the whole window, or gives the map back.
+   *
+   * Done with the stylesheet rather than the browser's own full-screen mode:
+   * that mode refuses a plain element on iOS, which is the half of the world
+   * this button is for.
+   */
+  function setFullscreen(full) {
+    readerEl.classList.toggle('is-full', full);
+    const button = document.getElementById('reader-full');
+    if (button) {
+      button.setAttribute('aria-pressed', String(full));
+      button.setAttribute('aria-label', t(full ? 'reader.exitFullscreen' : 'reader.fullscreen'));
+    }
+  }
+
   function closeReader() {
     state.selectedId = null;
     readerEl.classList.remove('is-open');
     setReadingTools(false);
+    setFullscreen(false);
     readerEl.setAttribute('aria-hidden', 'true');
     renderList();
     renderMarkers();
@@ -620,9 +637,12 @@
     $('reader-link').addEventListener('click', copyLink);
     $('reader-copy').addEventListener('click', copyLink);
     $('reader-back').addEventListener('click', closeReader);
+    $('reader-full').addEventListener('click', () => setFullscreen(!readerEl.classList.contains('is-full')));
 
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && state.selectedId) closeReader();
+      if (event.key !== 'Escape' || !state.selectedId) return;
+      if (readerEl.classList.contains('is-full')) setFullscreen(false);
+      else closeReader();
     });
 
     $('tiles-toggle').addEventListener('change', (event) => {

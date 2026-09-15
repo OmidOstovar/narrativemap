@@ -1143,7 +1143,29 @@ details.qa > .chips { padding-bottom: 20px; }
 .reader-tools__button:hover { background: var(--ink-600); color: var(--text); }
 .reader-tools__button:focus-visible { outline: 2px solid var(--saffron); outline-offset: -2px; }
 /* Back points the way the reader came, which depends on the direction of text. */
-[dir='rtl'] .reader-tools__button:first-child svg { transform: scaleX(-1); }
+[dir='rtl'] #reader-back svg { transform: scaleX(-1); }
+
+/* One button, two marks: out to the corners, or back in from them. */
+.icon--collapse { display: none; }
+.reader.is-full .icon--expand { display: none; }
+.reader.is-full .icon--collapse { display: block; }
+
+/*
+ * The narrative taking the whole window. Fixed rather than the browser's own
+ * full-screen mode, which refuses a plain element on iOS — and the tools sit
+ * inside the reader, so they come with it. The transform goes: it is what
+ * slides the panel in and out, and there is nowhere to slide to from here.
+ */
+.reader.is-full {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  transform: none;
+  /* Above Leaflet's own control panes, which sit at 1000 and would otherwise
+     print the map's attribution across the middle of a narrative. */
+  z-index: 1200;
+  border: 0;
+}
 .leaflet-control-attribution {
   background: var(--scrim) !important;
   color: var(--text-faint) !important;

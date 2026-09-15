@@ -108,6 +108,8 @@
     'reader.anonymous': { en: 'Anonymous', fa: 'ناشناس' },
     'reader.by': { en: 'by', fa: 'نوشتۀ' },
     'reader.timeAndPlace': { en: 'Time and place', fa: 'زمان و مکان' },
+    'reader.fullscreen': { en: 'Full screen', fa: 'تمام‌صفحه' },
+    'reader.exitFullscreen': { en: 'Leave full screen', fa: 'خروج از تمام‌صفحه' },
     'reader.solarHijri': { en: '(Solar Hijri)', fa: '(هجری شمسی)' },
     'reader.gregorian': { en: '(Gregorian)', fa: '(میلادی)' },
     'reader.untitled': { en: 'Untitled narrative', fa: 'روایت بی‌عنوان' },

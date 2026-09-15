@@ -1104,33 +1104,11 @@ details.qa > .chips { padding-bottom: 20px; }
  * colour below.
  */
 .leaflet-container {
-  background-color: #e9ddc3;
-  background-image: url('/img/map-ground.jpg');
-  background-repeat: repeat;
-  /*
-   * Set down a little. The photograph cut its own top row of flowers, so the
-   * tile begins mid-bloom; starting lower brings whole carnation heads into
-   * the band above the country and puts the cut row out of sight.
-   */
-  background-position: center 96px;
+  background: #e9ddc3 url('/img/map-ground.jpg') repeat;
   font-family: var(--sans);
   outline: none;
 }
-
-/*
- * The same ground on the dark theme, taken down under a wash rather than
- * swapped for a flat colour: the painting is still there, at the depth the rest
- * of the dark palette sits at. A wash rather than a filter, because a filter on
- * this element would take the country, the borders and the pins down with it.
- */
-[data-theme='dark'] .leaflet-container {
-  background-color: #0a0c10;
-  background-image:
-    linear-gradient(rgba(6, 8, 12, 0.8), rgba(6, 8, 12, 0.8)),
-    url('/img/map-ground.jpg');
-  background-repeat: repeat, repeat;
-  background-position: center top, center 96px;
-}
+[data-theme='dark'] .leaflet-container { background: var(--ink-900); }
 .leaflet-control-zoom { border: none !important; box-shadow: var(--shadow-md) !important; }
 .leaflet-control-zoom a {
   background: var(--veil) !important;

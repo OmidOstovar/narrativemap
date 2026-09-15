@@ -12,7 +12,14 @@
 (function (global) {
   'use strict';
 
-  const STORAGE_KEY = 'nm_theme';
+  /*
+   * The key carries a number, and the number was raised when paper became the
+   * default: a reader who tried the dark theme back when it was the default had
+   * that choice written down, and would have gone on seeing it for good. Raising
+   * the key sets everyone back to the default once. Anyone who wants dark is one
+   * press away, and this time it is remembered under the new name.
+   */
+  const STORAGE_KEY = 'nm_theme2';
   const THEMES = ['dark', 'light'];
   const listeners = new Set();
 

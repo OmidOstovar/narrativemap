@@ -15,9 +15,11 @@
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
 
   /* And the theme, for the same reason: chosen here or it flashes. Paper is
-     what the archive opens as; dark is remembered only if it was asked for. */
+     what the archive opens as; dark is remembered only if it was asked for.
+     The key is numbered, and the number was raised when the default changed —
+     see js/theme.js. */
   var theme = null;
-  try { theme = localStorage.getItem('nm_theme'); } catch (e) { /* storage blocked */ }
+  try { theme = localStorage.getItem('nm_theme2'); } catch (e) { /* storage blocked */ }
   document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
 }());
 </script>

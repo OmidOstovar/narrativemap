@@ -1103,12 +1103,20 @@ details.qa > .chips { padding-bottom: 20px; }
  * ever what lies beyond the border, and the dark theme replaces it with a flat
  * colour below.
  */
+/*
+ * Beyond the border the map is laid on a bookbinding, one per theme: the
+ * red-gold tooled leather on paper, the black lacquer on the dark. Neither is
+ * cropped or recoloured — only scaled down for the web — so the cover is shown
+ * whole, sized to fill the pane from its centre.
+ */
 .leaflet-container {
-  background: #e9ddc3 url('/img/map-ground.jpg') repeat;
+  background: #e9ddc3 url('/img/map-ground-light.jpg') center / cover no-repeat;
   font-family: var(--sans);
   outline: none;
 }
-[data-theme='dark'] .leaflet-container { background: var(--ink-900); }
+[data-theme='dark'] .leaflet-container {
+  background: #0a0c10 url('/img/map-ground-dark.jpg') center / cover no-repeat;
+}
 .leaflet-control-zoom { border: none !important; box-shadow: var(--shadow-md) !important; }
 .leaflet-control-zoom a {
   background: var(--veil) !important;

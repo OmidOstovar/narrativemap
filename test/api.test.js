@@ -514,9 +514,15 @@ test('the margins are a setting, not an edit', async () => {
     assert.match(margins.css(), /margin-left\.jpg/);
     assert.match(margins.css(), /margin-right\.jpg/);
 
+    // On the dark theme the photographed page gives way to a woven border,
+    // at every width rather than only on a phone.
+    assert.match(margins.css(), /\[data-theme='dark'\][\s\S]*margin-dark\.jpg/);
+
     process.env.MARGINS = 'drawn';
     assert.match(margins.css(), /jadval-band\.svg/);
     assert.ok(!margins.css().includes('margin-left.jpg'));
+    // The drawn margin was made dark; it needs no stand-in.
+    assert.ok(!margins.css().includes('margin-dark.jpg'));
 
     process.env.MARGINS = 'off';
     assert.ok(!/\.page::before\s*,/.test(margins.css()), 'nothing is drawn at all');

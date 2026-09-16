@@ -152,18 +152,41 @@ const NARROW_PHOTO = `  .page::before,
     background-size: 100% auto;
   }`;
 
+/*
+ * On the dark theme the photographed page is wrong twice over: it is a sheet
+ * lit for daylight, and beside a dark column it reads as a lamp rather than as
+ * an edge. A carpet border stands in its place — a navy field between red
+ * guards — and being a woven repeat it carries any height and any width the
+ * window has, where a photographed page carries only its own.
+ *
+ * Written outside the narrow-window rule on purpose. It is the more specific
+ * selector, so it holds at every width: the same border on a phone as on a
+ * desk, which is what a border down the side of a page is.
+ */
+const DARK_PHOTO = `[data-theme='dark'] .page::before,
+[data-theme='dark'] .page::after {
+  background-image: url('/img/margin-dark.jpg');
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+}
+`;
+
 function css() {
   const chosen = which();
   const head = `/* Illuminated margins: MARGINS=${chosen}. See src/margins.js. */\n`;
   if (chosen === 'off') return `${head}/* Switched off. */\n`;
 
-  return head + frame(
+  const body = frame(
     length('MARGIN_WIDTH', chosen === 'photo' ? '124px' : '38px'),
     length('MARGIN_MIN_PAGE', chosen === 'photo' ? '1120px' : '980px'),
     length('MARGIN_NARROW', chosen === 'photo' ? '22px' : '16px'),
     chosen === 'photo' ? PHOTO : DRAWN,
     chosen === 'photo' ? NARROW_PHOTO : '',
   );
+
+  // The drawn margin is dark already, and was made for the dark theme.
+  return head + body + (chosen === 'photo' ? `\n${DARK_PHOTO}` : '');
 }
 
 module.exports = { css, which, SETTINGS };

@@ -877,6 +877,60 @@ test('a style is chosen by name, without touching the code', () => {
   }
 });
 
+test('an English reader is offered a map lettered in Latin', () => {
+  const config = tiles.config();
+
+  // The ordinary imagery is unchanged by any of this.
+  assert.equal(config.style, 'osm');
+  assert.match(tiles.upstreamFor(5, 20, 12, false), /tile\.openstreetmap\.org/);
+
+  // And beside it, a second set with its names in a layer of their own.
+  assert.ok(config.latin, 'there is a second set');
+  assert.equal(config.latin.labels, true, 'whose names come apart from the ground');
+  assert.notEqual(config.latin.token, config.token, 'at an address of its own');
+
+  // The token is the whole of how the relay tells them apart.
+  assert.equal(tiles.variantFor(config.latin.token), 'latin');
+  assert.equal(tiles.variantFor(config.token), undefined);
+  assert.equal(tiles.variantFor('made-up'), undefined, 'a stale address gets the ordinary map');
+  assert.equal(tiles.variantFor(''), undefined);
+
+  // Each address goes to its own provider, and Esri's own ordering is kept.
+  assert.match(tiles.upstreamFor(6, 40, 25, false, 'base', 'latin'), /Light_Gray_Base/);
+  assert.ok(tiles.upstreamFor(6, 40, 25, false, 'base', 'latin').endsWith('/6/25/40'));
+  assert.match(tiles.upstreamFor(6, 40, 25, false, 'labels', 'latin'), /Light_Gray_Reference/);
+
+  // The bounds are the same bounds; a variant is not a way past them.
+  assert.equal(tiles.upstreamFor(99, 0, 0, false, 'base', 'latin'), null);
+  assert.equal(tiles.upstreamFor(5, 99999, 12, false, 'base', 'latin'), null);
+});
+
+test('the second map is a setting, and can be switched off', () => {
+  const saved = process.env.TILE_STYLE_LATIN;
+  try {
+    process.env.TILE_STYLE_LATIN = 'off';
+    assert.equal(tiles.config().latin, null, 'everyone is left on the one map');
+    assert.equal(tiles.upstreamFor(5, 20, 12, false, 'base', 'latin'), null);
+    assert.equal(tiles.variantFor('esri-latin-anything'), undefined);
+
+    // A style with no separate name layer cannot letter anything differently,
+    // so it is refused rather than served as if it could.
+    process.env.TILE_STYLE_LATIN = 'osm';
+    assert.equal(tiles.config().latin, null);
+
+    // A name nobody recognises falls back rather than breaking the map.
+    process.env.TILE_STYLE_LATIN = 'sideways';
+    assert.equal(tiles.config().latin.style, 'esri-latin');
+
+    process.env.TILE_STYLE_LATIN = 'esri-dark';
+    assert.equal(tiles.config().latin.style, 'esri-dark');
+    assert.match(tiles.upstreamFor(5, 20, 12, false, 'base', 'latin'), /Dark_Gray_Base/);
+  } finally {
+    if (saved === undefined) delete process.env.TILE_STYLE_LATIN;
+    else process.env.TILE_STYLE_LATIN = saved;
+  }
+});
+
 test('the archive can say which providers it can actually reach', async () => {
   const body = await json(await call('/api/tiles/status'));
   assert.equal(typeof body.inUse.style, 'string');

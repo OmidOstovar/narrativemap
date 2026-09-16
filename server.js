@@ -136,7 +136,8 @@ async function serveTile(req, res, layer) {
   const x = Number(req.params.x);
 
   try {
-    const tile = await tiles.fetchTile(z, x, y, { retina, layer });
+    const variant = tiles.variantFor(req.params.token);
+    const tile = await tiles.fetchTile(z, x, y, { retina, layer, variant });
     if (!tile) {
       res.status(404).end();
       return;
@@ -152,10 +153,15 @@ async function serveTile(req, res, layer) {
 
 /*
  * The address carries the provider (see `token` in src/tiles.js) and the layer
- * — the ground, or the place names some providers draw separately. The token
- * is not read: it is there so that changing provider changes every tile
- * address, and a reader holding a week of the old one's squares is handed the
- * new one's instead of being shown last month's map until the cache expires.
+ * — the ground, or the place names some providers draw separately.
+ *
+ * The token is what makes changing provider change every tile address, so that
+ * a reader holding a week of the old one's squares is handed the new one's
+ * rather than being shown last month's map until the cache expires. It is read
+ * for one thing besides: which of the two sets of imagery is being asked for,
+ * the ordinary one or the Latin-lettered one an English reader is shown. Any
+ * token that is neither means the ordinary one — a stale address gets a map
+ * rather than a grid of holes.
  */
 app.get('/tiles/:token/base/:z/:x/:y.png', (req, res) => serveTile(req, res, 'base'));
 app.get('/tiles/:token/labels/:z/:x/:y.png', (req, res) => serveTile(req, res, 'labels'));

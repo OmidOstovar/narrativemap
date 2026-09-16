@@ -205,6 +205,13 @@
     // archive opens on its own drawn map: the streets are there for placing a
     // pin, not for reading, and a reader should meet the country first.
     let wanted = false;
+    // What the archive says it has, which set of it is on the map, and what
+    // that set has to be credited as.
+    let imagery = null;
+    let showing = null;
+    let credit = null;
+    // A provider that would not answer is not asked again this visit.
+    const refused = new Set();
 
     /*
      * Over streets the provinces are a hint rather than a shape, and the
@@ -218,13 +225,44 @@
       borderLayer.setStyle(streets ? STYLE.borderOverTiles : STYLE.border);
     }
 
-    /** A provider that answers nothing is worse than no provider at all. */
-    function giveUpOnTiles() {
+    /** Off the map, but still built: the toggle can put them back at once. */
+    function hideTiles() {
       if (tileLayer) map.removeLayer(tileLayer);
       if (labelLayer) map.removeLayer(labelLayer);
+    }
+
+    /** Off the map and thrown away, for when a different set is to be built. */
+    function dropTiles() {
+      hideTiles();
       tileLayer = null;
       labelLayer = null;
-      paintFor(false);
+      showing = null;
+    }
+
+    /*
+     * Which of the two sets this reader should be shown.
+     *
+     * OpenStreetMap letters a place in the language of the place, so an
+     * English reader turning on street view gets Tehran's streets in Persian —
+     * no more use than no names at all. Where the archive has a Latin-lettered
+     * set, English is given it; Persian, and any reader whose provider has
+     * only the one set, gets the ordinary imagery.
+     */
+    function chosen() {
+      if (!imagery) return null;
+      const english = global.I18N && global.I18N.lang() === 'en';
+      const latin = english ? imagery.latin : null;
+      if (latin && latin.token && !refused.has(latin.token)) return latin;
+      return refused.has(imagery.token) ? null : imagery;
+    }
+
+    /** One credit on the map at a time: the one whose tiles are on it. */
+    function credited(set) {
+      const next = set && set.attribution ? set.attribution : null;
+      if (next === credit) return;
+      if (credit) map.attributionControl.removeAttribution(credit);
+      credit = next;
+      if (credit) map.attributionControl.addAttribution(credit);
     }
 
     function layer(path, className, maxNativeZoom) {
@@ -238,32 +276,73 @@
       });
     }
 
-    function build({ token, filter, maxZoom, labels }) {
-      if (!token) return;
+    function build(set) {
+      if (!set || !set.token) return;
+      showing = set;
 
-      tileLayer = layer(`/tiles/${token}/base/{z}/{x}/{y}{r}.png`, 'basemap-tiles', maxZoom);
+      tileLayer = layer(`/tiles/${set.token}/base/{z}/{x}/{y}{r}.png`, 'basemap-tiles', set.maxZoom);
 
       // A refusal from the provider is silent otherwise: Leaflet leaves the
       // squares blank and the reader sees a void where the country was.
       let arrived = false;
-      let refused = 0;
+      let refusals = 0;
       tileLayer.on('tileload', () => { arrived = true; });
       tileLayer.on('tileerror', () => {
-        refused += 1;
-        if (!arrived && refused >= 4) giveUpOnTiles();
+        refusals += 1;
+        if (!arrived && refusals >= 4) giveUpOn(set);
       });
 
       // Names, where the provider draws them apart from the ground.
-      if (labels) labelLayer = layer(`/tiles/${token}/labels/{z}/{x}/{y}{r}.png`, 'basemap-labels', maxZoom);
+      if (set.labels) {
+        labelLayer = layer(`/tiles/${set.token}/labels/{z}/{x}/{y}{r}.png`, 'basemap-labels', set.maxZoom);
+      }
 
       // A provider with no treatment of its own leaves it to the theme: a
       // street map drawn for paper has to be turned over on the dark one.
-      if (typeof filter === 'string' && filter && filter !== 'none') {
-        document.documentElement.style.setProperty('--basemap-filter', filter);
+      if (typeof set.filter === 'string' && set.filter && set.filter !== 'none') {
+        document.documentElement.style.setProperty('--basemap-filter', set.filter);
       } else {
         document.documentElement.style.removeProperty('--basemap-filter');
       }
+
+      credited(set);
       if (wanted) showTiles();
+    }
+
+    /*
+     * A provider that answers nothing is worse than no provider at all — but an
+     * English reader losing the map because the Latin provider would not answer
+     * is worse still than reading Persian names. So a refusal falls back to
+     * whatever is left before anything is given up, and the drawn country is
+     * what stands when nothing is.
+     */
+    function giveUpOn(set) {
+      refused.add(set.token);
+      dropTiles();
+      const next = chosen();
+      if (next) {
+        build(next);
+        return;
+      }
+      credited(null);
+      paintFor(false);
+    }
+
+    /** Puts the imagery this reader should be looking at on the map. */
+    function apply() {
+      const set = chosen();
+      if (!set) {
+        dropTiles();
+        credited(null);
+        paintFor(false);
+        return;
+      }
+      if (showing && showing.token === set.token) {
+        if (wanted) showTiles();
+        return;
+      }
+      dropTiles();
+      build(set);
     }
 
     function showTiles() {
@@ -277,21 +356,26 @@
 
     fetch('/api/tiles')
       .then((r) => r.json())
-      .then((imagery) => {
-        if (imagery.attribution) map.attributionControl.addAttribution(imagery.attribution);
-        build(imagery);
+      .then((answer) => {
+        imagery = answer;
+        apply();
       })
       .catch(() => { /* No answer, no imagery: the drawn map is already on screen. */ });
+
+    /*
+     * A change of language is a change of map, where the archive has a second
+     * set: the names on it were the whole point of turning the streets on.
+     */
+    if (global.I18N && global.I18N.onChange) global.I18N.onChange(apply);
 
     /** Kept for the callers that still offer the toggle. */
     function setTiles(enabled) {
       wanted = enabled;
       if (enabled) {
-        showTiles();
+        apply();
         return;
       }
-      if (tileLayer) map.removeLayer(tileLayer);
-      if (labelLayer) map.removeLayer(labelLayer);
+      hideTiles();
       paintFor(false);
     }
 

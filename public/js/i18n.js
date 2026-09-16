@@ -20,15 +20,15 @@
 
   const STRINGS = {
     /* ---------------------------- page titles --------------------------- */
-    'title.map': { en: 'Iranian Letter — narratives on the map of Iran', fa: 'نامه‌های ایرانی — روایت‌ها روی نقشهٔ ایران' },
-    'title.submit': { en: 'Add a narrative — Iranian Letter', fa: 'ثبت روایت — نامه‌های ایرانی' },
-    'title.about': { en: 'About — Iranian Letter', fa: 'دربارهٔ نامه‌های ایرانی' },
-    'title.admin': { en: 'Review queue — Iranian Letter', fa: 'صف بررسی — نامه‌های ایرانی' },
-    'title.404': { en: 'Not found — Iranian Letter', fa: 'پیدا نشد — نامه‌های ایرانی' },
+    'title.map': { en: 'Iranian Letters — narratives on the map of Iran', fa: 'نامه‌های ایرانی — روایت‌ها روی نقشهٔ ایران' },
+    'title.submit': { en: 'Add a narrative — Iranian Letters', fa: 'ثبت روایت — نامه‌های ایرانی' },
+    'title.about': { en: 'About — Iranian Letters', fa: 'دربارهٔ نامه‌های ایرانی' },
+    'title.admin': { en: 'Review queue — Iranian Letters', fa: 'صف بررسی — نامه‌های ایرانی' },
+    'title.404': { en: 'Not found — Iranian Letters', fa: 'پیدا نشد — نامه‌های ایرانی' },
 
     /* ------------------------------ chrome ------------------------------ */
     'brand.tagline': { en: 'Of them, let the world know', fa: 'از او بگو به دنیا' },
-    'brand.name': { en: 'Iranian Letter', fa: 'نامه‌های ایرانی' },
+    'brand.name': { en: 'Iranian Letters', fa: 'نامه‌های ایرانی' },
     'brand.sub': { en: 'Iran', fa: 'ایران' },
     'nav.map': { en: 'Narrative map', fa: 'نقشۀ روایات' },
     'nav.mapShort': { en: 'Map', fa: 'نقشه' },
@@ -126,7 +126,7 @@
     },
     'manifesto.p2': {
       fa: 'آنچه از سر گذراندید زمانی و مکانی داشته که احتمالاً بخشی ناگسستنی از تجربه‌تان بوده. تفاوت «نقشۀ روایاتِ نامه‌های ایرانی» با سایر تلاش‌ها برای آرشیو‌کردنِ روایات، اولاً نمایش آن‌ها روی نقشهٔ ایران است تا دسترسی را آسان‌تر و روایات را ملموس‌تر کند؛ ثانیاً تمام روایات ترجمه خواهند شد تا دنیا هم بتواند بشنود.',
-      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets the narrative map of Iranian Letter apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
+      en: 'What you lived through had a time and a place, and that was probably inseparable from the experience itself. What sets the narrative map of Iranian Letters apart from other efforts to archive narratives is, first, that it shows them on the map of Iran, to make them easier to reach and more tangible; and second, that every narrative is translated, so that the world can hear them too.',
     },
     'manifesto.p3': {
       fa: 'فعلاً تمرکز روی مشاهدات عینی خودتان یا نزدیکانِ معتمدتان در قیامِ هجدهم تا بیستم دی‌ماه هزار و چهارصد و چهار است، و آنچه پیش یا پس از آن به‌خاطرش تجربه کردید. روایات ناشناس خواهند ماند؛ به صحت نوشته‌هایتان اعتماد داریم.',
@@ -491,8 +491,8 @@
     },
     'about.map.title': { en: 'Where the map comes from', fa: 'نقشه از کجا آمده' },
     'about.map.p': {
-      en: 'The outline of Iran and its 31 provinces is drawn from geoBoundaries (CC BY 4.0) and bundled with the site. The “Street detail” tiles come from OpenStreetMap, but by way of this server rather than from your browser: the map is fetched on your behalf, so OpenStreetMap sees the archive and never you.',
-      fa: 'خطوط مرزی ایران و ۳۱ استان آن از geoBoundaries (CC BY 4.0) گرفته شده و همراه سایت عرضه می‌شود. کاشی‌های «نمای خیابانی» از OpenStreetMap می‌آید، اما از راهِ سرورِ ما و نه از مرورگرِ شما: نقشه به نیابت از شما گرفته می‌شود، پس OpenStreetMap آرشیو را می‌بیند و هرگز شما را.',
+      en: 'The outline of Iran and its 31 provinces is drawn from geoBoundaries (CC BY 4.0) and bundled with the site. The “Street detail” tiles come from OpenStreetMap, which letters a place in the language of the place — so in English they come from Esri instead, which draws the names in Latin. Either way they come by way of this server rather than from your browser: the map is fetched on your behalf, so the provider sees the archive and never you.',
+      fa: 'خطوط مرزی ایران و ۳۱ استان آن از geoBoundaries (CC BY 4.0) گرفته شده و همراه سایت عرضه می‌شود. کاشی‌های «نمای خیابانی» از OpenStreetMap می‌آید که نامِ هر جا را به زبانِ همان‌جا می‌نویسد؛ برای خوانندهٔ انگلیسی به جای آن از Esri گرفته می‌شود که نام‌ها را به لاتین می‌نویسد. در هر دو حالت از راهِ سرورِ ما می‌آید و نه از مرورگرِ شما: نقشه به نیابت از شما گرفته می‌شود، پس سرویس‌دهنده آرشیو را می‌بیند و هرگز شما را.',
     },
     'about.cta': { en: 'Add your narrative', fa: 'ثبت روایت' },
 

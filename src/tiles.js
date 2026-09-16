@@ -18,6 +18,11 @@
  *
  * {r} becomes "@2x" for a high-resolution screen, where the provider offers it.
  *
+ * TILE_STYLE_LATIN names the style shown to a reader in English, or 'off' to
+ * leave everyone on the same imagery. OpenStreetMap letters a place in the
+ * language of the place, so the default is a style that keeps its names in a
+ * layer of their own and draws them in Latin.
+ *
  * Which of them a given host can actually reach is not a thing this file can
  * know, so `probe` asks all of them from wherever the archive is running and
  * /api/tiles/status reports the answer.
@@ -97,6 +102,27 @@ const STYLES = {
   },
 
   /*
+   * The same map for a reader who is not reading Persian.
+   *
+   * OpenStreetMap letters a place in the language of the place, which is the
+   * right answer nearly everywhere and the wrong one here: an English reader
+   * turning on street view gets Tehran's streets named in Persian, which is
+   * no more use to them than no names at all. Esri's canvas draws no names on
+   * the ground itself and letters them in a second layer, in Latin — so this
+   * is the one pair in the list that can say Valiasr Street.
+   *
+   * No treatment of its own, so the theme turns the ground and the names over
+   * together on the dark side.
+   */
+  'esri-latin': {
+    url: `${ARCGIS}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ARCGIS}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+    attribution: `${ESRI_CREDIT}, ${OSM_CREDIT}`,
+    maxZoom: 16,
+    filter: 'none',
+  },
+
+  /*
    * The former default. CARTO now stamps "api key required" across tiles
    * fetched without an account, so this is only useful with one — set
    * TILE_URL to the keyed address rather than naming this style.
@@ -111,6 +137,12 @@ const STYLES = {
 
 const DEFAULT_STYLE = 'osm';
 
+/*
+ * What an English reader is shown instead. TILE_STYLE_LATIN names another of
+ * the styles above, or 'off' to leave every reader on the same imagery.
+ */
+const DEFAULT_LATIN = 'esri-latin';
+
 /** A provider given only as a URL is assumed to be already the look intended. */
 const CUSTOM = { attribution: OSM_CREDIT, maxZoom: 20, filter: 'saturate(0.8) brightness(0.92)' };
 
@@ -123,7 +155,9 @@ function setting(name) {
  * Read per call rather than frozen at load, so a restarted process and the
  * tests both see what the environment actually says.
  */
-function style() {
+function style(variant) {
+  if (variant === 'latin') return latinStyle();
+
   const named = STYLES[setting('TILE_STYLE')];
   const url = setting('TILE_URL');
   const base = named || (url ? CUSTOM : STYLES[DEFAULT_STYLE]);
@@ -140,6 +174,30 @@ function style() {
 }
 
 /**
+ * The imagery for a reader who has asked for English, or null when there is
+ * none to offer — which is what 'off' means, and what a style with no separate
+ * name layer amounts to: its names are painted into the ground in whatever
+ * language the ground was drawn in, and no setting here can change them.
+ */
+function latinStyle() {
+  const asked = setting('TILE_STYLE_LATIN').toLowerCase();
+  if (asked === 'off') return null;
+
+  const name = STYLES[asked] ? asked : DEFAULT_LATIN;
+  const base = STYLES[name];
+  if (!base || !base.labels) return null;
+
+  return {
+    name,
+    url: base.url,
+    labels: base.labels,
+    attribution: base.attribution,
+    maxZoom: base.maxZoom,
+    filter: base.filter,
+  };
+}
+
+/**
  * A short name for exactly this imagery, which changes when the imagery does.
  *
  * Tiles are cached hard — a square of map is the same square forever, and
@@ -151,8 +209,9 @@ function style() {
  * writing it. So the address carries this, and changing provider changes every
  * address at once.
  */
-function token() {
-  const current = style();
+function token(variant) {
+  const current = style(variant);
+  if (!current) return null;
   const digest = crypto.createHash('sha1')
     .update(`${current.url}|${current.labels || ''}`)
     .digest('hex')
@@ -160,10 +219,40 @@ function token() {
   return `${current.name}-${digest}`;
 }
 
+/**
+ * Which imagery an address is asking for. The token is the whole of the
+ * answer: it is built from the provider's own address, so it cannot name a
+ * provider the archive is not on. Anything unrecognised is served the ordinary
+ * imagery rather than refused — a reader holding the page open across a
+ * redeploy gets a map, not a grid of holes.
+ */
+function variantFor(asked) {
+  return asked && asked === token('latin') ? 'latin' : undefined;
+}
+
 /** What the map needs to know about the imagery it is being handed. */
 function config() {
   const { name, attribution, maxZoom, filter, labels } = style();
-  return { style: name, token: token(), attribution, maxZoom, filter, labels: Boolean(labels) };
+  const latin = style('latin');
+
+  return {
+    style: name,
+    token: token(),
+    attribution,
+    maxZoom,
+    filter,
+    labels: Boolean(labels),
+    // The second set, for a reader in English. Null when there is none, and
+    // then the map simply keeps the first for everybody.
+    latin: latin ? {
+      style: latin.name,
+      token: token('latin'),
+      attribution: latin.attribution,
+      maxZoom: latin.maxZoom,
+      filter: latin.filter,
+      labels: Boolean(latin.labels),
+    } : null,
+  };
 }
 
 /**
@@ -178,8 +267,9 @@ function config() {
  * Placeholders are named, so a provider that orders them {z}/{y}/{x} — Esri
  * does — is a matter of its address and nothing more.
  */
-function upstreamFor(z, x, y, retina, layer = 'base') {
-  const current = style();
+function upstreamFor(z, x, y, retina, layer = 'base', variant) {
+  const current = style(variant);
+  if (!current) return null;
   const template = layer === 'labels' ? current.labels : current.url;
   if (!template) return null;
 
@@ -221,11 +311,11 @@ const AGENT = 'narrativemap (a public archive of first-hand narratives)';
  * Fetches one tile. Returns { body, type } or null when the coordinates are
  * not real, and throws only when the provider fails.
  */
-async function fetchTile(z, x, y, { retina = false, layer = 'base' } = {}) {
+async function fetchTile(z, x, y, { retina = false, layer = 'base', variant } = {}) {
   // Keyed by the address rather than the coordinates, so a change of provider
   // cannot serve one map's squares inside another's, and so a doubled tile
   // that resolves to the ordinary one is stored once.
-  const url = upstreamFor(z, x, y, retina, layer);
+  const url = upstreamFor(z, x, y, retina, layer, variant);
   if (!url) return null;
 
   const hit = cache.get(url);
@@ -319,6 +409,7 @@ async function probe({ cacheMs = 60000 } = {}) {
 }
 
 module.exports = {
+  variantFor,
   fetchTile, upstreamFor, config, style, token, probe,
   STYLES, DEFAULT_STYLE, MAX_TILES, cache, PROBE_TILE,
 };

@@ -497,8 +497,14 @@ input[type='date'] { cursor: text; }
  */
 .basemap-tiles { filter: var(--basemap-filter, var(--tiles-filter)); }
 
-/* Place names are drawn for a dark map already; treating them only smudges. */
-.basemap-labels { filter: none; }
+/*
+ * Where a provider draws the names apart from the ground, the two are one map
+ * made in two passes and take the same treatment. They have to: the Latin
+ * names an English reader is shown are dark letters for a pale ground, and a
+ * ground turned over for the dark theme with its names left alone would be
+ * dark on dark.
+ */
+.basemap-labels { filter: var(--basemap-filter, var(--tiles-filter)); }
 
 /*
  * The reading panel waits just outside this pane, pushed off by a translate.

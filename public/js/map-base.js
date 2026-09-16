@@ -139,6 +139,58 @@
     );
 
     /*
+     * Street view is context for Iran, not a map of the region. Left to itself
+     * the imagery covers the whole pane, and the neighbours' roads bury the
+     * ground the archive is laid on. So the tiles are clipped to the country,
+     * cut from the same boundary the map is drawn from: inside the border the
+     * streets, outside it the binding.
+     *
+     * The path is in layer coordinates, which is the space the tile pane is
+     * positioned in — panning moves the pane and the clip together, so it only
+     * has to be rebuilt when the origin does, on a zoom or a reset. A browser
+     * that will not follow the reference simply shows the imagery whole, which
+     * is where this started.
+     */
+    const clipId = `nm-iran-clip-${elementId}`;
+    let clipShape = null;
+
+    function clipTilesToIran() {
+      if (!clipShape) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', '0');
+        svg.setAttribute('height', '0');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.style.position = 'absolute';
+        const clip = document.createElementNS(ns, 'clipPath');
+        clip.setAttribute('id', clipId);
+        clip.setAttribute('clipPathUnits', 'userSpaceOnUse');
+        clipShape = document.createElementNS(ns, 'path');
+        // Even-odd, so the islands and any hole in the outline come out right
+        // whichever way their ring happens to be wound.
+        clipShape.setAttribute('clip-rule', 'evenodd');
+        clip.appendChild(clipShape);
+        svg.appendChild(clip);
+        map.getContainer().appendChild(svg);
+        map.getPane('tilePane').style.clipPath = `url(#${clipId})`;
+      }
+
+      const geometry = border.geometry;
+      const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+      let d = '';
+      polygons.forEach((polygon) => polygon.forEach((ring) => {
+        ring.forEach((position, i) => {
+          const point = map.latLngToLayerPoint([position[1], position[0]]);
+          d += `${i ? 'L' : 'M'}${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+        });
+        d += 'Z';
+      }));
+      clipShape.setAttribute('d', d);
+    }
+
+    map.on('viewreset zoomend', () => { if (clipShape) clipTilesToIran(); });
+
+    /*
      * The base imagery comes through the archive, never from the provider
      * directly — see src/tiles.js.
      *
@@ -216,6 +268,7 @@
 
     function showTiles() {
       if (!tileLayer) return;
+      clipTilesToIran();
       tileLayer.addTo(map);
       tileLayer.bringToBack();
       if (labelLayer) labelLayer.addTo(map);

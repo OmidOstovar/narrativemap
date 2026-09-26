@@ -101,8 +101,8 @@ const QUESTIONS = [
     id: 'what_it_left',
     type: 'textarea',
     label: {
-      fa: 'آیا اثری ماندگار بر جای گذاشت؟',
-      en: 'Did it leave something lasting behind?',
+      fa: 'چه اثرِ ماندگاری بر جای گذاشت؟',
+      en: 'What lasting mark did it leave?',
     },
     help: {
       fa: 'آیا این تجربه اثر ماندگاری بر شما داشته، طوری که دستخوش تحولی شگرف شده باشید؟ چه چیزی تغییر کرد — شخصیتتان، عقایدتان، ارزش‌هایتان، قراری با خودتان، یا چیز دیگری؟',
@@ -150,8 +150,8 @@ const QUESTIONS = [
       en: 'Tell us about yourself.',
     },
     help: {
-      fa: 'تجربۀ افراد از اقشارِ مختلف یکی نیست؛ سن، جنسیت، طبقۀ اقتصادی، حرفه، میزان سنتی‌بودنِ شهر و خانواده — این ویژگی‌ها نگاه اقشار را از هم متمایز می‌کنند. متوجهیم که به دلایل امنیتی شاید نخواهید پاسخ دهید، اما بسیار مفید خواهد بود اگر اندکی از خودتان بگویید، طوری که صرفاً بدانیم راوی از چه قشری از جامعه می‌آید.',
-      en: 'People do not live the same events the same way: age, gender, economic class, profession, how traditional the city and the family are — these set one vantage apart from another. We understand you may not want to answer, for your own safety. But it helps a great deal to say a little about yourself, only enough for a reader to know which part of society the narrator comes from.',
+      fa: 'تجربۀ افراد از اقشارِ مختلف یکی نیست؛ سن، جنسیت، طبقۀ اقتصادی، حرفه، میزان سنتی‌بودنِ شهر و خانواده — این ویژگی‌ها نگاه اقشار را از هم متمایز می‌کنند. متوجهیم که به دلایل امنیتی شاید نخواهید پاسخ دهید، اما بسیار مفید خواهد بود اگر اندکی از خودتان بگویید.',
+      en: 'People do not live the same events the same way: age, gender, economic class, profession, how traditional the city and the family are — these set one vantage apart from another. We understand you may not want to answer, for your own safety. But it helps a great deal to say a little about yourself.',
     },
     required: false,
     maxLength: 2000,

@@ -109,7 +109,6 @@ async function walkConversation(bot, client, overrides = {}) {
     city: () => tap(`c:${citiesOf('گیلان').indexOf('رشت')}`),
     location: () => location(37.2808, 49.5832),
     precision: () => tap('pr:year'),
-    name: () => message('مهمان'),
     email: () => tap('sk'),
   }, overrides);
 
@@ -172,7 +171,7 @@ test('a full Telegram conversation reaches the review queue', async () => {
   assert.equal(submission.private.source, 'telegram');
   assert.equal(submission.place.province, 'Gilan');
   assert.equal(submission.place.lat, 37.2808);
-  assert.equal(submission.contributor, 'مهمان');
+  assert.equal(submission.contributor, null, 'nobody is asked for a name');
   assert.equal(submission.period.start, '1978-03-21');
   assert.ok(Array.isArray(submission.answers.narrative_kind));
   assert.equal(submission.place.approximate, undefined, 'a shared pin is not approximate');
@@ -190,7 +189,6 @@ test('skipping the location marks the narrative approximate for the moderator', 
     province: () => tap(`p:${PROVINCES.findIndex((p) => p.fa === 'یزد')}`),
     city: () => tap(`c:${citiesOf('یزد').indexOf('یزد')}`),
     location: () => tap('sk'),
-    name: () => tap('sk'),
   });
   await bot.handleUpdate(tap('rv:send'));
 
@@ -200,7 +198,7 @@ test('skipping the location marks the narrative approximate for the moderator', 
   assert.ok(submission, 'the narrative arrived');
   assert.equal(submission.place.approximate, true);
   assert.equal(submission.place.province, 'Yazd', 'the fallback sits in the chosen province');
-  assert.equal(submission.contributor, null, 'a skipped name is anonymous');
+  assert.equal(submission.contributor, null, 'every narrative arrives anonymous');
 });
 
 test('a multi-select shows what is already chosen and can be toggled', async () => {

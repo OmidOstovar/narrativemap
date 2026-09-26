@@ -53,7 +53,6 @@ const PERIOD_STEPS = ['precision', 'date'];
 const STEPS = FORM_SEQUENCE.flatMap((entry) => {
   if (entry.kind === 'place') return PLACE_STEPS.map((name) => ({ kind: name }));
   if (entry.kind === 'period') return PERIOD_STEPS.map((name) => ({ kind: name }));
-  if (entry.kind === 'pseudonym') return [{ kind: 'name' }];
   if (entry.kind === 'email') return [{ kind: 'email' }];
   return [{ kind: 'question', id: entry.id }];
 });
@@ -81,7 +80,6 @@ function newSession(lang) {
       endTime: null,
       calendar: 'jalali',
     },
-    contributor: null,
     updatedAt: Date.now(),
   };
 }
@@ -127,9 +125,6 @@ function prompt(session) {
   const footer = `\n\n<i>${t('step', lang, { n: stepNumber(session), total: totalSteps() })}</i>`;
 
   switch (session.step) {
-    case 'name':
-      return { text: t('ask.name', lang) + footer, keyboard: 'skip' };
-
     case 'province':
       return {
         text: t('ask.province', lang) + footer,
@@ -248,15 +243,6 @@ function apply(session, input) {
   session.updatedAt = Date.now();
 
   switch (session.step) {
-    case 'name': {
-      if (input.skip) { session.contributor = null; return advance(session); }
-      const name = (input.text || '').trim();
-      if (!name) return { ok: false, error: t('error.needText', lang) };
-      if (name.length > 80) return { ok: false, error: t('error.tooLong', lang, { max: 80 }) };
-      session.contributor = name;
-      return advance(session);
-    }
-
     case 'email': {
       if (input.skip) { session.email = null; return advance(session); }
       const email = (input.text || '').trim();
@@ -516,7 +502,6 @@ function reviewText(session) {
   const lines = [t('review.heading', lang), ''];
   const add = (label, value) => lines.push(`<b>${t(label, lang)}:</b> ${value}`);
 
-  add('review.name', session.contributor || t('review.anonymous', lang));
   add('review.place', `${session.place.city} — ${session.place.province}`);
   add('review.point', session.place.approximate
     ? t('review.pointApprox', lang)
@@ -568,7 +553,8 @@ function toSubmission(session, { centroidFor }) {
       approximate: session.place.approximate,
     },
     period,
-    contributor: { name: session.contributor, email: session.email || null },
+    // No name is asked for: every narrative arrives anonymous.
+    contributor: { name: null, email: session.email || null },
     // Carried only if the contributor pressed the oath button. This file does
     // not swear on anyone's behalf.
     pledge: session.pledged === true,

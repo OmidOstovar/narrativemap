@@ -36,7 +36,6 @@ function driveTo(session, target, overrides = {}) {
     city: { choice: 'رشت' },
     location: { location: { latitude: 37.2808, longitude: 49.5832 } },
     precision: { choice: 'year' },
-    name: { text: 'آزمونگر' },
     email: { skip: true },
   }, overrides);
 
@@ -271,7 +270,7 @@ test('the bot swears on nobody\'s behalf', () => {
 test('the review ends on the oath, in the contributor\'s language', () => {
   const fa = driveToReview(convo.newSession('fa'));
   const lastFa = convo.reviewText(fa).trim().split('\n').pop();
-  assert.match(lastFa, /سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم\./);
+  assert.match(lastFa, /سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشته‌ام\./);
 
   const en = driveToReview(convo.newSession('en'));
   const lastEn = convo.reviewText(en).trim().split('\n').pop();
@@ -285,7 +284,6 @@ test('optional questions may be skipped and are simply absent', () => {
     city: { choice: 'رشت' },
     location: { location: { latitude: 37.2808, longitude: 49.5832 } },
     precision: { choice: 'year' },
-    name: { skip: true },
     email: { skip: true },
   };
 
@@ -311,16 +309,23 @@ test('optional questions may be skipped and are simply absent', () => {
   assert.deepEqual(validateSubmission(convo.toSubmission(session, { centroidFor })).errors, []);
 });
 
-test('the pseudonym and email are asked at the end, and both may be skipped', () => {
-  const session = driveToReview(convo.newSession('fa'), {
-    name: { skip: true },
-    email: { skip: true },
-  });
-  assert.equal(session.contributor, null);
+test('nobody is asked for a name, and the email comes last and may be skipped', () => {
+  assert.ok(!convo.STEPS.some((s) => s.kind === 'name'), 'there is no name step');
+  assert.equal(convo.STEPS[convo.STEPS.length - 1].kind, 'email', 'the email is asked last');
+
+  const session = driveToReview(convo.newSession('fa'), { email: { skip: true } });
   assert.equal(session.email, null);
   const body = convo.toSubmission(session, { centroidFor });
-  assert.equal(body.contributor.name, null);
+  assert.equal(body.contributor.name, null, 'every narrative arrives anonymous');
   assert.equal(body.contributor.email, null);
+});
+
+test('the questions follow the order the archive asks them in', () => {
+  const order = convo.STEPS.filter((s) => s.kind === 'question').map((s) => s.id);
+  assert.deepEqual(order, [
+    'narrative_kind', 'how_you_know', 'what_happened', 'narrative_title',
+    'social_background', 'what_it_left', 'above_the_crowd', 'light_ahead',
+  ]);
 });
 
 test('an email is kept when given, and a malformed one is refused', () => {

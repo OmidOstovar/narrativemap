@@ -34,10 +34,6 @@ const STRINGS = {
   'choice.done': { fa: '✓ همین‌ها', en: '✓ That is all' },
   'choice.chosen': { fa: 'انتخاب‌شده: {list}', en: 'Chosen: {list}' },
   'choice.needOne': { fa: 'دست‌کم یک گزینه را انتخاب کنید.', en: 'Choose at least one option.' },
-  'ask.name': {
-    fa: '👤 <b>نام مستعارتان</b>\n\nروایت‌ها ناشناس خواهند بود؛ هر نامی که مایلید نمایش داده شود بنویسید. اگر می‌خواهید ناشناس بمانید، رد کنید.',
-    en: '👤 <b>Your chosen name</b>\n\nNarratives are anonymous. Write whatever name you would like shown, or skip to stay anonymous.',
-  },
   'ask.email': {
     fa: '✉️ <b>ایمیل</b> (اختیاری)\n\nصرفاً برای اما و اگرهای احتمالی آینده. اگر نمی‌خواهید، رد کنید.',
     en: '✉️ <b>Email</b> (optional)\n\nOnly for the ifs and maybes of some future moment. Skip if you would rather not.',
@@ -109,8 +105,6 @@ const STRINGS = {
   },
 
   'review.heading': { fa: '📋 <b>یک بار مرور کنید</b>', en: '📋 <b>Have a last look</b>' },
-  'review.name': { fa: 'راوی', en: 'Told by' },
-  'review.anonymous': { fa: 'ناشناس', en: 'Anonymous' },
   'review.place': { fa: 'مکان', en: 'Place' },
   'review.point': { fa: 'نقطه', en: 'Point' },
   'review.pointApprox': { fa: 'مرکز استان (بعداً دقیق می‌شود)', en: 'centre of the province (to be placed exactly later)' },
@@ -118,7 +112,7 @@ const STRINGS = {
   // A chat has no tick-box, so the send button is the oath: nothing leaves
   // without the contributor pressing a button that says they swear to it.
   'review.oath': {
-    fa: '<i>دکمهٔ «سوگند یاد می‌کنم» این سوگند را از زبان شما ثبت می‌کند و روایت را می‌فرستد:</i>\n\n<b>سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم.</b>',
+    fa: '<i>دکمهٔ «سوگند یاد می‌کنم» این سوگند را از زبان شما ثبت می‌کند و روایت را می‌فرستد:</i>\n\n<b>سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشته‌ام.</b>',
     en: '<i>The “I swear it” button takes this oath in your name and sends your narrative:</i>\n\n<b>I swear that I have told this with honour and honesty, and have written nothing but the truth.</b>',
   },
   'review.confirm': { fa: '✅ سوگند یاد می‌کنم — بفرست', en: '✅ I swear it — send' },

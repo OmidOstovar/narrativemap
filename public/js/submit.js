@@ -123,12 +123,6 @@
       <p class="field__error" data-error-for="period"></p>`;
   }
 
-  function pseudonymBody() {
-    return `
-      <input type="text" id="contributor-name" maxlength="80" placeholder="${escapeHtml(t('reader.anonymous'))}">
-      <p class="field__error" data-error-for="contributor.name"></p>`;
-  }
-
   function emailBody() {
     return `
       <input type="email" id="contributor-email" maxlength="160" placeholder="you@example.com">
@@ -155,9 +149,6 @@
       }
       if (entry.kind === 'period') {
         return stepBlock(number, t('submit.when.title'), t('submit.when.note'), periodBody());
-      }
-      if (entry.kind === 'pseudonym') {
-        return stepBlock(number, t('submit.about.title'), t('submit.about.note'), pseudonymBody());
       }
       if (entry.kind === 'email') {
         return stepBlock(number, `${t('submit.email')} (${t('submit.optional')})`, t('submit.emailHelp'), emailBody());
@@ -574,8 +565,8 @@
         lng: state.place.lng,
       },
       period: readPeriod() || { start: '', end: '', precision: state.precision },
+      // No name is asked for: every narrative arrives anonymous.
       contributor: {
-        name: $('contributor-name').value,
         email: $('contributor-email').value,
       },
       pledge: $('pledge').checked,
@@ -661,7 +652,6 @@
 
     const answers = collectAnswers();
     const period = periodSnapshot();
-    const name = $('contributor-name').value;
     const email = $('contributor-email').value;
     const tiles = $('picker-tiles').checked;
     const scrolled = window.scrollY;
@@ -674,7 +664,6 @@
     renderPeriodInputs();
     restoreAnswers(answers);
     restorePeriod(period);
-    $('contributor-name').value = name;
     $('contributor-email').value = email;
     $('picker-tiles').checked = tiles;
 

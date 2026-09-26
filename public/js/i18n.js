@@ -185,12 +185,6 @@
       en: 'Answer in whichever language you think in — English or Persian both work. The questions marked optional can be left empty.',
       fa: 'به هر زبانی که با آن فکر می‌کنید بنویسید — فارسی یا انگلیسی، فرقی نمی‌کند. پرسش‌هایی که «اختیاری» خورده‌اند را می‌توانید خالی بگذارید.',
     },
-    'submit.about.title': { fa: 'نام مستعارتان', en: 'Your chosen name' },
-    'submit.about.note': {
-      fa: 'روایت‌ها ناشناس خواهد بود، هر نامی که مایلید نمایش داده شود بنویسید.',
-      en: 'Narratives are anonymous. Write whatever name you would like shown.',
-    },
-    'submit.yourName': { fa: 'نام مستعارتان', en: 'Your chosen name' },
     'submit.optionalPublic': { en: 'optional, public', fa: 'اختیاری، عمومی' },
     'submit.optional': { en: 'optional', fa: 'اختیاری' },
     'submit.email': { en: 'Email', fa: 'ایمیل' },
@@ -201,7 +195,7 @@
     },
     'submit.pledge': {
       en: 'I swear that I have told this with honour and honesty, and have written nothing but the truth.',
-      fa: 'سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم.',
+      fa: 'سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشته‌ام.',
     },
     'submit.send': { en: 'Send for review', fa: 'ارسال' },
     'submit.sending': { en: 'Sending…', fa: 'در حال ارسال…' },
@@ -242,8 +236,8 @@
       fa: 'شما را نمی‌شناسیم، و نمی‌توانیم بشناسیم.',
     },
     'assure.p1': {
-      en: 'No account, no email, no name. We keep no record of your address or your device, and there is no tracking on this page. Leave the pseudonym and the email blank and there is nothing in our database that points to you — not even for us.',
-      fa: 'نه حساب کاربری می‌خواهیم، نه ایمیل، نه نام. هیچ ردی از نشانی اینترنتی یا دستگاه شما نگه نمی‌داریم و هیچ ابزار ردیابی روی این صفحه نیست. اگر نام مستعار و ایمیل را خالی بگذارید، در پایگاه دادهٔ ما چیزی نیست که شما را نشان دهد — حتی برای خودِ ما.',
+      en: 'No account, no email, no name. We keep no record of your address or your device, and there is no tracking on this page. Leave the email blank and there is nothing in our database that points to you — not even for us.',
+      fa: 'نه حساب کاربری می‌خواهیم، نه ایمیل، نه نام. هیچ ردی از نشانی اینترنتی یا دستگاه شما نگه نمی‌داریم و هیچ ابزار ردیابی روی این صفحه نیست. اگر ایمیل را خالی بگذارید، در پایگاه دادهٔ ما چیزی نیست که شما را نشان دهد — حتی برای خودِ ما.',
     },
     'assure.p2': {
       en: 'Two things are outside our hands, and we would rather say so:',

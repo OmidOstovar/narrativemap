@@ -146,8 +146,8 @@ const QUESTIONS = [
     id: 'social_background',
     type: 'textarea',
     label: {
-      fa: 'از کدام قشر از جامعه‌اید؟',
-      en: 'Which part of society do you come from?',
+      fa: 'از خودتان بگویید.',
+      en: 'Tell us about yourself.',
     },
     help: {
       fa: 'تجربۀ افراد از اقشارِ مختلف یکی نیست؛ سن، جنسیت، طبقۀ اقتصادی، حرفه، میزان سنتی‌بودنِ شهر و خانواده — این ویژگی‌ها نگاه اقشار را از هم متمایز می‌کنند. متوجهیم که به دلایل امنیتی شاید نخواهید پاسخ دهید، اما بسیار مفید خواهد بود اگر اندکی از خودتان بگویید، طوری که صرفاً بدانیم راوی از چه قشری از جامعه می‌آید.',
@@ -178,10 +178,13 @@ const QUESTIONS_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 /**
  * The order the contributor is asked things, on the form and in the bot.
  *
- * The place, the period and the contributor's details are structured fields
- * rather than questionnaire answers, but they are asked in amongst the
- * questions, so the sequence lives here and both surfaces follow it. This is
- * what makes the numbering on the form match the order in the bot.
+ * The place, the period and the email are structured fields rather than
+ * questionnaire answers, but they are asked in amongst the questions, so the
+ * sequence lives here and both surfaces follow it. This is what makes the
+ * numbering on the form match the order in the bot.
+ *
+ * Nobody is asked for a name. Every narrative is told anonymously; a name
+ * shown beside it is one a moderator has chosen to add.
  */
 const FORM_SEQUENCE = [
   { kind: 'question', id: 'narrative_kind' },
@@ -189,15 +192,14 @@ const FORM_SEQUENCE = [
   { kind: 'place' },
   { kind: 'period' },
   { kind: 'question', id: 'what_happened' },
+  // The narrative is named straight after it is told; then who is telling
+  // it; then the questions that go further, and the address last.
+  { kind: 'question', id: 'narrative_title' },
+  { kind: 'question', id: 'social_background' },
   { kind: 'question', id: 'what_it_left' },
   { kind: 'question', id: 'above_the_crowd' },
   { kind: 'question', id: 'light_ahead' },
-  { kind: 'pseudonym' },
-  // Asked here rather than among the narrative questions: it is about the
-  // person telling it, and so belongs with the name and the address.
-  { kind: 'question', id: 'social_background' },
   { kind: 'email' },
-  { kind: 'question', id: 'narrative_title' },
 ];
 
 /** The question a pin, a list card and the reading panel are labelled with. */

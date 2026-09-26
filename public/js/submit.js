@@ -578,6 +578,7 @@
         name: $('contributor-name').value,
         email: $('contributor-email').value,
       },
+      pledge: $('pledge').checked,
     };
 
     try {

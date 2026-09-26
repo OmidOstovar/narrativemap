@@ -280,6 +280,8 @@ function createBot(client) {
     }
     if (data === 'rv:restart') { await start(chatId); return; }
     if (data === 'rv:send') {
+      // The send button is the oath; pressing it is the contributor taking it.
+      session.pledged = true;
       const result = await submit(session);
       if (result.ok) {
         sessions.delete(chatId);

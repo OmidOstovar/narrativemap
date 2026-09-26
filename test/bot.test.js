@@ -156,6 +156,9 @@ test('a full Telegram conversation reaches the review queue', async () => {
   await walkConversation(bot, client);
   assert.equal(sessions.get(CHAT).step, 'review');
   assert.match(client.last().text, /مرور/);
+  // A chat has no tick-box: the send button is the oath, and says so.
+  assert.match(client.last().text, /سوگند یاد می‌کنم/);
+  assert.ok(buttonFor(client.last().keyboard, '✅ سوگند یاد می‌کنم — بفرست'));
 
   await bot.handleUpdate(tap('rv:send'));
   assert.match(client.last().text, /کد پیگیری/);
@@ -295,6 +298,7 @@ test('a public submission cannot claim to be from Telegram or be approximate', a
       period: { start: '1979-01-01', end: '1979-12-31', precision: 'year' },
       contributor: { name: 'Impostor' },
       source: 'telegram',
+      pledge: true,
     }),
   });
   assert.equal(response.status, 201);
@@ -322,6 +326,7 @@ test('a wrong bot token is treated as an ordinary visitor', async () => {
       period: { start: '1990-01-01', end: '1990-12-31', precision: 'year' },
       contributor: {},
       source: 'telegram',
+      pledge: true,
     }),
   });
   assert.equal(response.status, 201);

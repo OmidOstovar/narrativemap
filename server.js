@@ -331,7 +331,7 @@ app.post('/api/submissions', (req, res) => {
     return;
   }
 
-  const { value, errors } = validateSubmission(req.body);
+  const { value, errors } = validateSubmission(req.body, { requirePledge: true });
   if (!value) {
     res.status(400).json({ error: 'Some answers still need work.', errors });
     return;

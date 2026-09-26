@@ -540,6 +540,9 @@ function reviewText(session) {
     }
     lines.push(`<b>${label}</b>\n${shown}\n`);
   }
+
+  // The last thing read before sending, as on the website.
+  lines.push(t('review.oath', lang));
   return lines.join('\n');
 }
 
@@ -566,6 +569,9 @@ function toSubmission(session, { centroidFor }) {
     },
     period,
     contributor: { name: session.contributor, email: session.email || null },
+    // Carried only if the contributor pressed the oath button. This file does
+    // not swear on anyone's behalf.
+    pledge: session.pledged === true,
     source: 'telegram',
   };
 }

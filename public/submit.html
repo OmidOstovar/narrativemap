@@ -103,6 +103,20 @@
   <form id="form" novalidate>
     <div id="steps"></div>
 
+    <!-- The last thing asked, and not a question: an oath. Outside the
+         numbered steps, so it is not counted as one of them and survives a
+         change of language untouched, and required by the server as well as
+         here, so a narrative nobody has sworn to cannot arrive by any road. -->
+    <div class="field pledge">
+      <label class="choice pledge__choice">
+        <input type="checkbox" id="pledge">
+        <span class="choice__body">
+          <span class="choice__label" data-i18n="submit.pledge">سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم.</span>
+        </span>
+      </label>
+      <p class="field__error" data-error-for="pledge"></p>
+    </div>
+
     <div class="callout" id="form-error" hidden></div>
 
     <div class="submit-actions">

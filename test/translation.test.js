@@ -69,6 +69,7 @@ function submissionBody(overrides = {}) {
     place: { name: 'کوچه‌ای در سرپل ذهاب', lat: 34.4614, lng: 45.8631, ...(overrides.place || {}) },
     period: { start: '1998-01-01', end: '1998-12-31', precision: 'year' },
     contributor: { name: null, email: null },
+    pledge: true,
   };
 }
 

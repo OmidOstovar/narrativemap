@@ -79,6 +79,7 @@ function validSubmission(overrides = {}) {
     place: { name: 'A corner in Tehran', lat: 35.6892, lng: 51.3890, ...(overrides.place || {}) },
     period: { start: '1979-01-01', end: '1979-06-30', precision: 'month', ...(overrides.period || {}) },
     contributor: { name: 'Tester', email: 'tester@example.com', ...(overrides.contributor || {}) },
+    pledge: 'pledge' in overrides ? overrides.pledge : true,
   };
 }
 
@@ -170,6 +171,52 @@ test('a valid submission is accepted and held as pending', async () => {
 
   const publicList = await json(await call('/api/narratives'));
   assert.deepEqual(publicList.narratives, [], 'pending submissions must not be public');
+});
+
+test('nothing is taken in without the oath', async () => {
+  const response = await call('/api/submissions', {
+    method: 'POST', body: validSubmission({ pledge: false }),
+  });
+  assert.equal(response.status, 400);
+  const { errors } = await json(response);
+  assert.deepEqual(errors.map((e) => e.field), ['pledge']);
+  assert.equal(errors[0].code, 'error.pledge', 'the page can say it in the reader\'s language');
+
+  // A box ticked is true and nothing else. Anything a script might send in
+  // its place is not a person having sworn.
+  for (const pledge of [undefined, null, 'true', 'on', 1, 'yes', {}]) {
+    const body = validSubmission();
+    if (pledge === undefined) delete body.pledge; else body.pledge = pledge;
+    const refused = await call('/api/submissions', { method: 'POST', body });
+    assert.equal(refused.status, 400, `refused ${JSON.stringify(pledge)}`);
+  }
+
+  const pending = await json(await call('/api/narratives'));
+  assert.ok(!pending.narratives.length, 'and none of them was kept');
+});
+
+test('a missing oath is reported with everything else, in one reply', async () => {
+  const payload = validSubmission({ pledge: false });
+  delete payload.answers.what_happened;
+  const response = await call('/api/submissions', { method: 'POST', body: payload });
+  const fields = (await json(response)).errors.map((e) => e.field);
+  assert.ok(fields.includes('what_happened'));
+  assert.ok(fields.includes('pledge'));
+});
+
+test('a moderator correcting a narrative swears to nothing', async () => {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST', body: validSubmission({ place: { name: 'Sworn to once' } }),
+  }));
+
+  // The oath was the contributor's, given when the narrative arrived.
+  const edited = validSubmission({ place: { name: 'Corrected' }, pledge: false });
+  delete edited.pledge;
+  const response = await call(`/api/admin/submissions/${created.id}`, {
+    method: 'PUT', cookie, body: edited,
+  });
+  assert.equal(response.status, 200);
 });
 
 test('missing required answers are rejected field by field', async () => {

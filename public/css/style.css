@@ -1492,6 +1492,12 @@ details.qa > .chips { padding-bottom: 20px; }
   .step__title { font-size: 19px; }
 }
 
+/* The oath: the form's own choice card, set apart from the last step and
+   given the weight of the last thing read before sending. */
+.pledge { margin: 6px 0 22px; }
+.pledge .choice__label { font-size: 18px; line-height: 1.7; }
+.pledge.has-error .choice { border-color: var(--rose); }
+
 .submit-actions {
   display: flex;
   align-items: center;

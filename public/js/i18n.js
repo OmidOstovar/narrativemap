@@ -199,6 +199,10 @@
       fa: 'صرفاً برای اما و اگرهای احتمالی آینده.',
       en: 'Only for the ifs and maybes of some future moment.',
     },
+    'submit.pledge': {
+      en: 'I swear that I have told this with honour and honesty, and have written nothing but the truth.',
+      fa: 'سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم.',
+    },
     'submit.send': { en: 'Send for review', fa: 'ارسال' },
     'submit.sending': { en: 'Sending…', fa: 'در حال ارسال…' },
     'submit.moderatorNote': {
@@ -415,6 +419,7 @@
     'error.tooEarly': { en: 'This map covers {min} onwards.', fa: 'این نقشه از سال {min} به بعد را در بر می‌گیرد.' },
     'error.future': { en: 'The period cannot end in the future.', fa: 'بازه نمی‌تواند در آینده تمام شود.' },
     'error.nameTooLong': { en: 'Please keep the name under 80 characters.', fa: 'نام را کمتر از ۸۰ نویسه بنویسید.' },
+    'error.pledge': { en: 'Tick the oath above to send your narrative.', fa: 'برای ارسال روایت، سوگند بالا را تیک بزنید.' },
     'error.badEmail': { en: 'That does not look like an email address.', fa: 'این نشانی ایمیل درست به نظر نمی‌رسد.' },
     'error.generic': { en: 'Something went wrong.', fa: 'خطایی رخ داد.' },
 

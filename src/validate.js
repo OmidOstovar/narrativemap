@@ -120,8 +120,15 @@ function validateContributor(raw, errors) {
 /**
  * Validates a whole submission body. Returns { value, errors }; `value` is null
  * when anything failed, so callers never half-write a record.
+ *
+ * `requirePledge` is for a contributor sending a narrative in: the last thing
+ * they do is swear to it, and a narrative nobody has sworn to is not taken.
+ * A moderator correcting one afterwards swears nothing — the oath was the
+ * contributor's, and it was given when the narrative arrived. Checked here
+ * rather than in the route so that a missing oath is reported alongside
+ * everything else still wrong, in one reply rather than two.
  */
-function validateSubmission(body) {
+function validateSubmission(body, { requirePledge = false } = {}) {
   const input = body && typeof body === 'object' ? body : {};
   const errors = [];
 
@@ -131,6 +138,12 @@ function validateSubmission(body) {
   const place = validatePlace(input.place, errors);
   const period = validatePeriod(input.period, errors);
   const contributor = validateContributor(input.contributor, errors);
+
+  // Only a literal true. A string, a 1, a missing field: none of them is a
+  // person having ticked the box.
+  if (requirePledge && input.pledge !== true) {
+    errors.push({ field: 'pledge', code: 'error.pledge', message: 'Please take the oath before sending.' });
+  }
 
   if (errors.length) return { value: null, errors };
   return { value: { answers, place, period, contributor }, errors: [] };

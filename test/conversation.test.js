@@ -234,13 +234,15 @@ test('an answer below the minimum length is refused', () => {
 
 test('a completed session becomes a submission the API accepts', () => {
   const session = driveToReview(convo.newSession('fa'));
+  session.pledged = true; // what pressing the oath button does
   const body = convo.toSubmission(session, { centroidFor });
   assert.ok(body);
   assert.equal(body.source, 'telegram');
   assert.equal(body.place.approximate, false);
   assert.equal(body.place.lat, 37.2808);
+  assert.equal(body.pledge, true);
 
-  const { value, errors } = validateSubmission(body);
+  const { value, errors } = validateSubmission(body, { requirePledge: true });
   assert.deepEqual(errors, [], 'the bot must not build a submission the API rejects');
   assert.equal(value.place.province, 'Gilan');
   assert.ok(Array.isArray(value.answers.narrative_kind));
@@ -256,6 +258,24 @@ test('skipping the location falls back to the province centre and says so', () =
   assert.deepEqual(errors, []);
   assert.equal(value.place.province, 'Gilan');
   assert.match(convo.reviewText(session), /مرکز استان/);
+});
+
+test('the bot swears on nobody\'s behalf', () => {
+  const session = driveToReview(convo.newSession('fa'));
+  const body = convo.toSubmission(session, { centroidFor });
+  assert.equal(body.pledge, false, 'no oath until the button is pressed');
+  const { errors } = validateSubmission(body, { requirePledge: true });
+  assert.deepEqual(errors.map((e) => e.field), ['pledge'], 'and the API would refuse it');
+});
+
+test('the review ends on the oath, in the contributor\'s language', () => {
+  const fa = driveToReview(convo.newSession('fa'));
+  const lastFa = convo.reviewText(fa).trim().split('\n').pop();
+  assert.match(lastFa, /سوگند یاد می‌کنم که با شرافت و راستی روایت کرده‌ام و جز حقیقت ننوشتم\./);
+
+  const en = driveToReview(convo.newSession('en'));
+  const lastEn = convo.reviewText(en).trim().split('\n').pop();
+  assert.match(lastEn, /I swear that I have told this with honour and honesty/);
 });
 
 test('optional questions may be skipped and are simply absent', () => {

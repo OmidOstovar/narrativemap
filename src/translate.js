@@ -37,9 +37,19 @@ function detectLanguage(text) {
   return rtl / letters.length > 0.2 ? 'fa' : 'en';
 }
 
-/** The language of a whole submission, judged from its longest answers. */
+/**
+ * The language of a whole submission, judged from what was written in it —
+ * not from choice codes or a pasted link, which are Latin whatever the
+ * narrative is in, and a long link could tip a short Persian one into being
+ * called English.
+ */
 function detectSubmissionLanguage(answers) {
-  const joined = Object.values(answers || {}).join('\n');
+  const input = answers || {};
+  const joined = QUESTIONS
+    .filter((question) => question.type === 'text' || question.type === 'textarea')
+    .map((question) => input[question.id])
+    .filter((value) => typeof value === 'string')
+    .join('\n');
   return detectLanguage(joined);
 }
 

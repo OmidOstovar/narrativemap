@@ -1492,6 +1492,15 @@ details.qa > .chips { padding-bottom: 20px; }
   .step__title { font-size: 19px; }
 }
 
+/* The link an option asks for, tucked under the option it belongs to. */
+.choice-source { margin: -2px 0 4px; padding-inline-start: 43px; }
+.choice-source input { font-size: 15px; padding: 9px 12px; }
+.choice-source .field__error { margin-top: 6px; }
+
+/* A narrative's cited source, under the answer that cites it. */
+.qa__source { margin: 10px 0 0; font-size: 15px; color: var(--text-muted); }
+.qa__source a { direction: ltr; unicode-bidi: isolate; overflow-wrap: anywhere; }
+
 /* The oath: the form's own choice card, set apart from the last step and
    given the weight of the last thing read before sending. */
 .pledge { margin: 6px 0 22px; }

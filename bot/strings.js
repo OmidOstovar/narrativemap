@@ -34,6 +34,10 @@ const STRINGS = {
   'choice.done': { fa: '✓ همین‌ها', en: '✓ That is all' },
   'choice.chosen': { fa: 'انتخاب‌شده: {list}', en: 'Chosen: {list}' },
   'choice.needOne': { fa: 'دست‌کم یک گزینه را انتخاب کنید.', en: 'Choose at least one option.' },
+  'ask.source': {
+    fa: '🔗 <b>پیوند به منبع</b>\n\nنشانیِ پستی را که این روایت از آن آمده بفرستید.',
+    en: '🔗 <b>Link to the source</b>\n\nSend the address of the post this came from.',
+  },
   'ask.email': {
     fa: '✉️ <b>ایمیل</b> (اختیاری)\n\nصرفاً برای اما و اگرهای احتمالی آینده. اگر نمی‌خواهید، رد کنید.',
     en: '✉️ <b>Email</b> (optional)\n\nOnly for the ifs and maybes of some future moment. Skip if you would rather not.',
@@ -95,6 +99,8 @@ const STRINGS = {
   'error.tooLong': { fa: 'این بیش از حد بلند است. کمتر از {max} نویسه بنویسید.', en: 'That is too long. Please keep it under {max} characters.' },
   'error.needText': { fa: 'لطفاً پاسخ را به‌صورت متن بنویسید.', en: 'Please answer with text.' },
   'error.pickOption': { fa: 'یکی از گزینه‌ها را انتخاب کنید.', en: 'Choose one of the options.' },
+  'error.sourceRequired': { fa: 'پیوندِ پستی را که این روایت از آن آمده بفرستید.', en: 'Send the link to the post this came from.' },
+  'error.sourceLink': { fa: 'این پیوند درست به نظر نمی‌رسد. نشانیِ خودِ پست را بفرستید.', en: 'That does not look like a link. Send the address of the post.' },
   'error.send': {
     fa: '⚠️ روایت فرستاده نشد. کمی بعد دوباره /start را بزنید.',
     en: '⚠️ The narrative could not be sent. Try /start again shortly.',

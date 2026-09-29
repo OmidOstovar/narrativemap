@@ -153,6 +153,23 @@
       </div>`;
   }
 
+  /*
+   * The link an answer cites, when the option that asks for one was chosen.
+   * Only ever a web address — the server accepts nothing else — and checked
+   * once more here, the last place before it becomes something to click.
+   */
+  function sourceLine(question, answers) {
+    const chosen = [].concat(answers[question.id] || []);
+    return (question.options || [])
+      .filter((option) => option.source && chosen.includes(option.value))
+      .map((option) => answers[option.source.id])
+      .filter((link) => typeof link === 'string' && /^https?:\/\//i.test(link))
+      .map((link) => `
+        <p class="qa__source">${escapeHtml(t('reader.source'))}:
+          <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer nofollow ugc" dir="ltr">${escapeHtml(link)}</a></p>`)
+      .join('');
+  }
+
   function detailHtml(submission) {
     const when = formatPeriodPair(submission.period);
     const source = (submission.private && submission.private.source) || 'web';
@@ -170,6 +187,7 @@
             <section class="qa">
               <h3 class="qa__q">${escapeHtml(pick(q.label))}</h3>
               <div class="chips">${chips}</div>
+              ${sourceLine(q, submission.answers)}
             </section>`;
         }
         const translated = (submission.answersTranslated || {})[q.id];
@@ -319,7 +337,13 @@
                      name="edit-${escapeHtml(q.id)}" value="${escapeHtml(o.value)}"
                      data-answer-choice="${escapeHtml(q.id)}"${chosen.includes(o.value) ? ' checked' : ''}>
               <span class="choice__body"><span class="choice__label">${escapeHtml(pick(o))}</span></span>
-            </label>`).join('')}</div>`
+            </label>${o.source ? `
+            <div class="choice-source">
+              <label class="field__label field__label--sub">${escapeHtml(pick(o.source.label))}</label>
+              <input type="text" data-answer="${escapeHtml(o.source.id)}" dir="ltr" maxlength="500"
+                     value="${escapeHtml(submission.answers[o.source.id] || '')}" placeholder="https://">
+              <p class="field__error" data-error-for="${escapeHtml(o.source.id)}"></p>
+            </div>` : ''}`).join('')}</div>`
         : q.type === 'text'
           ? `<input type="text" data-answer="${escapeHtml(q.id)}" value="${escapeHtml(value)}" maxlength="${q.maxLength || 200}">`
           : `<textarea data-answer="${escapeHtml(q.id)}" rows="${Math.min(q.rows || 5, 10)}" maxlength="${q.maxLength || 5000}">${escapeHtml(value)}</textarea>`;

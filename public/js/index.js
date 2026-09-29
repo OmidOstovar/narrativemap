@@ -426,6 +426,23 @@
     });
   }
 
+  /*
+   * The link an answer cites, when the option that asks for one was chosen.
+   * Only ever a web address — the server accepts nothing else — and checked
+   * once more here, the last place before it becomes something to click.
+   */
+  function sourceLine(question, answers) {
+    const chosen = [].concat(answers[question.id] || []);
+    return (question.options || [])
+      .filter((option) => option.source && chosen.includes(option.value))
+      .map((option) => answers[option.source.id])
+      .filter((link) => typeof link === 'string' && /^https?:\/\//i.test(link))
+      .map((link) => `
+        <p class="qa__source">${escapeHtml(t('reader.source'))}:
+          <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer nofollow ugc" dir="ltr">${escapeHtml(link)}</a></p>`)
+      .join('');
+  }
+
   function renderReader(n) {
     const when = formatPeriodPair(n.period);
 
@@ -455,6 +472,7 @@
             <details class="qa"${open}>
               <summary class="qa__q">${escapeHtml(questionLabel(q.id))}</summary>
               <div class="chips">${chips}</div>
+              ${sourceLine(q, n.answers)}
             </details>`;
         }
         return `

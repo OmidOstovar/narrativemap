@@ -45,6 +45,35 @@
       : ` <span class="field__optional">${escapeHtml(t('submit.optional'))}</span>`;
   }
 
+  /*
+   * The link an option asks for, directly under it and only while it is
+   * ticked. Plain text rather than type="url": a contributor pasting
+   * "t.me/…" without the https:// should not be told they are wrong — the
+   * server completes it.
+   */
+  function sourceBox(question, option) {
+    const id = option.source.id;
+    return `
+      <div class="choice-source" data-source-of="${escapeHtml(question.id)}:${escapeHtml(option.value)}" hidden>
+        <label class="field__label field__label--sub" for="q-${escapeHtml(id)}">${escapeHtml(pick(option.source.label))}</label>
+        <input type="text" id="q-${escapeHtml(id)}" data-source="${escapeHtml(id)}" dir="ltr"
+               inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+               maxlength="500" placeholder="https://">
+        <p class="field__error" data-error-for="${escapeHtml(id)}"></p>
+      </div>`;
+  }
+
+  /** Shows each option's link box while that option is ticked, and only then. */
+  function syncSources() {
+    document.querySelectorAll('[data-source-of]').forEach((box) => {
+      const [questionId, value] = box.dataset.sourceOf.split(':');
+      const option = document.querySelector(
+        `[data-choice="${CSS.escape(questionId)}"][value="${CSS.escape(value)}"]`,
+      );
+      box.hidden = !(option && option.checked);
+    });
+  }
+
   function questionBody(question) {
     const id = `q-${question.id}`;
     const placeholder = question.placeholder ? pick(question.placeholder) : '';
@@ -61,7 +90,7 @@
             <span class="choice__label">${escapeHtml(pick(option))}</span>
             ${option.detail ? `<span class="choice__detail">${escapeHtml(pick(option.detail))}</span>` : ''}
           </span>
-        </label>`).join('');
+        </label>${option.source ? sourceBox(question, option) : ''}`).join('');
       return `<div class="choices" id="${id}" role="group">${choices}</div>
               <p class="field__error" data-error-for="${escapeHtml(question.id)}"></p>`;
     }
@@ -190,6 +219,9 @@
       const input = $(`q-${question.id}`);
       if (input) answers[question.id] = input.value;
     }
+    document.querySelectorAll('[data-source]').forEach((input) => {
+      answers[input.dataset.source] = input.value;
+    });
     return answers;
   }
 
@@ -213,6 +245,11 @@
         updateCounter(input);
       }
     }
+    document.querySelectorAll('[data-source]').forEach((input) => {
+      const value = answers[input.dataset.source];
+      if (typeof value === 'string') input.value = value;
+    });
+    syncSources();
   }
 
   /* ------------------------------ the period ----------------------------- */
@@ -473,6 +510,10 @@
     const required = state.questions.filter((q) => q.required);
     const answered = required.filter((q) => {
       const value = answers[q.id];
+      const owed = (q.options || []).some((o) => o.source
+        && [].concat(value || []).includes(o.value)
+        && !(answers[o.source.id] || '').trim());
+      if (owed) return false;
       if (Array.isArray(value)) return value.length > 0;
       const text = (value || '').trim();
       if (!text) return false;
@@ -603,7 +644,10 @@
       updateCounter(event.target);
       updateProgress();
     });
-    $('steps').addEventListener('change', updateProgress);
+    $('steps').addEventListener('change', () => {
+      syncSources();
+      updateProgress();
+    });
 
     pickerApi = await window.NMMap.create('picker-map', {
       interactiveProvinces: false,

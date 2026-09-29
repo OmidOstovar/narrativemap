@@ -219,6 +219,73 @@ test('a moderator correcting a narrative swears to nothing', async () => {
   assert.equal(response.status, 200);
 });
 
+test('a reliable social media post is the fourth way of knowing, before "other"', async () => {
+  const meta = await json(await call('/api/questions'));
+  const options = meta.questions.find((q) => q.id === 'how_you_know').options;
+  assert.deepEqual(options.map((o) => o.value), ['lived', 'witnessed', 'family_friend', 'social_media', 'other']);
+  const social = options[3];
+  assert.equal(social.fa, 'صفحات قابل اعتماد شبکه‌های اجتماعی');
+  assert.equal(social.en, 'Reliable social media post.');
+  assert.equal(social.source.id, 'how_you_know_source', 'and the form is told it asks for a link');
+});
+
+test('a social media post is not taken without a link to it', async () => {
+  const bare = await call('/api/submissions', {
+    method: 'POST', body: validSubmission({ answers: { how_you_know: ['social_media'] } }),
+  });
+  assert.equal(bare.status, 400);
+  const { errors } = await json(bare);
+  assert.deepEqual(errors.map((e) => `${e.field}:${e.code}`), ['how_you_know_source:error.sourceRequired']);
+
+  // Nothing a browser would follow but a web address.
+  for (const link of ['javascript:alert(1)', 'not a link', 'mailto:someone@example.com', 'localhost/post']) {
+    const refused = await call('/api/submissions', {
+      method: 'POST',
+      body: validSubmission({ answers: { how_you_know: ['social_media'], how_you_know_source: link } }),
+    });
+    assert.equal(refused.status, 400, `refused ${link}`);
+    assert.equal((await json(refused)).errors[0].code, 'error.sourceLink');
+  }
+});
+
+test('the link is kept, made whole, and published with the narrative', async () => {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({ answers: { how_you_know: ['witnessed', 'social_media'], how_you_know_source: '  t.me/somechannel/1234  ' } }),
+  }));
+  await call(`/api/admin/submissions/${created.id}/status`, {
+    method: 'POST', cookie, body: { status: 'approved' },
+  });
+  const { narrative } = await json(await call(`/api/narratives/${created.id}`));
+  assert.deepEqual(narrative.answers.how_you_know, ['witnessed', 'social_media']);
+  assert.equal(narrative.answers.how_you_know_source, 'https://t.me/somechannel/1234', 'the https:// people leave off is put back');
+});
+
+test('a link sent with an answer that never claimed one is dropped', async () => {
+  const { cookie } = await signIn();
+  const created = await json(await call('/api/submissions', {
+    method: 'POST',
+    body: validSubmission({ answers: { how_you_know: ['lived'], how_you_know_source: 'https://example.com/spam' } }),
+  }));
+  await call(`/api/admin/submissions/${created.id}/status`, {
+    method: 'POST', cookie, body: { status: 'approved' },
+  });
+  const { narrative } = await json(await call(`/api/narratives/${created.id}`));
+  assert.equal(narrative.answers.how_you_know_source, undefined);
+});
+
+test('a pasted link does not change what language a narrative is in', () => {
+  const { detectSubmissionLanguage } = require('../src/translate');
+  const link = `https://www.instagram.com/p/${'x'.repeat(40)}/?utm_source=ig_web_copy_link&igshid=${'y'.repeat(60)}`;
+  assert.equal(detectSubmissionLanguage({
+    how_you_know: ['social_media'],
+    how_you_know_source: link,
+    narrative_title: 'شبِ هجدهم',
+    what_happened: 'آن شب خیابان پر از آدم بود و هیچ‌کس نمی‌دانست بعد چه می‌شود، اما همه ماندند.',
+  }), 'fa');
+});
+
 test('missing required answers are rejected field by field', async () => {
   const payload = validSubmission();
   delete payload.answers.what_happened;

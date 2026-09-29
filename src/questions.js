@@ -16,6 +16,9 @@
  * `select` and `multiselect` options carry a stable `value` that is what gets
  * stored, so an answer chosen in Persian still renders in English for an
  * English reader. Changing a `value` orphans answers already given under it.
+ *
+ * An option may carry a `source`: choosing it obliges the contributor to give
+ * a link, stored beside the answers under `source.id`.
  */
 const QUESTIONS = [
   {
@@ -78,6 +81,20 @@ const QUESTIONS = [
       { value: 'lived', fa: 'شخصاً از سر گذراندم.', en: 'I lived through it myself.' },
       { value: 'witnessed', fa: 'شخصاً آنجا بودم، اما بر کسِ دیگری گذشت.', en: 'I was there myself, but it happened to someone else.' },
       { value: 'family_friend', fa: 'خانواده یا دوستِ نزدیکی تعریف کرد.', en: 'Family or a close friend told me.' },
+      {
+        value: 'social_media',
+        fa: 'صفحات قابل اعتماد شبکه‌های اجتماعی',
+        en: 'Reliable social media post.',
+        /*
+         * Not taken on its own word: whoever chooses this gives the link to
+         * the post it came from, so the moderator can read the source before
+         * anything is published, and a reader can follow it afterwards.
+         */
+        source: {
+          id: 'how_you_know_source',
+          label: { fa: 'پیوند به منبع', en: 'Link to the source' },
+        },
+      },
       { value: 'other', fa: 'جور دیگری.', en: 'Some other way.' },
     ],
   },
@@ -251,6 +268,66 @@ function validateChoice(question, raw, errors) {
   return question.options.map((o) => o.value).filter((v) => unique.includes(v));
 }
 
+const MAX_LINK = 500;
+
+/**
+ * A link as a contributor is likely to paste it — often without the https://
+ * — made whole, or null if it is not a web address at all. Only http and
+ * https: this is shown to readers as something to follow, and nothing else a
+ * browser will follow belongs there. An address carrying a name and password
+ * is refused as well; no post a contributor is citing needs one.
+ */
+function normaliseLink(raw) {
+  let value = typeof raw === 'string' ? raw.trim() : '';
+  if (!value) return null;
+  if (!/^https?:\/\//i.test(value)) value = `https://${value}`;
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch (error) {
+    return null;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  if (!url.hostname.includes('.') || url.username || url.password) return null;
+  return url.href.length <= MAX_LINK ? url.href : null;
+}
+
+/** The options of a question that ask for a source. */
+function sourcesOf(question) {
+  return (question.options || []).filter((option) => option.source);
+}
+
+/**
+ * The link an option asks for: required when the option is chosen, and
+ * discarded when it is not, so a link cannot ride in on an answer that never
+ * claimed one.
+ */
+function validateSources(question, value, input, answers, errors) {
+  const chosen = toArray(value);
+  for (const option of sourcesOf(question)) {
+    if (!chosen.includes(option.value)) continue;
+    const { id } = option.source;
+    const raw = typeof input[id] === 'string' ? input[id].trim() : '';
+    if (!raw) {
+      errors.push({ field: id, code: 'error.sourceRequired', message: 'Add a link to the post this came from.' });
+      continue;
+    }
+    if (raw.length > MAX_LINK) {
+      errors.push({
+        field: id, code: 'error.tooLong', params: { max: MAX_LINK }, message: `Please keep this under ${MAX_LINK} characters.`,
+      });
+      continue;
+    }
+    const link = normaliseLink(raw);
+    if (!link) {
+      errors.push({ field: id, code: 'error.sourceLink', message: 'That does not look like a link. Paste the address of the post.' });
+      continue;
+    }
+    answers[id] = link;
+  }
+}
+
 /**
  * Validates a raw `{questionId: answer}` object against the questionnaire.
  * Errors carry a `code` (and any `params`) so the browser can translate them;
@@ -265,6 +342,7 @@ function validateAnswers(raw) {
     if (SELECT_TYPES.has(q.type)) {
       const value = validateChoice(q, input[q.id], errors);
       if (value !== undefined) answers[q.id] = value;
+      validateSources(q, value, input, answers, errors);
       continue;
     }
 
@@ -308,4 +386,7 @@ module.exports = {
   SELECT_TYPES,
   toArray,
   validateAnswers,
+  normaliseLink,
+  sourcesOf,
+  MAX_LINK,
 };

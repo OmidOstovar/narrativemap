@@ -8,7 +8,7 @@
  * which matters because the flow is long and easy to break.
  */
 
-const { QUESTIONS, FORM_SEQUENCE, SELECT_TYPES } = require('../src/questions');
+const { QUESTIONS, FORM_SEQUENCE, SELECT_TYPES, normaliseLink, sourcesOf, MAX_LINK } = require('../src/questions');
 const { PROVINCES, citiesOf, EN_BY_FA } = require('./provinces');
 const { t, PERSIAN_MONTHS } = require('./strings');
 
@@ -80,6 +80,8 @@ function newSession(lang) {
       endTime: null,
       calendar: 'jalali',
     },
+    // The id of a link still owed for an option just chosen, if any.
+    owedSource: null,
     updatedAt: Date.now(),
   };
 }
@@ -152,6 +154,9 @@ function prompt(session) {
     case 'question': {
       const question = currentQuestion(session);
       if (!question) return { text: t('unknown', lang), keyboard: null };
+      if (session.owedSource) {
+        return { text: t('ask.source', lang) + footer, keyboard: null };
+      }
       return questionPrompt(question, session, footer);
     }
 
@@ -386,6 +391,18 @@ function applyQuestion(session, input) {
   if (SELECT_TYPES.has(question.type)) {
     const chosen = session.chosen[question.id] || [];
 
+    // A link is owed for an option just chosen: typed text is that link.
+    if (session.owedSource && !input.choice) {
+      const raw = (input.text || '').trim();
+      if (!raw) return { ok: false, error: t('error.sourceRequired', lang) };
+      if (raw.length > MAX_LINK) return { ok: false, error: t('error.tooLong', lang, { max: MAX_LINK }) };
+      const link = normaliseLink(raw);
+      if (!link) return { ok: false, error: t('error.sourceLink', lang) };
+      session.answers[session.owedSource] = link;
+      session.owedSource = null;
+      return advance(session);
+    }
+
     if (input.choice === '__done') {
       if (!chosen.length) {
         return question.required
@@ -393,11 +410,19 @@ function applyQuestion(session, input) {
           : advance(session);
       }
       session.answers[question.id] = question.type === 'multiselect' ? chosen : chosen[0];
+      // An option that asks for its source is not finished until it has one.
+      const citing = sourcesOf(question).find((o) => chosen.includes(o.value));
+      if (citing && !session.answers[citing.source.id]) {
+        session.owedSource = citing.source.id;
+        return { ok: true, stay: true };
+      }
       return advance(session);
     }
 
     const option = question.options.find((o) => o.value === input.choice);
     if (!option) return { ok: false, error: t('error.pickOption', lang) };
+    // Tapping the choices again, from an earlier message, reopens them.
+    session.owedSource = null;
 
     if (question.type === 'multiselect') {
       // Tapping an option again takes it back off the list.
@@ -497,6 +522,11 @@ function describePeriod(session) {
   return startTime === endTime ? `${date}، ${startTime}` : `${date}، ${startTime}–${endTime}`;
 }
 
+/** A link is shown in a message sent as HTML, so its own <, > and & are escaped. */
+function escapeLink(link) {
+  return String(link).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function reviewText(session) {
   const { lang } = session;
   const lines = [t('review.heading', lang), ''];
@@ -522,6 +552,10 @@ function reviewText(session) {
       }).join('، ');
     } else {
       shown = value.length > 220 ? `${value.slice(0, 220)}…` : value;
+    }
+    for (const option of sourcesOf(question)) {
+      const link = session.answers[option.source.id];
+      if (link && [].concat(value).includes(option.value)) shown += `\n${option.source.label[lang] || option.source.label.fa}: ${escapeLink(link)}`;
     }
     lines.push(`<b>${label}</b>\n${shown}\n`);
   }

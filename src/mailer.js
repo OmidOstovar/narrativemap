@@ -1,6 +1,6 @@
 'use strict';
 
-const { QUESTIONS, SELECT_TYPES, toArray } = require('./questions');
+const { QUESTIONS, SELECT_TYPES, toArray, sourcesOf } = require('./questions');
 
 /**
  * A copy of every narrative, posted out as it arrives.
@@ -193,6 +193,14 @@ function compose(id, submission) {
     if (value === undefined || value === '' || (Array.isArray(value) && !value.length)) continue;
     lines.push(labelFor(question, lang));
     lines.push(answerText(question, value, lang));
+    // A cited source goes in the copy too: without it the answer that cites
+    // it cannot be checked, which was the point of asking for it.
+    for (const option of sourcesOf(question)) {
+      const link = submission.answers[option.source.id];
+      if (link && toArray(value).includes(option.value)) {
+        lines.push(`${option.source.label[lang] || option.source.label.en}: ${link}`);
+      }
+    }
     lines.push('');
   }
 

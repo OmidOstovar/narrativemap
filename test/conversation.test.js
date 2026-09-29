@@ -277,6 +277,28 @@ test('the review ends on the oath, in the contributor\'s language', () => {
   assert.match(lastEn, /I swear that I have told this with honour and honesty/);
 });
 
+test('choosing a social media post in the bot asks for its link', () => {
+  const session = convo.newSession('fa');
+  driveTo(session, 'question');
+  while (session.questionId !== 'how_you_know') {
+    convo.apply(session, { choice: convo.prompt(session).question.options[0].value });
+    convo.apply(session, { choice: '__done' });
+  }
+
+  convo.apply(session, { choice: 'social_media' });
+  const done = convo.apply(session, { choice: '__done' });
+  assert.ok(done.ok && done.stay, 'it does not move on yet');
+  assert.equal(session.questionId, 'how_you_know');
+  assert.match(convo.prompt(session).text, /پیوند به منبع/);
+
+  assert.equal(convo.apply(session, { text: 'not a link' }).ok, false);
+  assert.equal(convo.apply(session, { text: 'javascript:alert(1)' }).ok, false);
+  assert.ok(convo.apply(session, { text: 'instagram.com/p/abc123' }).ok);
+  assert.equal(session.answers.how_you_know_source, 'https://instagram.com/p/abc123');
+  assert.notEqual(session.questionId, 'how_you_know', 'and then it moves on');
+  assert.match(convo.reviewText(session), /https:\/\/instagram\.com\/p\/abc123/);
+});
+
 test('optional questions may be skipped and are simply absent', () => {
   const session = convo.newSession('en');
   const scripted = {
